@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'default',
     title: 'Brewrich Wealth',
   },
   icons: {
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#06090e',
+  themeColor: '#0A358F',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -44,7 +44,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark scroll-smooth">
+    <html lang="en" className="scroll-smooth bg-slate-50">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -53,7 +53,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen flex flex-col font-['Plus_Jakarta_Sans',sans-serif] antialiased bg-dark-950 text-slate-100 selection:bg-emerald-500 selection:text-black">
+      <body className="min-h-screen flex flex-col font-['Plus_Jakarta_Sans',sans-serif] antialiased bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
         <Navbar />
         <main className="flex-1 flex flex-col">{children}</main>
         <Footer />

@@ -149,7 +149,7 @@ export default function RegisterFlowModal({
           email: activeUser.email,
         },
         theme: {
-          color: '#059669', // Emerald brand color
+          color: '#1456F0', // Royal Blue brand color
         },
         modal: {
           ondismiss: () => {
@@ -179,7 +179,7 @@ export default function RegisterFlowModal({
                 particleCount: 120,
                 spread: 70,
                 origin: { y: 0.6 },
-                colors: ['#10b981', '#f59e0b', '#34d399', '#ffffff'],
+                colors: ['#1456F0', '#0A358F', '#10b981', '#ffffff'],
               });
 
               setTimeout(() => {
@@ -217,31 +217,25 @@ export default function RegisterFlowModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-950/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg rounded-2xl bg-dark-900 border border-slate-700/80 p-6 sm:p-8 shadow-2xl shadow-emerald-950/60 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg rounded-3xl bg-white border border-slate-200 p-6 sm:p-8 shadow-2xl overflow-hidden">
         
-        {/* Background glow accents */}
-        <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 h-10 w-10 flex items-center justify-center rounded-xl bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700 transition-all focus:outline-none"
+          className="absolute top-4 right-4 h-10 w-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-all focus:outline-none"
         >
           <X className="h-5 w-5" />
         </button>
 
         {/* Program Header Badge */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-emerald-600 p-[1px]">
-            <div className="flex h-full w-full items-center justify-center rounded-[11px] bg-dark-950">
-              <GraduationCap className="h-6 w-6 text-amber-400" />
-            </div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+            <GraduationCap className="h-6 w-6" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-white">Enroll in MIIP</h3>
-            <p className="text-xs text-amber-400/90 font-medium">
+            <h3 className="text-xl font-extrabold text-slate-900">Enroll in MIIP</h3>
+            <p className="text-xs text-blue-700 font-bold">
               Momentum Institutional Investing Program
             </p>
           </div>
@@ -250,28 +244,28 @@ export default function RegisterFlowModal({
         {/* Dynamic Step Content */}
         {step === 'auth_check' && (
           <div className="space-y-6">
-            <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/60 space-y-3">
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-300">Program Fee:</span>
-                <span className="font-bold text-white text-lg">₹22,000 <span className="text-xs font-normal text-slate-400">INR</span></span>
+                <span className="text-slate-600 font-medium">Program Fee:</span>
+                <span className="font-extrabold text-slate-900 text-lg">₹22,000 <span className="text-xs font-normal text-slate-500">INR</span></span>
               </div>
-              <div className="flex justify-between items-center text-xs text-slate-400 border-t border-slate-700/60 pt-2">
+              <div className="flex justify-between items-center text-xs text-slate-500 border-t border-slate-200/60 pt-2 font-medium">
                 <span>Access Duration:</span>
-                <span className="text-emerald-400 font-medium">Lifetime + Weekend Live Classes</span>
+                <span className="text-blue-700 font-bold">Lifetime + Weekend Live Classes</span>
               </div>
             </div>
 
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Step 1: Authenticate with Google
               </p>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-600 leading-relaxed">
                 To link your institutional student portal credentials and unlocked assessments, please sign in with your Google account.
               </p>
 
               {errorMessage && (
-                <div className="p-3 rounded-xl bg-red-950/40 border border-red-800 text-xs text-red-400 flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-red-600" />
                   <span>{errorMessage}</span>
                 </div>
               )}
@@ -280,7 +274,7 @@ export default function RegisterFlowModal({
                 type="button"
                 onClick={handleGoogleSignIn}
                 disabled={loading}
-                className="btn-interactive w-full min-h-[52px] flex items-center justify-center gap-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-base shadow-lg transition-all active:scale-[0.99] disabled:opacity-50"
+                className="btn-interactive w-full min-h-[52px] flex items-center justify-center gap-3 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-base shadow-md transition-all active:scale-[0.99] disabled:opacity-50"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
                   <path
@@ -308,30 +302,30 @@ export default function RegisterFlowModal({
 
         {step === 'ready_to_pay' && (
           <div className="space-y-6 animate-in fade-in">
-            <div className="p-4 rounded-xl bg-emerald-950/30 border border-emerald-800/40 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+            <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200/80 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
                 {user?.email?.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 truncate">
-                <p className="text-xs text-emerald-400 font-medium">Logged in via Google</p>
-                <p className="text-sm font-semibold text-white truncate">{user?.email}</p>
+                <p className="text-xs text-blue-700 font-bold">Logged in via Google</p>
+                <p className="text-sm font-extrabold text-slate-900 truncate">{user?.email}</p>
               </div>
-              <CheckCircle className="h-5 w-5 text-emerald-400" />
+              <CheckCircle className="h-5 w-5 text-blue-600" />
             </div>
 
-            <div className="space-y-3 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+            <div className="space-y-2 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-300">Total Investment:</span>
-                <span className="text-2xl font-bold text-emerald-400">₹22,000</span>
+                <span className="text-sm text-slate-600 font-medium">Total Enrollment:</span>
+                <span className="text-2xl font-extrabold text-slate-900">₹22,000</span>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Includes Weekend Live Classes, Order Flow Engine, Assessment Certifications, and Discord Alpha Desk access.
               </p>
             </div>
 
             {errorMessage && (
-              <div className="p-3 rounded-xl bg-red-950/40 border border-red-800 text-xs text-red-400 flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-red-600" />
                 <span>{errorMessage}</span>
               </div>
             )}
@@ -340,7 +334,7 @@ export default function RegisterFlowModal({
               type="button"
               onClick={() => triggerRazorpayPayment()}
               disabled={loading}
-              className="btn-interactive w-full min-h-[52px] flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-base shadow-xl shadow-emerald-950/50 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+              className="btn-interactive w-full min-h-[52px] flex items-center justify-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-base shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
             >
               <CreditCard className="h-5 w-5" />
               <span>Proceed to Razorpay Checkout (₹22,000)</span>
@@ -351,24 +345,24 @@ export default function RegisterFlowModal({
 
         {step === 'processing' && (
           <div className="py-10 text-center space-y-4 animate-in fade-in">
-            <div className="mx-auto h-12 w-12 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-            <h4 className="text-lg font-bold text-white">Opening Secure Gateway...</h4>
-            <p className="text-xs text-slate-400 max-w-xs mx-auto">
-              Please complete the transaction in the Razorpay window. Do not refresh or close this tab.
+            <div className="mx-auto h-12 w-12 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <h4 className="text-lg font-bold text-slate-900">Launching Razorpay Gateway...</h4>
+            <p className="text-xs text-slate-500 max-w-xs mx-auto">
+              Please complete the transaction in the checkout window.
             </p>
           </div>
         )}
 
         {step === 'success' && (
           <div className="py-8 text-center space-y-4 animate-in zoom-in-95">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20 border border-emerald-500 text-emerald-400">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">
               <CheckCircle className="h-10 w-10" />
             </div>
-            <h4 className="text-2xl font-bold text-white">Enrollment Confirmed!</h4>
-            <p className="text-sm text-emerald-300">
+            <h4 className="text-2xl font-extrabold text-slate-900">Enrollment Confirmed!</h4>
+            <p className="text-sm text-emerald-700 font-semibold">
               Your transaction was verified and your Student Portal access has been granted.
             </p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Redirecting to your protected dashboard now...
             </p>
           </div>
@@ -376,14 +370,14 @@ export default function RegisterFlowModal({
 
         {step === 'error' && (
           <div className="py-6 text-center space-y-4 animate-in fade-in">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-500/20 text-red-400">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-600">
               <AlertCircle className="h-8 w-8" />
             </div>
-            <h4 className="text-lg font-bold text-white">Payment Sync Issue</h4>
-            <p className="text-xs text-red-300 max-w-sm mx-auto">{errorMessage}</p>
+            <h4 className="text-lg font-bold text-slate-900">Payment Sync Issue</h4>
+            <p className="text-xs text-red-600 max-w-sm mx-auto">{errorMessage}</p>
             <button
               onClick={() => setStep('ready_to_pay')}
-              className="btn-interactive px-6 py-2.5 rounded-xl bg-slate-800 text-white text-sm font-medium hover:bg-slate-700"
+              className="btn-interactive px-6 py-2.5 rounded-full bg-slate-100 text-slate-800 text-sm font-semibold hover:bg-slate-200"
             >
               Try Again
             </button>
@@ -391,13 +385,13 @@ export default function RegisterFlowModal({
         )}
 
         {/* Security Trust Badges */}
-        <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+        <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
           <div className="flex items-center gap-1.5">
-            <Lock className="h-3.5 w-3.5 text-emerald-400" />
+            <Lock className="h-3.5 w-3.5 text-blue-600" />
             <span>256-Bit Encrypted Checkout</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-amber-400" />
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
             <span>Razorpay Verified Merchant</span>
           </div>
         </div>

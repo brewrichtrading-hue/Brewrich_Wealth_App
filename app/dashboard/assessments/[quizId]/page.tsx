@@ -199,7 +199,7 @@ export default function AssessmentPage() {
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#10b981', '#f59e0b', '#34d399', '#ffffff'],
+        colors: ['#1456F0', '#0A358F', '#10b981', '#ffffff'],
       });
     }
 
@@ -235,20 +235,20 @@ export default function AssessmentPage() {
   const isPassed = scorePercentage >= quiz.passingScore;
 
   return (
-    <div className="flex flex-col w-full pb-16 bg-dark-950 min-h-screen">
+    <div className="flex flex-col w-full pb-20 bg-slate-50 min-h-screen text-slate-900">
       
       {/* Top Breadcrumb Header */}
-      <div className="border-b border-slate-800/80 bg-slate-900/60 py-4 px-4 sm:px-6 lg:px-8">
+      <div className="border-b border-slate-200 bg-white py-4 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl flex items-center justify-between">
           <Link
             href="/dashboard"
-            className="btn-interactive flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+            className="btn-interactive flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-blue-600 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Return to Student Dashboard</span>
           </Link>
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <Clock className="h-3.5 w-3.5 text-amber-400" />
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+            <Clock className="h-3.5 w-3.5 text-blue-600" />
             <span>Time Limit: {quiz.timeLimitMinutes} Mins</span>
           </div>
         </div>
@@ -257,29 +257,29 @@ export default function AssessmentPage() {
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
         {/* Assessment Overview Card */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl space-y-4">
+        <div className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-lg space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
+            <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
               {quiz.module}
             </span>
-            <span className="text-xs text-slate-400 font-medium">
-              Passing Benchmark: <strong className="text-amber-400">{quiz.passingScore}%</strong>
+            <span className="text-xs text-slate-500 font-medium">
+              Passing Benchmark: <strong className="text-blue-700 font-bold">{quiz.passingScore}%</strong>
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
             {quiz.title}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300">
+          <p className="text-sm text-slate-600 leading-relaxed">
             {quiz.description}
           </p>
 
           {/* Progress Tracker */}
-          <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
             <span>
-              Progress: <strong className="text-white">{answeredCount} of {quiz.questions.length} Answered</strong>
+              Progress: <strong className="text-slate-900">{answeredCount} of {quiz.questions.length} Answered</strong>
             </span>
-            <span className="text-emerald-400 font-semibold">
+            <span className="text-blue-600 font-bold">
               {Math.round((answeredCount / quiz.questions.length) * 100)}% Complete
             </span>
           </div>
@@ -288,10 +288,10 @@ export default function AssessmentPage() {
         {/* Score Report Header if Submitted */}
         {isSubmitted && (
           <div
-            className={`p-6 sm:p-8 rounded-2xl border animate-in zoom-in-95 duration-300 space-y-4 ${
+            className={`p-8 rounded-3xl border animate-in zoom-in-95 duration-300 space-y-4 shadow-xl ${
               isPassed
-                ? 'bg-emerald-950/30 border-emerald-500/50 shadow-xl shadow-emerald-950/40'
-                : 'bg-amber-950/30 border-amber-500/50 shadow-xl shadow-amber-950/40'
+                ? 'bg-emerald-50 border-emerald-300'
+                : 'bg-amber-50 border-amber-300'
             }`}
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -299,19 +299,19 @@ export default function AssessmentPage() {
                 <div
                   className={`h-16 w-16 rounded-2xl flex items-center justify-center text-3xl font-extrabold ${
                     isPassed
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                      : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-amber-600 text-white'
                   }`}
                 >
                   {scorePercentage}%
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">
+                  <h3 className="text-xl font-extrabold text-slate-900">
                     {isPassed ? 'Assessment Passed!' : 'Benchmark Not Met'}
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-300">
+                  <p className="text-xs sm:text-sm text-slate-700">
                     {isPassed
-                      ? `Congratulations! You scored ${scorePercentage}% (Passing bar: ${quiz.passingScore}%).`
+                      ? `Congratulations! You scored ${scorePercentage}% (Passing benchmark: ${quiz.passingScore}%).`
                       : `You scored ${scorePercentage}%. Review the rationales below and retake to achieve 80%+`}
                   </p>
                 </div>
@@ -320,7 +320,7 @@ export default function AssessmentPage() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleRetake}
-                  className="btn-interactive flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
+                  className="btn-interactive flex items-center gap-2 px-5 py-2.5 rounded-full bg-white hover:bg-slate-100 text-slate-800 text-xs font-bold border border-slate-200 shadow-sm"
                 >
                   <RotateCcw className="h-4 w-4" />
                   <span>Retake Assessment</span>
@@ -329,7 +329,7 @@ export default function AssessmentPage() {
                 {quiz.id === 'quiz-1' && isPassed && (
                   <Link
                     href="/dashboard/assessments/quiz-2"
-                    className="btn-interactive flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white text-xs font-bold shadow-lg"
+                    className="btn-interactive flex items-center gap-2 px-6 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold shadow-md shadow-blue-600/25"
                   >
                     <span>Proceed to Quiz 2</span>
                     <ArrowRight className="h-4 w-4" />
@@ -349,11 +349,11 @@ export default function AssessmentPage() {
             return (
               <div
                 key={q.id}
-                className="p-6 sm:p-8 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4"
+                className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-md space-y-4"
               >
                 <div className="flex items-start justify-between gap-4">
-                  <h4 className="text-base sm:text-lg font-bold text-white leading-snug">
-                    <span className="text-emerald-400 mr-2">Q{qIndex + 1}.</span>
+                  <h4 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
+                    <span className="text-blue-600 mr-2 font-extrabold">Q{qIndex + 1}.</span>
                     {q.question}
                   </h4>
                 </div>
@@ -362,16 +362,16 @@ export default function AssessmentPage() {
                 <div className="space-y-2.5 pt-2">
                   {q.options.map((opt, optIndex) => {
                     const isSelected = selectedOpt === optIndex;
-                    let optionStyle = 'bg-slate-950/60 border-slate-800 text-slate-300 hover:bg-slate-800/60';
+                    let optionStyle = 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100';
 
                     if (isSubmitted) {
                       if (optIndex === q.correctAnswer) {
-                        optionStyle = 'bg-emerald-950/50 border-emerald-500 text-emerald-200';
+                        optionStyle = 'bg-emerald-50 border-emerald-400 text-emerald-900 font-semibold';
                       } else if (isSelected && optIndex !== q.correctAnswer) {
-                        optionStyle = 'bg-red-950/50 border-red-500 text-red-200';
+                        optionStyle = 'bg-red-50 border-red-400 text-red-900 font-semibold';
                       }
                     } else if (isSelected) {
-                      optionStyle = 'bg-emerald-950/60 border-emerald-400 text-white shadow-md shadow-emerald-950/40';
+                      optionStyle = 'bg-blue-50 border-blue-500 text-blue-950 font-bold shadow-sm';
                     }
 
                     return (
@@ -380,9 +380,9 @@ export default function AssessmentPage() {
                         type="button"
                         onClick={() => handleSelect(qIndex, optIndex)}
                         disabled={isSubmitted}
-                        className={`btn-interactive w-full text-left p-4 rounded-xl border transition-all flex items-start gap-3 ${optionStyle}`}
+                        className={`btn-interactive w-full text-left p-4 rounded-2xl border transition-all flex items-start gap-3.5 ${optionStyle}`}
                       >
-                        <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-slate-800/80 text-xs font-bold text-slate-300 shrink-0 mt-0.5">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-slate-200 text-xs font-extrabold text-slate-700 shrink-0 mt-0.5">
                           {String.fromCharCode(65 + optIndex)}
                         </span>
                         <span className="text-xs sm:text-sm leading-relaxed flex-1">
@@ -390,10 +390,10 @@ export default function AssessmentPage() {
                         </span>
 
                         {isSubmitted && optIndex === q.correctAnswer && (
-                          <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
+                          <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
                         )}
                         {isSubmitted && isSelected && optIndex !== q.correctAnswer && (
-                          <XCircle className="h-5 w-5 text-red-400 shrink-0" />
+                          <XCircle className="h-5 w-5 text-red-600 shrink-0" />
                         )}
                       </button>
                     );
@@ -402,8 +402,8 @@ export default function AssessmentPage() {
 
                 {/* Question Explanation if Submitted */}
                 {isSubmitted && (
-                  <div className="mt-4 p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 space-y-1">
-                    <p className="font-bold text-amber-400">Institutional Strategy Rationale:</p>
+                  <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1">
+                    <p className="font-bold text-blue-700">Institutional Strategy Rationale:</p>
                     <p className="leading-relaxed">{q.explanation}</p>
                   </div>
                 )}
@@ -414,8 +414,8 @@ export default function AssessmentPage() {
 
         {/* Submit Bottom Bar */}
         {!isSubmitted && (
-          <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-xs text-slate-400 text-center sm:text-left">
+          <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs text-slate-500 font-medium text-center sm:text-left">
               <span>{isAllAnswered ? 'All questions answered! Click submit to calculate score.' : `Please complete all ${quiz.questions.length} questions before submitting.`}</span>
             </div>
 
@@ -423,7 +423,7 @@ export default function AssessmentPage() {
               type="button"
               onClick={handleSubmit}
               disabled={!isAllAnswered || submitting}
-              className="btn-interactive w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-sm shadow-xl shadow-emerald-950/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              className="btn-interactive w-full sm:w-auto px-8 py-3.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-600/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {submitting ? 'Calculating Score...' : 'Submit Assessment'}
             </button>
