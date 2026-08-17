@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
-import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
   try {
@@ -23,9 +23,11 @@ export async function POST(request: Request) {
     const finalEmail = (email || '').trim().toLowerCase();
     const finalPhone = (phone || '').trim();
     const finalAllocation = target_allocation || portfolioSize || '₹10L - ₹25L';
-    const finalDate = consultation_date || preferredDate || 'Earliest Available Slot';
-    const finalTime = time_slot || preferredTime || '04:00 PM - 04:30 PM';
-    const finalNotes = notes || '';
+    
+    // Combine date & time into consultation_date to strictly match Supabase table schema
+    const rawDate = consultation_date || preferredDate || 'Tomorrow';
+    const rawTime = time_slot || preferredTime || '04:00 PM - 04:30 PM';
+    const formattedConsultationDate = `${rawDate} • ${rawTime}`;
 
     // Validate required fields
     if (!finalName || !finalEmail || !finalPhone) {
@@ -35,10 +37,24 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1. Insert into Supabase `mfd_bookings` table
-    const supabase = await createClient();
-    let generatedBookingId = `BK-${Date.now().toString(36).toUpperCase()}`;
+    // 1. Initialize Supabase Client
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://cplgtebmbplroctuqmyz.supabase.co';
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+    if (!supabaseKey) {
+      console.error('❌ [SUPABASE CONFIG ERROR]: Missing Supabase Key in environment variables.');
+      return NextResponse.json(
+        { error: 'Server database configuration error.' },
+        { status: 500 }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false },
+    });
+
+    // 2. Insert into Supabase `public.mfd_bookings` table
+    // Exact schema columns: client_name, email, phone, target_allocation, consultation_date
     const { data: dbBooking, error: dbError } = await supabase
       .from('mfd_bookings')
       .insert({
@@ -46,31 +62,40 @@ export async function POST(request: Request) {
         email: finalEmail,
         phone: finalPhone,
         target_allocation: finalAllocation,
-        consultation_date: finalDate,
-        time_slot: finalTime,
-        notes: finalNotes || null,
+        consultation_date: formattedConsultationDate,
       })
-      .select('id, created_at')
-      .maybeSingle();
+      .select('id, client_name, email, phone, target_allocation, consultation_date, created_at')
+      .single();
 
     if (dbError) {
-      console.error('Supabase mfd_bookings insert warning/error:', dbError);
-      // Note: If table hasn't been created yet in SQL editor, we log the error
-      // and proceed with sending email while using the generated ID reference.
-    } else if (dbBooking?.id) {
-      generatedBookingId = dbBooking.id;
+      console.error('❌ [SUPABASE INSERT FAILED]:', {
+        code: dbError.code,
+        message: dbError.message,
+        details: dbError.details,
+        hint: dbError.hint,
+      });
+
+      return NextResponse.json(
+        { 
+          error: `Database insertion failed: ${dbError.message}`,
+          code: dbError.code,
+        },
+        { status: 500 }
+      );
     }
 
-    // 2. Dispatch real HTML email notification via Resend
-    const apiKey = process.env.RESEND_API_KEY;
+    const generatedBookingId = dbBooking.id;
+    console.log('✅ [SUPABASE INSERT SUCCESS]: Created booking row #', generatedBookingId);
+
+    // 3. Dispatch real HTML email notification via Resend
+    const resendApiKey = process.env.RESEND_API_KEY;
     const adminEmail = process.env.ADMIN_EMAIL || 'support@brewrichwealth.com';
     const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-
     let emailDispatched = false;
 
-    if (apiKey) {
+    if (resendApiKey) {
       try {
-        const resend = new Resend(apiKey);
+        const resend = new Resend(resendApiKey);
 
         const emailHtml = `
           <!DOCTYPE html>
@@ -99,18 +124,18 @@ export async function POST(request: Request) {
               <div class="card">
                 <div class="header">
                   <p>Brewrich Wealth Advisory Desk</p>
-                  <h1>New 1-on-1 Portfolio Booking</h1>
+                  <h1>New 1-on-1 Portfolio Consultation</h1>
                 </div>
                 <div class="content">
                   <span class="alert-pill">⚡ Direct Consultation Lead</span>
                   <p style="font-size: 15px; line-height: 1.5; color: #334155; margin-top: 0;">
-                    A prospective client has requested a 1-on-1 Mutual Fund Portfolio Review & Account Opening session.
+                    A prospective investor has requested a 1-on-1 Mutual Fund Portfolio Review & Fast-Track Account Opening consultation.
                   </p>
                   
                   <table class="details-table">
                     <tr>
-                      <td class="label">Booking Reference</td>
-                      <td class="value"><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px;">${generatedBookingId}</code></td>
+                      <td class="label">Database Record ID</td>
+                      <td class="value"><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: monospace;">${generatedBookingId}</code></td>
                     </tr>
                     <tr>
                       <td class="label">Client Name</td>
@@ -125,44 +150,40 @@ export async function POST(request: Request) {
                       <td class="value"><a href="mailto:${finalEmail}" style="color: #1456F0; text-decoration: none;">${finalEmail}</a></td>
                     </tr>
                     <tr>
-                      <td class="label">Consultation Date</td>
-                      <td class="value">${finalDate}</td>
-                    </tr>
-                    <tr>
-                      <td class="label">Selected Time Slot</td>
-                      <td class="value">${finalTime}</td>
+                      <td class="label">Consultation Date & Slot</td>
+                      <td class="value">${formattedConsultationDate}</td>
                     </tr>
                     <tr>
                       <td class="label">Target Allocation</td>
                       <td class="value"><span class="badge">${finalAllocation}</span></td>
                     </tr>
-                    ${finalNotes ? `
+                    ${notes ? `
                     <tr>
                       <td class="label">Client Notes</td>
-                      <td class="value">${finalNotes}</td>
+                      <td class="value">${notes}</td>
                     </tr>` : ''}
                     <tr>
-                      <td class="label">Submitted At</td>
+                      <td class="label">Recorded In Database</td>
                       <td class="value" style="color: #64748b; font-size: 13px;">${timestamp}</td>
                     </tr>
                   </table>
 
                   <div class="action-box">
-                    <p style="margin: 0 0 4px 0; font-weight: 800; color: #166534; font-size: 14px;">Next Action:</p>
+                    <p style="margin: 0 0 4px 0; font-weight: 800; color: #166534; font-size: 14px;">Advisory Desk Action:</p>
                     <p style="margin: 0; font-size: 13px; color: #15803d; line-height: 1.4;">
-                      Please confirm calendar invite on Google Meet or reach out on WhatsApp (${finalPhone}) to initiate digital onboarding.
+                      Please dispatch Google Meet calendar invite or contact the client on WhatsApp (${finalPhone}) to initiate digital onboarding.
                     </p>
                   </div>
 
                   <div style="text-align: center; margin-top: 24px;">
                     <a href="mailto:${finalEmail}?subject=Brewrich%20Wealth%20Consultation%20Confirmed%20-%20Ref%20%23${generatedBookingId}" class="btn">
-                      Contact Investor
+                      Reply to Investor
                     </a>
                   </div>
                 </div>
                 <div class="footer">
                   Brewrich Wealth Management • AMFI Registered Mutual Fund Distributor<br/>
-                  Confidential Client Record
+                  Confidential Database Record
                 </div>
               </div>
             </body>
@@ -173,31 +194,35 @@ export async function POST(request: Request) {
           from: 'Brewrich Wealth <onboarding@resend.dev>',
           to: [adminEmail],
           replyTo: finalEmail,
-          subject: `🔔 New 1-on-1 MFD Consultation: ${finalName} (${finalAllocation})`,
+          subject: `🔔 New 1-on-1 MFD Booking: ${finalName} (${finalAllocation})`,
           html: emailHtml,
         });
 
         if (resendError) {
-          console.error('Resend email delivery error:', resendError);
+          console.error('❌ [RESEND EMAIL FAILED]:', {
+            name: resendError.name,
+            message: resendError.message,
+          });
         } else {
           emailDispatched = true;
+          console.log('✅ [RESEND EMAIL DISPATCHED]: Sent notification to', adminEmail);
         }
       } catch (emailErr) {
-        console.error('Error invoking Resend email client:', emailErr);
+        console.error('❌ [RESEND CLIENT ERROR]:', emailErr);
       }
     } else {
-      console.warn('RESEND_API_KEY is not defined in environment.');
+      console.warn('⚠️ [RESEND WARNING]: RESEND_API_KEY is not defined in environment.');
     }
 
     return NextResponse.json({
       success: true,
       bookingId: generatedBookingId,
       emailDispatched,
-      message: 'Consultation successfully scheduled! Our wealth desk has received your details.',
+      message: 'Consultation successfully scheduled and recorded in database!',
     });
 
   } catch (err: any) {
-    console.error('Fatal /api/book-mfd endpoint error:', err);
+    console.error('❌ [FATAL /api/book-mfd ERROR]:', err);
     return NextResponse.json(
       { error: err.message || 'Internal server error processing consultation request.' },
       { status: 500 }
