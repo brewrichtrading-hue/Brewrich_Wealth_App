@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, Clock, CheckCircle2, User, Phone, Mail, ArrowRight, ShieldCheck, AlertCircle, Sparkles, Briefcase } from 'lucide-react';
+import { Calendar, Clock, CheckCircle2, User, Phone, Mail, ArrowRight, ShieldCheck, AlertCircle, Sparkles, Briefcase, FileText } from 'lucide-react';
 
 export default function CalComEmbed() {
   const [selectedDate, setSelectedDate] = useState<string>('Tomorrow');
@@ -33,35 +33,44 @@ export default function CalComEmbed() {
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Front-end validation
+    if (!name.trim() || !phone.trim() || !email.trim()) {
+      setErrorMessage('Please fill in your name, phone number, and email address.');
+      return;
+    }
+
     setLoading(true);
     setErrorMessage(null);
 
     try {
-      const response = await fetch('/api/mfd/book', {
+      // Real backend API call to /api/book-mfd
+      const response = await fetch('/api/book-mfd', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name,
-          phone,
-          email,
-          preferredDate: selectedDateLabel,
-          preferredTime: selectedTime,
-          portfolioSize,
-          notes,
+          client_name: name.trim(),
+          phone: phone.trim(),
+          email: email.trim().toLowerCase(),
+          consultation_date: selectedDateLabel,
+          time_slot: selectedTime,
+          target_allocation: portfolioSize,
+          notes: notes.trim(),
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok || data.error) {
-        throw new Error(data.error || 'Failed to submit consultation request.');
+        throw new Error(data.error || 'Unable to schedule consultation. Please try again.');
       }
 
-      setBookingId(data.bookingId || `BK-${Math.floor(100000 + Math.random() * 900000)}`);
+      // Capture real generated ID from database / server
+      setBookingId(data.bookingId || `BK-${Date.now().toString(36).toUpperCase()}`);
       setIsBooked(true);
     } catch (err: any) {
-      console.error('Booking submission error:', err);
-      setErrorMessage(err.message || 'Unable to connect to the advisory desk. Please check your connection.');
+      console.error('MFD Booking Error:', err);
+      setErrorMessage(err.message || 'Server connection error. Please check your internet and try again.');
     } finally {
       setLoading(false);
     }
@@ -75,13 +84,13 @@ export default function CalComEmbed() {
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider mb-2.5 border border-blue-100">
             <ShieldCheck className="h-3.5 w-3.5 text-blue-600" />
-            <span>AMFI Certified Advisor Call</span>
+            <span>AMFI Certified Advisor Desk</span>
           </div>
           <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
             Schedule 1-on-1 Portfolio Consultation
           </h3>
           <p className="text-sm text-slate-500 mt-1">
-            Complimentary 30-minute wealth structuring & tax-efficient portfolio review.
+            Complimentary 30-minute wealth structuring & tax-efficient mutual fund review.
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-slate-50 px-3.5 py-2.5 rounded-full border border-slate-200/70 self-start sm:self-auto">
@@ -96,29 +105,35 @@ export default function CalComEmbed() {
             <CheckCircle2 className="h-9 w-9" />
           </div>
           <div className="space-y-1">
-            <span className="text-xs uppercase font-bold tracking-wider text-emerald-600">Booking Confirmed #{bookingId}</span>
+            <div className="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-extrabold border border-emerald-200 uppercase tracking-wider mb-1">
+              Booking Confirmed #{bookingId}
+            </div>
             <h4 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Consultation Scheduled!</h4>
             <p className="text-sm text-slate-600 max-w-md mx-auto">
-              Thank you, <strong className="text-slate-900">{name || 'Investor'}</strong>. Our Senior Wealth Advisor will connect with you on <strong className="text-blue-700">{selectedDateLabel} at {selectedTime}</strong>.
+              Thank you, <strong className="text-slate-900">{name || 'Investor'}</strong>. Our Senior Wealth Advisor has confirmed your slot for <strong className="text-blue-700">{selectedDateLabel} at {selectedTime}</strong>.
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 max-w-md mx-auto text-xs text-slate-600 space-y-2 text-left">
+          <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 max-w-md mx-auto text-xs text-slate-600 space-y-2 text-left shadow-sm">
             <div className="flex justify-between py-1 border-b border-slate-200/60">
-              <span className="text-slate-500 font-medium">Confirmation Sent To:</span>
-              <span className="font-bold text-slate-900">{email}</span>
+              <span className="text-slate-500 font-medium">Record ID:</span>
+              <span className="font-mono font-bold text-slate-900 truncate max-w-[220px]">{bookingId}</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-slate-200/60">
+              <span className="text-slate-500 font-medium">Email Dispatch:</span>
+              <span className="font-bold text-slate-900 truncate max-w-[220px]">{email}</span>
             </div>
             <div className="flex justify-between py-1 border-b border-slate-200/60">
               <span className="text-slate-500 font-medium">WhatsApp / SMS Alert:</span>
               <span className="font-bold text-slate-900">{phone}</span>
             </div>
             <div className="flex justify-between py-1 border-b border-slate-200/60">
-              <span className="text-slate-500 font-medium">Target Allocation:</span>
+              <span className="text-slate-500 font-medium">Planned Allocation:</span>
               <span className="font-bold text-blue-700">{portfolioSize}</span>
             </div>
             <div className="flex justify-between py-1">
-              <span className="text-slate-500 font-medium">Meeting Link:</span>
-              <span className="font-semibold text-emerald-600">Calendar invite dispatched</span>
+              <span className="text-slate-500 font-medium">Next Step:</span>
+              <span className="font-semibold text-emerald-600">Calendar invite sent via email</span>
             </div>
           </div>
 
@@ -130,7 +145,7 @@ export default function CalComEmbed() {
               setEmail('');
               setNotes('');
             }}
-            className="btn-interactive px-6 py-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold transition-all"
+            className="btn-interactive px-6 py-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-bold transition-all"
           >
             Book Another Consultation
           </button>
@@ -208,7 +223,7 @@ export default function CalComEmbed() {
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Full Name</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Full Name *</label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
@@ -223,7 +238,7 @@ export default function CalComEmbed() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Phone (WhatsApp Updates)</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Phone (WhatsApp Updates) *</label>
                 <div className="relative">
                   <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
@@ -238,7 +253,7 @@ export default function CalComEmbed() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Email Address</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Email Address *</label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
@@ -265,6 +280,17 @@ export default function CalComEmbed() {
                   <option value="₹1Cr+">₹1 Crore+ (Family Office / Private)</option>
                 </select>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">Any specific queries or current holdings? (Optional)</label>
+              <textarea
+                rows={2}
+                placeholder="e.g. Existing portfolio review, tax harvesting advice, lump sum vs SIP..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full rounded-2xl bg-slate-50 border border-slate-200 p-3.5 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+              />
             </div>
           </div>
 
