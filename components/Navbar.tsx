@@ -95,7 +95,7 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Home', href: '/', icon: TrendingUp },
     { name: 'Mutual Funds', href: '/mfd', icon: PieChart },
-    { name: 'MIP Mentorship', href: '/mip', icon: GraduationCap, badge: 'Flagship' },
+    { name: 'MIP Mentorship', href: '/miip', icon: GraduationCap, badge: 'Flagship' },
   ];
 
   return (
@@ -210,7 +210,7 @@ export default function Navbar() {
               </button>
 
               <Link
-                href="/mip"
+                href="/miip"
                 className="btn-interactive flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-md shadow-blue-600/25 transition-all hover:scale-[1.01] active:scale-[0.99]"
               >
                 <Sparkles className="h-4 w-4" />
@@ -341,7 +341,7 @@ export default function Navbar() {
                 </button>
 
                 <Link
-                  href="/mip"
+                  href="/miip"
                   onClick={() => setIsOpen(false)}
                   className="btn-interactive w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-full bg-blue-600 text-white font-extrabold text-base shadow-lg shadow-blue-600/25"
                 >

@@ -47,7 +47,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/mip" className="hover:text-white transition-colors flex items-center gap-1">
+                <Link href="/miip" className="hover:text-white transition-colors flex items-center gap-1">
                   <span>MIP Mentorship</span>
                   <ArrowUpRight className="h-3.5 w-3.5 opacity-60 text-amber-400" />
                 </Link>

@@ -83,9 +83,9 @@ export default function HomePage() {
               <ArrowRight className="h-5 w-5 text-blue-700" />
             </Link>
 
-            {/* Button 2: Become Your Own Fund Manager (Routes to /mip) */}
+            {/* Button 2: Become Your Own Fund Manager (Routes to /miip) */}
             <Link
-              href="/mip"
+              href="/miip"
               className="btn-interactive flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-blue-800/80 hover:bg-blue-800 text-white font-extrabold text-base border border-white/20 shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               <GraduationCap className="h-5 w-5 text-amber-300" />
@@ -276,7 +276,7 @@ export default function HomePage() {
 
               <div className="pt-8 mt-8 border-t border-slate-100">
                 <Link
-                  href="/mip"
+                  href="/miip"
                   className="btn-interactive w-full flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm shadow-lg shadow-slate-900/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
                 >
                   <span>Join MIP Program (₹22,000)</span>
