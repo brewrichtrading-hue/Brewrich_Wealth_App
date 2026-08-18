@@ -1,0 +1,154 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
+
+export default function StudentDashboard() {
+  const [profile, setProfile] = useState<any>(null);
+  const [fullName, setFullName] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  
+  const supabase = createClient();
+  const router = useRouter();
+
+  useEffect(() => {
+    async function loadStudentData() {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        router.push('/mip');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('student_profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (data) {
+        setProfile(data);
+        setFullName(data.full_name || '');
+      }
+      setLoading(false);
+    }
+
+    loadStudentData();
+  }, [supabase, router]);
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setMessage('');
+
+    const { error } = await supabase
+      .from('student_profiles')
+      .update({ full_name: fullName, updated_at: new Date() })
+      .eq('id', profile.id);
+
+    if (error) {
+      setMessage('Failed to update name. Try again.');
+    } else {
+      setMessage('Profile updated successfully! This name will appear on your certificate.');
+    }
+    setSaving(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+        <p className="text-xl animate-pulse">Loading your student portal...</p>
+      </div>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-slate-950 text-white p-6 md:p-12">
+      <div className="max-w-5xl mx-auto space-y-8">
+        
+        {/* Header Banner */}
+        <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 p-8 rounded-2xl border border-blue-500/30 shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div>
+            <span className="bg-blue-500/20 text-blue-400 text-xs font-semibold px-3 py-1 rounded-full border border-blue-400/30 uppercase tracking-wider">
+              MIP Mentorship Program
+            </span>
+            <h1 className="text-3xl md:text-4xl font-extrabold mt-2">Welcome, {profile?.full_name || 'Student'}!</h1>
+            <p className="text-slate-300 text-sm mt-1">Institutional Wealth & Disciplined Compounding Portal</p>
+          </div>
+          <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 text-right">
+            <p className="text-xs text-slate-400">Enrollment ID</p>
+            <p className="text-lg font-mono font-bold text-blue-400">{profile?.enrollment_id || 'Generating...'}</p>
+          </div>
+        </div>
+
+        {/* Live Class & Reusable Meeting Link Box */}
+        <div className="bg-slate-900/80 p-8 rounded-2xl border border-slate-800 shadow-xl">
+          <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
+            <span className="w-3 h-3 bg-green-500 rounded-full animate-ping"></span>
+            Live Institutional Class Room
+          </h2>
+          <p className="text-slate-400 text-sm mb-6">
+            Join our live weekend sessions using your secure registered email account. Sessions are hosted via our reusable institutional link.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <a
+              href="https://meet.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto text-center bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-3.5 rounded-xl transition shadow-lg shadow-blue-600/30"
+            >
+              Join Live Class Now 🚀
+            </a>
+            <span className="text-xs text-slate-400">Requires Google login matching: <strong className="text-white">{profile?.email}</strong></span>
+          </div>
+        </div>
+
+        {/* Profile & Certificate Name Settings */}
+        <div className="bg-slate-900/80 p-8 rounded-2xl border border-slate-800 shadow-xl">
+          <h2 className="text-xl font-bold mb-2">Student Profile & Certificate Settings</h2>
+          <p className="text-slate-400 text-sm mb-6">
+            Update your full legal name below. This exact name will be automatically printed on your official MIP Program completion certificate.
+          </p>
+          
+          <form onSubmit={handleUpdateProfile} className="space-y-4 max-w-xl">
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Registered Email (Locked)</label>
+              <input 
+                type="email" 
+                disabled 
+                value={profile?.email || ''} 
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-500 cursor-not-allowed text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Full Name for Certificate</label>
+              <input 
+                type="text" 
+                value={fullName} 
+                onChange={(e) => setFullName(e.target.value)} 
+                required
+                placeholder="Enter your full name (e.g. Yogesh Nath S.)"
+                className="w-full bg-slate-950 border border-slate-700 focus:border-blue-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition"
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={saving}
+              className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition"
+            >
+              {saving ? 'Saving...' : 'Save Profile Name'}
+            </button>
+
+            {message && <p className="text-sm text-green-400 mt-2 font-medium">{message}</p>}
+          </form>
+        </div>
+
+      </div>
+    </main>
+  );
+}
