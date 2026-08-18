@@ -7,6 +7,9 @@ import Link from 'next/link';
 
 export default function AdminControlCenter() {
   const [students, setStudents] = useState<any[]>([]);
+  const [liveLink, setLiveLink] = useState('https://meet.google.com');
+  const [savingLink, setSavingLink] = useState(false);
+  const [linkMessage, setLinkMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
   
@@ -24,7 +27,6 @@ export default function AdminControlCenter() {
         return;
       }
 
-      // Strict security check for admin email
       if (session.user.email !== adminEmail) {
         router.push('/student/dashboard');
         return;
@@ -32,8 +34,8 @@ export default function AdminControlCenter() {
 
       setAuthorized(true);
 
-      // Fetch all registered student profiles from database
-      const { data, error } = await supabase
+      // Fetch students
+      const { data } = await supabase
         .from('student_profiles')
         .select('*')
         .order('created_at', { ascending: false });
@@ -41,11 +43,41 @@ export default function AdminControlCenter() {
       if (data) {
         setStudents(data);
       }
+
+      // Fetch saved live meeting link from database settings if available
+      const { data: settingsData } = await supabase
+        .from('platform_settings')
+        .select('*')
+        .eq('key', 'live_meeting_link')
+        .single();
+
+      if (settingsData) {
+        setLiveLink(settingsData.value);
+      }
+
       setLoading(false);
     }
 
     verifyAndLoadAdmin();
   }, [supabase, router]);
+
+  const handleSaveLiveLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingLink(true);
+    setLinkMessage('');
+
+    // Upsert live link into platform_settings table
+    const { error } = await supabase
+      .from('platform_settings')
+      .upsert({ key: 'live_meeting_link', value: liveLink }, { onConflict: 'key' });
+
+    if (error) {
+      setLinkMessage('Failed to update live link. Make sure table exists.');
+    } else {
+      setLinkMessage('Live meeting link updated successfully! Students will see it instantly.');
+    }
+    setSavingLink(false);
+  };
 
   if (loading || !authorized) {
     return (
@@ -65,8 +97,8 @@ export default function AdminControlCenter() {
             <span className="bg-red-500/20 text-red-400 text-xs font-semibold px-3 py-1 rounded-full border border-red-500/30 uppercase tracking-wider">
               🔒 Master Admin Control Center
             </span>
-            <h1 className="text-3xl md:text-4xl font-extrabold mt-2">MIP Scholar Directory</h1>
-            <p className="text-slate-300 text-sm mt-1">Manage enrollments, inspect unique credentials, and monitor platform activity.</p>
+            <h1 className="text-3xl md:text-4xl font-extrabold mt-2">Platform Management</h1>
+            <p className="text-slate-300 text-sm mt-1">Control live session links, manage enrollments, and monitor platform activity.</p>
           </div>
           <Link 
             href="/student/dashboard"
@@ -74,6 +106,34 @@ export default function AdminControlCenter() {
           >
             ← Back to Student View
           </Link>
+        </div>
+
+        {/* Live Class Link Control Box */}
+        <div className="bg-slate-900/80 p-8 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+          <h2 className="text-xl font-bold">Live Classroom Link Control</h2>
+          <p className="text-slate-400 text-sm">
+            Update the Google Meet or Zoom URL below. Once saved, students clicking "Join Live Class Now" on their dashboard will automatically be directed to this link.
+          </p>
+
+          <form onSubmit={handleSaveLiveLink} className="space-y-4 max-w-2xl">
+            <div className="flex gap-4">
+              <input 
+                type="url" 
+                value={liveLink} 
+                onChange={(e) => setLiveLink(e.target.value)} 
+                required
+                className="flex-1 bg-slate-950 border border-slate-700 focus:border-blue-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition"
+              />
+              <button 
+                type="submit" 
+                disabled={savingLink}
+                className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-xl text-sm transition shadow-lg shadow-blue-600/30"
+              >
+                {savingLink ? 'Saving...' : 'Update Live Link'}
+              </button>
+            </div>
+            {linkMessage && <p className="text-sm text-green-400 font-medium">{linkMessage}</p>}
+          </form>
         </div>
 
         {/* Stats Overview */}
