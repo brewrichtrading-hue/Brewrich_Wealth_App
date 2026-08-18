@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function StudentDashboard() {
   const [profile, setProfile] = useState<any>(null);
+  const [sessionUser, setSessionUser] = useState<any>(null);
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -13,6 +15,8 @@ export default function StudentDashboard() {
   
   const supabase = createClient();
   const router = useRouter();
+
+  const adminEmail = 'brewrichtrading@gmail.com';
 
   useEffect(() => {
     async function loadStudentData() {
@@ -23,6 +27,8 @@ export default function StudentDashboard() {
         return;
       }
 
+      setSessionUser(session.user);
+
       // Try fetching existing profile
       let { data } = await supabase
         .from('student_profiles')
@@ -30,7 +36,7 @@ export default function StudentDashboard() {
         .eq('id', session.user.id)
         .single();
 
-      // If profile doesn't exist yet, create it on the fly!
+      // Auto-create profile if missing
       if (!data) {
         const randomId = 'BRW-MIP-2026-' + Math.random().toString(36).substring(2, 6).toUpperCase();
         const newProfile = {
@@ -83,17 +89,50 @@ export default function StudentDashboard() {
     );
   }
 
+  const isAdmin = sessionUser?.email === adminEmail;
+
   return (
     <main className="min-h-screen bg-slate-950 text-white p-6 md:p-12">
       <div className="max-w-5xl mx-auto space-y-8">
         
+        {/* Top Navigation & Admin Shortcut */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-ping"></span>
+            <span className="text-xs font-semibold text-slate-300">Portal Status: <strong className="text-green-400">Active & Whitelisted</strong></span>
+          </div>
+
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            {isAdmin && (
+              <Link 
+                href="/admin" 
+                className="bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2"
+              >
+                🛠️ Open Admin Panel
+              </Link>
+            )}
+            <Link 
+              href="/student/assessments" 
+              className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 px-4 py-2 rounded-xl text-xs font-bold transition"
+            >
+              📝 View Assessments
+            </Link>
+            <Link 
+              href="/student/certificate" 
+              className="bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 border border-amber-500/30 px-4 py-2 rounded-xl text-xs font-bold transition"
+            >
+              🎓 Certificate
+            </Link>
+          </div>
+        </div>
+
         {/* Header Banner */}
         <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 p-8 rounded-2xl border border-blue-500/30 shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <span className="bg-blue-500/20 text-blue-400 text-xs font-semibold px-3 py-1 rounded-full border border-blue-400/30 uppercase tracking-wider">
               MIP Mentorship Program
             </span>
-            <h1 className="text-3xl md:text-4xl font-extrabold mt-2">Welcome, {profile?.full_name || 'Student'}!</h1>
+            <h1 className="text-3xl md:text-4xl font-extrabold mt-2">Welcome, {profile?.full_name || 'Scholar'}!</h1>
             <p className="text-slate-300 text-sm mt-1">Institutional Wealth & Disciplined Compounding Portal</p>
           </div>
           <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 text-right">
@@ -105,11 +144,11 @@ export default function StudentDashboard() {
         {/* Live Class & Reusable Meeting Link Box */}
         <div className="bg-slate-900/80 p-8 rounded-2xl border border-slate-800 shadow-xl">
           <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
-            <span className="w-3 h-3 bg-green-500 rounded-full animate-ping"></span>
+            <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
             Live Institutional Class Room
           </h2>
           <p className="text-slate-400 text-sm mb-6">
-            Join our live weekend sessions using your secure registered email account. Sessions are hosted via our reusable institutional link.
+            Join our live weekend mentoring sessions using your secure registered email account. Sessions are hosted via our reusable institutional link below.
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <a
@@ -120,7 +159,47 @@ export default function StudentDashboard() {
             >
               Join Live Class Now 🚀
             </a>
-            <span className="text-xs text-slate-400">Requires Google login matching: <strong className="text-white">{profile?.email}</strong></span>
+            <span className="text-xs text-slate-400">Secured to Google account: <strong className="text-white">{profile?.email}</strong></span>
+          </div>
+        </div>
+
+        {/* 4-Week Program Schedule & Events Roadmap */}
+        <div className="bg-slate-900/80 p-8 rounded-2xl border border-slate-800 shadow-xl space-y-6">
+          <div>
+            <h2 className="text-xl font-bold">MIP Program Schedule & Curriculum</h2>
+            <p className="text-slate-400 text-sm mt-1">Scheduled live sessions and Sunday assessment unlock roadmap.</p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            
+            <div className="bg-slate-950/60 p-5 rounded-xl border border-slate-800/80">
+              <span className="text-xs font-mono text-blue-400 uppercase tracking-widest">Week 1 Module</span>
+              <h3 className="text-lg font-bold mt-1">Basics of Stock Market & Order Flow</h3>
+              <p className="text-slate-400 text-xs mt-2">Live Session: Saturday, 10:00 AM</p>
+              <p className="text-slate-400 text-xs mt-1">Assessment Unlocks: Sunday (20 Questions)</p>
+            </div>
+
+            <div className="bg-slate-950/60 p-5 rounded-xl border border-slate-800/80">
+              <span className="text-xs font-mono text-blue-400 uppercase tracking-widest">Week 2 Module</span>
+              <h3 className="text-lg font-bold mt-1">Risk Management & Capital Protection</h3>
+              <p className="text-slate-400 text-xs mt-2">Live Session: Saturday, 10:00 AM</p>
+              <p className="text-slate-400 text-xs mt-1">Assessment Unlocks: Sunday (20 Questions)</p>
+            </div>
+
+            <div className="bg-slate-950/60 p-5 rounded-xl border border-slate-800/80">
+              <span className="text-xs font-mono text-blue-400 uppercase tracking-widest">Week 3 Module</span>
+              <h3 className="text-lg font-bold mt-1">Strategy Building & Automated Backtesting</h3>
+              <p className="text-slate-400 text-xs mt-2">Live Session: Saturday, 10:00 AM</p>
+              <p className="text-slate-400 text-xs mt-1">Assessment Unlocks: Sunday (20 Questions)</p>
+            </div>
+
+            <div className="bg-slate-950/60 p-5 rounded-xl border border-slate-800/80">
+              <span className="text-xs font-mono text-blue-400 uppercase tracking-widest">Week 4 Module</span>
+              <h3 className="text-lg font-bold mt-1">Diversification on Mutual Funds & ETFs</h3>
+              <p className="text-slate-400 text-xs mt-2">Live Session: Saturday, 10:00 AM</p>
+              <p className="text-slate-400 text-xs mt-1">Assessment Unlocks & Certificate: Sunday</p>
+            </div>
+
           </div>
         </div>
 
