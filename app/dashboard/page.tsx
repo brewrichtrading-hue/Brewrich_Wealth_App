@@ -48,7 +48,7 @@ export default async function DashboardPage() {
     .maybeSingle();
 
   if (!moduleStatus || !moduleStatus.is_paid) {
-    redirect('/?access_denied=unpaid_member');
+    redirect('/miip/free-resources?status=unpaid_member');
   }
 
   // 3. Upcoming Saturday & Sunday Live Class Schedule

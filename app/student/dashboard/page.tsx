@@ -21,7 +21,7 @@ export default function StudentDashboard() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        router.push('/mip');
+        router.push('/miip');
         return;
       }
 
