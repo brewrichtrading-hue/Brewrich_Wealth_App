@@ -53,12 +53,6 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/miip/free-resources" className="hover:text-white transition-colors flex items-center gap-1 text-emerald-400">
-                  <span>Free Study Materials</span>
-                  <ArrowUpRight className="h-3.5 w-3.5 opacity-60 text-emerald-400" />
-                </Link>
-              </li>
-              <li>
                 <Link href="/dashboard" className="hover:text-white transition-colors">
                   Student Portal
                 </Link>

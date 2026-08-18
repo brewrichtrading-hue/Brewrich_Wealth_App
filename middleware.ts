@@ -8,7 +8,7 @@ export async function middleware(req: NextRequest) {
   // Protect student routes only
   if (url.pathname.startsWith('/student')) {
     if (!user) {
-      return NextResponse.redirect(new URL('/miip', req.url));
+      return NextResponse.redirect(new URL('/mip', req.url));
     }
   }
 

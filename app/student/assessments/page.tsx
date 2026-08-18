@@ -17,7 +17,7 @@ export default function StudentAssessments() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        router.push('/miip');
+        router.push('/mip');
         return;
       }
 

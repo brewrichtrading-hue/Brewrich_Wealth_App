@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import confetti from 'canvas-confetti';
 import { 
@@ -14,8 +13,7 @@ import {
   CheckCircle, 
   AlertCircle,
   CreditCard,
-  GraduationCap,
-  BookOpen
+  GraduationCap
 } from 'lucide-react';
 
 interface RegisterFlowModalProps {
@@ -344,17 +342,6 @@ export default function RegisterFlowModal({
               <span>Proceed to Razorpay Checkout (₹22,000)</span>
               <ArrowRight className="h-5 w-5" />
             </button>
-
-            <div className="pt-2 text-center">
-              <Link
-                href="/miip/free-resources"
-                onClick={onClose}
-                className="text-xs text-blue-600 hover:text-blue-800 font-bold inline-flex items-center gap-1.5 transition-colors"
-              >
-                <BookOpen className="h-3.5 w-3.5" />
-                <span>Not ready yet? Download our Complimentary Study Guides &rarr;</span>
-              </Link>
-            </div>
           </div>
         )}
 

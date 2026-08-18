@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import GlobalScrollUnlocker from '@/components/GlobalScrollUnlocker';
 
 export const metadata: Metadata = {
   title: 'Brewrich Wealth | Institutional Wealth & Momentum Trading Firm',
@@ -54,6 +55,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col font-['Plus_Jakarta_Sans',sans-serif] antialiased bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
+        <GlobalScrollUnlocker />
         <Navbar />
         <main className="flex-1 flex flex-col">{children}</main>
         <Footer />

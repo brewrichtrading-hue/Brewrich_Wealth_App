@@ -16,8 +16,7 @@ import {
   PieChart, 
   Sparkles,
   ChevronRight,
-  ArrowUpRight,
-  BookOpen
+  ArrowUpRight
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -97,7 +96,6 @@ export default function Navbar() {
     { name: 'Home', href: '/', icon: TrendingUp },
     { name: 'Mutual Funds', href: '/mfd', icon: PieChart },
     { name: 'MIP Mentorship', href: '/miip', icon: GraduationCap, badge: 'Flagship' },
-    { name: 'Free Study Guides', href: '/miip/free-resources', icon: BookOpen, badge: 'Free' },
   ];
 
   return (
