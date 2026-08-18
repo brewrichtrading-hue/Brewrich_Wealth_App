@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Download, BookOpen, CheckCircle2, FileText, Sparkles, ArrowDownToLine } from 'lucide-react';
+import { Download, BookOpen, CheckCircle2, FileText, Sparkles, ArrowDownToLine, Lock, Unlock } from 'lucide-react';
 
 interface FreeResourceCardProps {
   id: string;
@@ -17,6 +17,8 @@ interface FreeResourceCardProps {
   gradientTheme: string;
   accentColor: string;
   coverImageTheme: 'risk' | 'chart';
+  isUnlocked?: boolean;
+  onUnlockRequest?: () => void;
 }
 
 export default function FreeResourceCard({
@@ -32,6 +34,8 @@ export default function FreeResourceCard({
   gradientTheme,
   accentColor,
   coverImageTheme,
+  isUnlocked = false,
+  onUnlockRequest,
 }: FreeResourceCardProps) {
   return (
     <div className="relative rounded-3xl bg-slate-900/90 border border-slate-800 p-6 sm:p-8 shadow-2xl shadow-slate-950 flex flex-col justify-between hover:border-slate-700 transition-all group overflow-hidden">
@@ -51,9 +55,22 @@ export default function FreeResourceCard({
             {badge}
           </span>
 
-          <span className="text-[11px] font-semibold text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700">
-            {pageCount} • {fileSize}
-          </span>
+          <div className="flex items-center gap-2">
+            {isUnlocked ? (
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
+                <Unlock className="h-3 w-3" />
+                <span>Unlocked</span>
+              </span>
+            ) : (
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
+                <Lock className="h-3 w-3" />
+                <span>Locked</span>
+              </span>
+            )}
+            <span className="text-[11px] font-semibold text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700">
+              {pageCount} • {fileSize}
+            </span>
+          </div>
         </div>
 
         {/* 3D Visual Book Mockup Container */}
@@ -97,7 +114,15 @@ export default function FreeResourceCard({
             {/* Book Footer */}
             <div className="pl-2 pt-2 border-t border-white/10 flex items-center justify-between text-[8px] text-slate-400">
               <span className="font-bold text-slate-300">By Yogesh Nath S</span>
-              <span className="font-mono text-emerald-400 font-extrabold">FREE PDF</span>
+              {isUnlocked ? (
+                <span className="font-mono text-emerald-400 font-extrabold flex items-center gap-1">
+                  ✓ READY
+                </span>
+              ) : (
+                <span className="font-mono text-amber-400 font-extrabold flex items-center gap-1">
+                  🔒 ACCESS REQUIRED
+                </span>
+              )}
             </div>
 
           </div>
@@ -135,25 +160,40 @@ export default function FreeResourceCard({
 
       {/* Action Area */}
       <div className="pt-6 mt-6 border-t border-slate-800/80 relative z-10 space-y-2.5">
-        <a
-          href={pdfUrl}
-          download
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`btn-interactive w-full min-h-[50px] flex items-center justify-center gap-2.5 rounded-full font-extrabold text-sm shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99] ${
-            badgeColor === 'amber'
-              ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/20'
-              : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/30'
-          }`}
-        >
-          <ArrowDownToLine className="h-4 w-4" />
-          <span>Download Free PDF ({fileSize})</span>
-        </a>
+        {isUnlocked ? (
+          <a
+            href={pdfUrl}
+            download
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`btn-interactive w-full min-h-[50px] flex items-center justify-center gap-2.5 rounded-full font-extrabold text-sm shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99] animate-in fade-in ${
+              badgeColor === 'amber'
+                ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/25 ring-2 ring-amber-400/40'
+                : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/30 ring-2 ring-blue-400/40'
+            }`}
+          >
+            <ArrowDownToLine className="h-4 w-4" />
+            <span>Instant Download PDF ({fileSize})</span>
+          </a>
+        ) : (
+          <button
+            type="button"
+            onClick={onUnlockRequest}
+            className={`btn-interactive w-full min-h-[50px] flex items-center justify-center gap-2.5 rounded-full font-extrabold text-sm shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99] ${
+              badgeColor === 'amber'
+                ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/20'
+                : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/30'
+            }`}
+          >
+            <Lock className="h-4 w-4" />
+            <span>Unlock Free Download ({fileSize})</span>
+          </button>
+        )}
 
         <div className="flex items-center justify-center gap-3 text-[11px] text-slate-400 font-semibold">
           <span className="flex items-center gap-1">
             <Sparkles className="h-3 w-3 text-amber-400" />
-            <span>Instant Unrestricted Access</span>
+            <span>{isUnlocked ? 'Direct Download Active' : 'Free Registration Required'}</span>
           </span>
           <span>•</span>
           <span>Zero Payment Required</span>

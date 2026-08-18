@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import confetti from 'canvas-confetti';
 import FreeResourceCard from '@/components/FreeResourceCard';
 import RegisterFlowModal from '@/components/RegisterFlowModal';
 import {
@@ -15,6 +16,7 @@ import {
   Users,
   CheckCircle2,
   Lock,
+  Unlock,
   ArrowUpRight,
   MessageCircle,
   TrendingUp,
@@ -24,14 +26,111 @@ import {
   Calendar,
   Layers,
   ChevronRight,
-  AlertCircle
+  AlertCircle,
+  User,
+  Mail,
+  Phone,
+  ArrowDownToLine
 } from 'lucide-react';
 
 function FreeResourcesContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  
+  // Lead Form State
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [capturedLeadName, setCapturedLeadName] = useState('');
+
   const searchParams = useSearchParams();
   const fallbackStatus = searchParams?.get('status') || searchParams?.get('fallback');
   const isUnpaidFallback = fallbackStatus === 'unpaid_member' || fallbackStatus === 'cancelled';
+
+  // Check if lead was previously unlocked in localStorage
+  useEffect(() => {
+    try {
+      const storedUnlock = localStorage.getItem('brw_lead_unlocked');
+      const storedName = localStorage.getItem('brw_lead_name');
+      if (storedUnlock === 'true') {
+        setIsUnlocked(true);
+        if (storedName) setCapturedLeadName(storedName);
+      }
+    } catch (e) {
+      console.warn('Storage check error:', e);
+    }
+  }, []);
+
+  const handleLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError('');
+
+    if (!fullName.trim() || !email.trim() || !phone.trim()) {
+      setFormError('Please enter your full name, email address, and phone number.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch('/api/lead-capture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: fullName.trim(),
+          email: email.trim().toLowerCase(),
+          phone: phone.trim(),
+          resource_requested: 'MIIP Free Study Books Pack (Risk Guidebook + Chart Patterns)',
+          source: isUnpaidFallback ? 'miip_unpaid_fallback_wall' : 'miip_free_resources_wall',
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setIsUnlocked(true);
+        setCapturedLeadName(fullName.trim());
+        try {
+          localStorage.setItem('brw_lead_unlocked', 'true');
+          localStorage.setItem('brw_lead_name', fullName.trim());
+          localStorage.setItem('brw_lead_email', email.trim().toLowerCase());
+        } catch (storageErr) {
+          console.warn('LocalStorage error:', storageErr);
+        }
+
+        // Trigger celebratory confetti
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#1456F0', '#F59E0B', '#10B981', '#ffffff'],
+        });
+
+        // Smooth scroll down to resources
+        setTimeout(() => {
+          document.getElementById('study-books-grid')?.scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+      } else {
+        setFormError(data.error || 'Failed to unlock materials. Please try again.');
+      }
+    } catch (err: any) {
+      console.error('Lead capture submit error:', err);
+      // Fallback: unlock anyway so user experience is not blocked
+      setIsUnlocked(true);
+      setCapturedLeadName(fullName.trim());
+      try {
+        localStorage.setItem('brw_lead_unlocked', 'true');
+      } catch (_) {}
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const scrollToLeadForm = () => {
+    document.getElementById('lead-capture-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const resources = [
     {
@@ -90,7 +189,7 @@ function FreeResourcesContent() {
                 <Sparkles className="h-4 w-4" />
               </div>
               <p className="text-xs sm:text-sm text-slate-200">
-                <strong className="text-amber-300">Complimentary Gift Unlocked:</strong> Your active cohort access is pending, but you can immediately download our core institutional study materials below!
+                <strong className="text-amber-300">Complimentary Gift Unlocked:</strong> Your active cohort access is pending, but you can immediately unlock and download our core institutional study materials below!
               </p>
             </div>
 
@@ -106,7 +205,7 @@ function FreeResourcesContent() {
       )}
 
       {/* 2. HERO SECTION */}
-      <section className="relative pt-16 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <section className="relative pt-16 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
         
         {/* Glowing Ambient Radial Gradients */}
         <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-3xl pointer-events-none -z-0" />
@@ -149,18 +248,161 @@ function FreeResourcesContent() {
         </div>
       </section>
 
-      {/* 3. DUAL LUXURY 3D BOOK CARDS SECTION */}
-      <section className="px-4 sm:px-6 lg:px-8 relative z-20">
+      {/* 3. LEAD CAPTURE FORM / UNLOCKED CELEBRATION BOX */}
+      <section id="lead-capture-section" className="px-4 sm:px-6 lg:px-8 mb-12 relative z-20">
+        <div className="mx-auto max-w-3xl">
+          
+          {isUnlocked ? (
+            /* UNLOCKED STATE CELEBRATION BANNER */
+            <div className="rounded-3xl bg-gradient-to-r from-emerald-950/60 via-slate-900 to-blue-950/60 border border-emerald-500/40 p-6 sm:p-8 text-center space-y-3 shadow-2xl shadow-emerald-950/50 animate-in fade-in">
+              <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 mx-auto">
+                <Unlock className="h-6 w-6" />
+              </div>
+              <h3 className="text-xl sm:text-2xl font-extrabold text-white">
+                Study Materials Unlocked{capturedLeadName ? `, ${capturedLeadName}` : ''}! 🎉
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto">
+                Your direct download access is active. Click the <strong className="text-emerald-300">"Instant Download PDF"</strong> buttons below to save both institutional study books to your device.
+              </p>
+              <div className="pt-2">
+                <a
+                  href="#study-books-grid"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 transition-all"
+                >
+                  <ArrowDownToLine className="h-4 w-4" />
+                  <span>Go to Download Cards</span>
+                </a>
+              </div>
+            </div>
+          ) : (
+            /* LEAD CAPTURE WALL FORM */
+            <div className="rounded-3xl bg-slate-900/95 border border-blue-500/30 p-6 sm:p-10 shadow-2xl shadow-blue-950/60 space-y-6 relative overflow-hidden">
+              
+              <div className="absolute top-0 right-0 w-60 h-60 bg-blue-600/10 rounded-full blur-2xl pointer-events-none" />
+
+              <div className="text-center space-y-2 relative z-10">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] font-extrabold uppercase tracking-wider">
+                  <Lock className="h-3.5 w-3.5" />
+                  <span>Free Registration Required to Download</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                  Unlock Instant Access to Both Study Books
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto">
+                  Enter your details below. We'll instantly unlock high-resolution PDF download access for both proprietary guides.
+                </p>
+              </div>
+
+              {formError && (
+                <div className="p-3.5 rounded-2xl bg-red-950/50 border border-red-500/40 text-xs text-red-300 flex items-start gap-2.5">
+                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-red-400" />
+                  <span>{formError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleLeadSubmit} className="space-y-4 relative z-10">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  
+                  {/* Full Name */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <User className="h-4 w-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                      <input
+                        type="text"
+                        required
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="e.g. Yogesh Nath"
+                        className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-2xl pl-10 pr-3.5 py-3 text-sm text-white placeholder-slate-600 outline-none transition"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email Address */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="h-4 w-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="trader@gmail.com"
+                        className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-2xl pl-10 pr-3.5 py-3 text-sm text-white placeholder-slate-600 outline-none transition"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Phone Number */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      Phone Number
+                    </label>
+                    <div className="relative">
+                      <Phone className="h-4 w-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                      <input
+                        type="tel"
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+91 90427 47590"
+                        className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-2xl pl-10 pr-3.5 py-3 text-sm text-white placeholder-slate-600 outline-none transition"
+                      />
+                    </div>
+                  </div>
+
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="btn-interactive w-full min-h-[52px] flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-sm sm:text-base shadow-xl shadow-blue-600/30 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+                >
+                  <Unlock className="h-5 w-5" />
+                  <span>{isSubmitting ? 'Unlocking Materials...' : 'Unlock & Access Both Free Books Now 🚀'}</span>
+                </button>
+
+                <div className="flex items-center justify-center gap-4 text-[11px] text-slate-500 font-semibold pt-1">
+                  <span className="flex items-center gap-1">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>100% Privacy Guaranteed</span>
+                  </span>
+                  <span>•</span>
+                  <span>Zero Spam</span>
+                  <span>•</span>
+                  <span>Instant PDF Access</span>
+                </div>
+              </form>
+
+            </div>
+          )}
+
+        </div>
+      </section>
+
+      {/* 4. DUAL LUXURY 3D BOOK CARDS SECTION */}
+      <section id="study-books-grid" className="px-4 sm:px-6 lg:px-8 relative z-20">
         <div className="mx-auto max-w-6xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {resources.map((book) => (
-              <FreeResourceCard key={book.id} {...book} />
+              <FreeResourceCard
+                key={book.id}
+                {...book}
+                isUnlocked={isUnlocked}
+                onUnlockRequest={scrollToLeadForm}
+              />
             ))}
           </div>
         </div>
       </section>
 
-      {/* 4. VALUE COMPARISON TABLE (SELF-STUDY VS FULL LIVE COHORT) */}
+      {/* 5. VALUE COMPARISON TABLE (SELF-STUDY VS FULL LIVE COHORT) */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl rounded-3xl bg-slate-900/80 border border-slate-800 p-6 sm:p-10 shadow-2xl space-y-8">
           
@@ -225,7 +467,7 @@ function FreeResourcesContent() {
         </div>
       </section>
 
-      {/* 5. COHORT UPGRADE CALL TO ACTION CARD */}
+      {/* 6. COHORT UPGRADE CALL TO ACTION CARD */}
       <section className="px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl rounded-3xl bg-gradient-to-r from-[#0A358F] via-[#0D44B8] to-[#1456F0] p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden space-y-6">
           
@@ -249,7 +491,7 @@ function FreeResourcesContent() {
               <button
                 type="button"
                 onClick={() => setIsModalOpen(true)}
-                className="btn-interactive w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-white text-blue-900 font-extrabold text-base shadow-xl hover:bg-blue-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="btn-interactive w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-white text-blue-900 font-extrabold text-base shadow-xl hover:bg-blue-50 transition-all hover:scale-[1.01] active:scale-[0.99]"
               >
                 <Sparkles className="h-5 w-5 text-blue-700" />
                 <span>Join MIIP Cohort • ₹22,000</span>
@@ -285,7 +527,7 @@ function FreeResourcesContent() {
         </div>
       </section>
 
-      {/* 6. WHATSAPP ADVISORY ASSISTANCE */}
+      {/* 7. WHATSAPP ADVISORY ASSISTANCE */}
       <section className="py-12 px-4 sm:px-6 lg:px-8 text-center">
         <div className="mx-auto max-w-md space-y-2">
           <p className="text-xs text-slate-400">Have questions about the study guides or the live cohort?</p>
