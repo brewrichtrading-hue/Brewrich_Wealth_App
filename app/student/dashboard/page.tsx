@@ -7,7 +7,6 @@ import Link from 'next/link';
 
 export default function StudentDashboard() {
   const [profile, setProfile] = useState<any>(null);
-  const [sessionUser, setSessionUser] = useState<any>(null);
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -15,8 +14,6 @@ export default function StudentDashboard() {
   
   const supabase = createClient();
   const router = useRouter();
-
-  const adminEmail = 'brewrichtrading@gmail.com';
 
   useEffect(() => {
     async function loadStudentData() {
@@ -26,8 +23,6 @@ export default function StudentDashboard() {
         router.push('/mip');
         return;
       }
-
-      setSessionUser(session.user);
 
       // Try fetching existing profile
       let { data } = await supabase
@@ -89,28 +84,18 @@ export default function StudentDashboard() {
     );
   }
 
-  const isAdmin = sessionUser?.email === adminEmail;
-
   return (
     <main className="min-h-screen bg-slate-950 text-white p-6 md:p-12">
       <div className="max-w-5xl mx-auto space-y-8">
         
-        {/* Top Navigation & Admin Shortcut */}
+        {/* Top Student Navigation Links */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
           <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-ping"></span>
-            <span className="text-xs font-semibold text-slate-300">Portal Status: <strong className="text-green-400">Active & Whitelisted</strong></span>
+            <span className="w-2.5 h-2.5 bg-green-500 rounded-full"></span>
+            <span className="text-xs font-semibold text-slate-300">Portal Status: <strong className="text-green-400">Active Student Access</strong></span>
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            {isAdmin && (
-              <Link 
-                href="/admin" 
-                className="bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2"
-              >
-                🛠️ Open Admin Panel
-              </Link>
-            )}
             <Link 
               href="/student/assessments" 
               className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 px-4 py-2 rounded-xl text-xs font-bold transition"
