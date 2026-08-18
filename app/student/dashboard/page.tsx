@@ -8,6 +8,7 @@ import Link from 'next/link';
 export default function StudentDashboard() {
   const [profile, setProfile] = useState<any>(null);
   const [fullName, setFullName] = useState('');
+  const [liveMeetingUrl, setLiveMeetingUrl] = useState('https://meet.google.com');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -48,6 +49,17 @@ export default function StudentDashboard() {
           .single();
           
         data = insertedData || newProfile;
+      }
+
+      // Fetch dynamic live meeting link set by admin
+      const { data: settingsData } = await supabase
+        .from('platform_settings')
+        .select('*')
+        .eq('key', 'live_meeting_link')
+        .single();
+
+      if (settingsData) {
+        setLiveMeetingUrl(settingsData.value);
       }
 
       setProfile(data);
@@ -126,7 +138,7 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        {/* Live Class & Reusable Meeting Link Box */}
+        {/* Live Class & Dynamic Meeting Link Box */}
         <div className="bg-slate-900/80 p-8 rounded-2xl border border-slate-800 shadow-xl">
           <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
             <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
@@ -137,7 +149,7 @@ export default function StudentDashboard() {
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <a
-              href="https://meet.google.com"
+              href={liveMeetingUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto text-center bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-3.5 rounded-xl transition shadow-lg shadow-blue-600/30"
