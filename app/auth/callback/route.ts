@@ -20,8 +20,9 @@ export async function GET(request: Request) {
 
       if (moduleStatus && moduleStatus.is_paid) {
         return NextResponse.redirect(`${requestUrl.origin}/dashboard`);
-      } else if (next.includes('miip')) {
-        return NextResponse.redirect(`${requestUrl.origin}/miip?checkout=auto`);
+      } else if (next.includes('mip') || next.includes('miip')) {
+        const dest = next.includes('miip') ? '/miip?checkout=auto' : '/mip?checkout=auto';
+        return NextResponse.redirect(`${requestUrl.origin}${dest}`);
       }
     }
   }

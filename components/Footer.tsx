@@ -47,8 +47,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/miip" className="hover:text-white transition-colors flex items-center gap-1">
-                  <span>MIIP Mentorship</span>
+                <Link href="/mip" className="hover:text-white transition-colors flex items-center gap-1">
+                  <span>MIP Mentorship</span>
                   <ArrowUpRight className="h-3.5 w-3.5 opacity-60 text-amber-400" />
                 </Link>
               </li>
@@ -122,7 +122,7 @@ export default function Footer() {
             <strong className="text-slate-300">AMFI / SEBI Regulatory Disclaimers:</strong> Mutual Fund investments are subject to market risks, read all scheme related documents carefully. Brewrich Wealth operates as an AMFI Registered Mutual Fund Distributor. The NAV of the schemes may go up or down depending upon the factors and forces affecting the securities market including fluctuations in interest rates.
           </p>
           <p>
-            <strong className="text-slate-300">Educational & Trading Disclaimer:</strong> The Momentum Institutional Investing Program (MIIP) is an educational mentorship program. Trading in equities, derivatives, and institutional securities carries substantial risk of capital loss and is not suitable for all investors.
+            <strong className="text-slate-300">Educational & Trading Disclaimer:</strong> The Momentum Investing Program (MIP) is an educational mentorship program. Trading in equities, derivatives, and institutional securities carries substantial risk of capital loss and is not suitable for all investors.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 text-slate-400">
             <p>© {new Date().getFullYear()} Brewrich Wealth Management & Institutional Trading. All rights reserved.</p>

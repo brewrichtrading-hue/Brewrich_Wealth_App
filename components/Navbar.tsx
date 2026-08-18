@@ -95,27 +95,25 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Home', href: '/', icon: TrendingUp },
     { name: 'Mutual Funds', href: '/mfd', icon: PieChart },
-    { name: 'MIIP Mentorship', href: '/miip', icon: GraduationCap, badge: 'Flagship' },
+    { name: 'MIP Mentorship', href: '/mip', icon: GraduationCap, badge: 'Flagship' },
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 h-20">
         
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-3 group focus:outline-none rounded-xl p-1">
-          <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0A358F] to-[#1456F0] shadow-md shadow-blue-500/20 text-white">
-            <Shield className="h-6 w-6 group-hover:scale-105 transition-transform duration-300" />
+          <div className="flex items-center bg-white p-1 rounded-xl shadow-sm border border-slate-100">
+            <img 
+              src="/BR LOGO.jpeg" 
+              alt="Brewrich Wealth Logo" 
+              className="h-9 sm:h-10 w-auto object-contain" 
+            />
           </div>
-          <div className="flex flex-col">
-            <span className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-1.5">
-              BREWRICH
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-                WEALTH
-              </span>
-            </span>
-            <span className="text-[10px] tracking-wider uppercase text-slate-500 font-semibold">
-              Institutional Asset Management
+          <div className="hidden lg:flex flex-col">
+            <span className="text-[10px] tracking-widest uppercase text-blue-700 font-extrabold">
+              Institutional Mentorship & Wealth
             </span>
           </div>
         </Link>
@@ -123,7 +121,7 @@ export default function Navbar() {
         {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-1 lg:gap-2">
           {navLinks.map((link) => {
-            const isActive = pathname === link.href;
+            const isActive = pathname === link.href || (link.href === '/mip' && pathname === '/miip');
             return (
               <Link
                 key={link.name}
@@ -212,11 +210,11 @@ export default function Navbar() {
               </button>
 
               <Link
-                href="/miip"
+                href="/mip"
                 className="btn-interactive flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-md shadow-blue-600/25 transition-all hover:scale-[1.01] active:scale-[0.99]"
               >
                 <Sparkles className="h-4 w-4" />
-                <span>Join MIIP</span>
+                <span>Join MIP</span>
               </Link>
             </div>
           )}
@@ -244,7 +242,7 @@ export default function Navbar() {
             </p>
             {navLinks.map((link) => {
               const Icon = link.icon;
-              const isActive = pathname === link.href;
+              const isActive = pathname === link.href || (link.href === '/mip' && pathname === '/miip');
               return (
                 <Link
                   key={link.name}
@@ -343,12 +341,12 @@ export default function Navbar() {
                 </button>
 
                 <Link
-                  href="/miip"
+                  href="/mip"
                   onClick={() => setIsOpen(false)}
                   className="btn-interactive w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-full bg-blue-600 text-white font-extrabold text-base shadow-lg shadow-blue-600/25"
                 >
                   <Sparkles className="h-5 w-5" />
-                  <span>Join MIIP Mentorship (₹22,000)</span>
+                  <span>Join MIP Mentorship (₹22,000)</span>
                 </Link>
               </div>
             )}

@@ -94,10 +94,12 @@ export default function RegisterFlowModal({
     setErrorMessage(null);
     try {
       const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/mip';
+      const redirectPath = currentPath.includes('miip') ? '/miip?checkout=auto' : '/mip?checkout=auto';
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${origin}/auth/callback?next=/miip?checkout=auto`,
+          redirectTo: `${origin}/auth/callback?next=${redirectPath}`,
         },
       });
       if (error) {
@@ -141,9 +143,9 @@ export default function RegisterFlowModal({
         amount: orderData.amount,
         currency: orderData.currency || 'INR',
         name: 'Brewrich Wealth Management',
-        description: 'Momentum Institutional Investing Program (MIIP)',
+        description: 'Momentum Investing Program (MIP)',
         order_id: orderData.orderId,
-        image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=200&q=80',
+        image: '/BR LOGO.jpeg',
         prefill: {
           name: activeUser.user_metadata?.full_name || activeUser.email?.split('@')[0] || 'Trader',
           email: activeUser.email,
@@ -234,9 +236,9 @@ export default function RegisterFlowModal({
             <GraduationCap className="h-6 w-6" />
           </div>
           <div>
-            <h3 className="text-xl font-extrabold text-slate-900">Enroll in MIIP</h3>
+            <h3 className="text-xl font-extrabold text-slate-900">Enroll in MIP</h3>
             <p className="text-xs text-blue-700 font-bold">
-              Momentum Institutional Investing Program
+              Momentum Investing Program (MIP)
             </p>
           </div>
         </div>

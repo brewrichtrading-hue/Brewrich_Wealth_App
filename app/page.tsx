@@ -83,9 +83,9 @@ export default function HomePage() {
               <ArrowRight className="h-5 w-5 text-blue-700" />
             </Link>
 
-            {/* Button 2: Become Your Own Fund Manager (Routes to /miip) */}
+            {/* Button 2: Become Your Own Fund Manager (Routes to /mip) */}
             <Link
-              href="/miip"
+              href="/mip"
               className="btn-interactive flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-blue-800/80 hover:bg-blue-800 text-white font-extrabold text-base border border-white/20 shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               <GraduationCap className="h-5 w-5 text-amber-300" />
@@ -240,7 +240,7 @@ export default function HomePage() {
 
                 <div>
                   <h4 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">
-                    Momentum Institutional Investing (MIIP)
+                    Momentum Investing Program (MIP)
                   </h4>
                   <p className="text-sm text-slate-600 leading-relaxed">
                     A rigorous institutional training bootcamp for traders seeking to exploit market microstructure, volume footprints, and dark pool liquidity.
@@ -276,10 +276,10 @@ export default function HomePage() {
 
               <div className="pt-8 mt-8 border-t border-slate-100">
                 <Link
-                  href="/miip"
+                  href="/mip"
                   className="btn-interactive w-full flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm shadow-lg shadow-slate-900/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
                 >
-                  <span>Join MIIP Program (₹22,000)</span>
+                  <span>Join MIP Program (₹22,000)</span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
