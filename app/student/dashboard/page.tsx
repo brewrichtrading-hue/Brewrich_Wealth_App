@@ -23,16 +23,34 @@ export default function StudentDashboard() {
         return;
       }
 
-      const { data, error } = await supabase
+      // Try fetching existing profile
+      let { data } = await supabase
         .from('student_profiles')
         .select('*')
         .eq('id', session.user.id)
         .single();
 
-      if (data) {
-        setProfile(data);
-        setFullName(data.full_name || '');
+      // If profile doesn't exist yet, create it on the fly!
+      if (!data) {
+        const randomId = 'BRW-MIP-2026-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+        const newProfile = {
+          id: session.user.id,
+          email: session.user.email,
+          full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+          enrollment_id: randomId
+        };
+        
+        const { data: insertedData } = await supabase
+          .from('student_profiles')
+          .insert([newProfile])
+          .select()
+          .single();
+          
+        data = insertedData || newProfile;
       }
+
+      setProfile(data);
+      setFullName(data?.full_name || '');
       setLoading(false);
     }
 
@@ -80,7 +98,7 @@ export default function StudentDashboard() {
           </div>
           <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 text-right">
             <p className="text-xs text-slate-400">Enrollment ID</p>
-            <p className="text-lg font-mono font-bold text-blue-400">{profile?.enrollment_id || 'Generating...'}</p>
+            <p className="text-lg font-mono font-bold text-blue-400">{profile?.enrollment_id || 'BRW-MIP-2026-ACTIVE'}</p>
           </div>
         </div>
 
@@ -120,7 +138,7 @@ export default function StudentDashboard() {
                 type="email" 
                 disabled 
                 value={profile?.email || ''} 
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-500 cursor-not-allowed text-sm"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-400 cursor-not-allowed text-sm"
               />
             </div>
 
