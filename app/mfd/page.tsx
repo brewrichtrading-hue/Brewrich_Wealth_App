@@ -364,7 +364,7 @@ export default function MfdPage() {
           <div className="space-y-3">
             <p className="font-bold text-slate-900 text-sm uppercase tracking-wider">Brewrich Wealth</p>
             <p className="text-slate-500">Helping individuals build long-term wealth using structured, disciplined, and AI-driven intelligent financial planning.</p>
-            <p className="text-slate-500">Based in Theni, Tamil Nadu.</p>
+            <p className="text-slate-600 font-medium">Brewrich 2151/1A, Sri Rajarajeshwari Nagar, plot no 21, Periyakulam - Theni Rd, Lakshmipuram, Thamarai Kulam, Tamil Nadu 625523</p>
           </div>
 
           <div className="space-y-2">

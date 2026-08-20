@@ -1135,8 +1135,8 @@ function MipContent() {
                     <Phone className="h-3.5 w-3.5 text-slate-400" />
                     +91 90427 47590
                   </span>
-                  <span className="truncate">
-                    Brewrich 2151/1A, Sri Rajarajeshwari Nagar, Theni / Madurai, Tamil Nadu 625523
+                  <span>
+                    Brewrich 2151/1A, Sri Rajarajeshwari Nagar, plot no 21, Periyakulam - Theni Rd, Lakshmipuram, Thamarai Kulam, Tamil Nadu 625523
                   </span>
                 </div>
               </div>

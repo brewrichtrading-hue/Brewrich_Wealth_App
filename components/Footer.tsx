@@ -109,7 +109,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-2 text-slate-400">
                 <MapPin className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
-                <span>BKC, Mumbai & Indiranagar, Bengaluru</span>
+                <span>Brewrich 2151/1A, Sri Rajarajeshwari Nagar, plot no 21, Periyakulam - Theni Rd, Lakshmipuram, Thamarai Kulam, Tamil Nadu 625523</span>
               </li>
             </ul>
           </div>
