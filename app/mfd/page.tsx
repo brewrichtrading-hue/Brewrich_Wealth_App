@@ -1,777 +1,434 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { 
-  ShieldCheck, 
-  TrendingUp, 
-  PieChart, 
-  CheckCircle2, 
-  Clock, 
-  Lock, 
-  Award, 
-  Users, 
-  ArrowRight, 
-  Sparkles, 
-  Layers, 
-  BarChart3, 
-  FileCheck,
-  Percent,
-  Shield,
-  ArrowUpRight,
-  Calculator,
-  Briefcase,
-  Building2,
-  BadgeCheck,
-  Check,
-  Zap,
-  Smartphone,
-  Landmark,
-  Scale,
-  HeartPulse,
-  Receipt,
-  Umbrella,
-  CreditCard,
-  PhoneCall,
-  MessageSquare,
-  ChevronRight,
-  Activity,
-  Wallet,
-  ArrowDownRight
-} from 'lucide-react';
-
-const ONBOARDING_URL = "https://mweb.assetplus.in/client_onboarding/?advisor=688b3679af6048595923afd2";
-const WHATSAPP_CONSULT_URL = "https://wa.me/919042747590";
+import { motion } from 'framer-motion';
 
 export default function MfdPage() {
-  // Interactive mini-calculator for hero preview
-  const [sipSlider, setSipSlider] = useState<number>(10000);
-  const [yearsSlider, setYearsSlider] = useState<number>(10);
-  const expectedReturn = 15.2; // Institutional Multi-Cap CAGR
+  // Interactive State for SIP Calculator
+  const [sipAmount, setSipAmount] = useState<number>(10000);
+  const sipYears = 10;
+  const expectedReturn = 0.14; // 14% p.a. historical equity expectation
+  
+  // Compound Interest Calculation for SIP
+  const monthlyRate = expectedReturn / 12;
+  const totalMonths = sipYears * 12;
+  const investedAmount = sipAmount * totalMonths;
+  const futureValue = sipAmount * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) * (1 + monthlyRate);
+  const estimatedGains = futureValue - investedAmount;
 
-  const monthlyRate = expectedReturn / 12 / 100;
-  const totalMonths = yearsSlider * 12;
-  const totalInvested = sipSlider * totalMonths;
-  const projectedCorpus = Math.round(
-    sipSlider * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) * (1 + monthlyRate)
-  );
-  const wealthGenerated = projectedCorpus - totalInvested;
+  // Interactive State for Loan Against Mutual Funds (LAMF)
+  const [portfolioValue, setPortfolioValue] = useState<number>(2500000);
+  const approvedLimit = portfolioValue * 0.80; // 80% LTV on equity mutual funds
+
+  const onboardingUrl = "https://mweb.assetplus.in/client_onboarding/?advisor=688b3679af6048595923afd2";
+  const phoneWhatsAppNumber = "+919042747590";
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white selection:bg-blue-600 selection:text-white font-sans antialiased">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-600 selection:text-white">
       
-      {/* ========================================================================= */}
-      {/* 1. INSTITUTIONAL STICKY NAVIGATION BAR */}
-      {/* ========================================================================= */}
-      <nav className="sticky top-0 z-50 w-full border-b border-blue-500/30 bg-blue-600/95 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-3.5 transition-all">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          
-          {/* Logo & Platform Tag */}
-          <Link href="/" className="flex items-center gap-3 group focus:outline-none">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-blue-600 font-black shadow-md group-hover:scale-105 transition-transform">
-              <Shield className="h-5 w-5 fill-blue-600" />
-            </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-black tracking-wider text-white">BREWRICH</span>
-                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-blue-700 text-blue-100 border border-blue-400/40">
-                  Wealth Desk
-                </span>
-              </div>
-              <span className="text-[10px] uppercase font-bold tracking-widest text-blue-100/80 hidden sm:inline">
-                AMFI Registered MFD • ARN-335693
-              </span>
-            </div>
-          </Link>
-
-          {/* Nav Actions */}
-          <div className="flex items-center gap-3">
-            <a
-              href="#consultation"
-              className="hidden md:inline-flex items-center gap-1.5 text-xs font-bold text-white hover:text-blue-100 px-3.5 py-2 rounded-xl bg-blue-700/60 border border-blue-400/30 hover:bg-blue-700 transition-all"
-            >
-              <PhoneCall className="h-3.5 w-3.5" />
-              <span>Talk to Advisor</span>
-            </a>
-
-            <a
-              href={ONBOARDING_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-interactive inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-blue-600 font-extrabold text-xs sm:text-sm shadow-lg shadow-blue-900/30 hover:bg-blue-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <span>Client Portal Login</span>
-              <ArrowUpRight className="h-4 w-4 text-blue-600" />
-            </a>
-          </div>
-
-        </div>
-      </nav>
-
-      {/* ========================================================================= */}
-      {/* 2. HERO SECTION (ROYAL BLUE THEME WITH 3D MOBILE APP MOCKUP) */}
-      {/* ========================================================================= */}
-      <section className="relative bg-gradient-to-b from-blue-600 via-blue-600 to-blue-700 text-white pt-14 pb-20 md:pt-20 md:pb-28 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      {/* ================= HERO SECTION (Royal Blue Brand Background) ================= */}
+      <section className="relative bg-blue-600 text-white overflow-hidden pt-20 pb-28 px-4 sm:px-6 lg:px-8">
+        {/* Subtle radial gradient overlay for premium depth */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-500/40 via-transparent to-blue-900/60 pointer-events-none" />
         
-        {/* Ambient background glow & grid */}
-        <div className="absolute inset-0 bg-[radial-gradient(#ffffff18_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none opacity-40" />
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* Left Column: Value Proposition & CTAs */}
-            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-700/60 border border-blue-400/40 text-blue-100 text-xs font-bold tracking-wide shadow-inner">
-                <ShieldCheck className="h-4 w-4 text-emerald-300" />
-                <span>ISO 9001:2015 Certified • AMFI & IRDAI Regulated Platform</span>
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.12]">
-                Build wealth with <br className="hidden sm:inline" />
-                <span className="text-white drop-shadow-sm">
-                  confidence and ease.
-                </span>
-              </h1>
-
-              <p className="max-w-2xl text-base sm:text-xl text-blue-100/90 font-normal leading-relaxed">
-                Automated multi-cap compounding, institutional fund baskets, family protection, and instant liquidity overdraft—managed for you under one unified platform.
-              </p>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center gap-3.5 pt-2 justify-center lg:justify-start">
-                <a
-                  href={ONBOARDING_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-interactive w-full sm:w-auto min-h-[52px] px-8 flex items-center justify-center gap-2.5 rounded-2xl bg-white text-blue-600 font-black text-base shadow-xl shadow-blue-950/30 hover:bg-blue-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <Zap className="h-5 w-5 fill-blue-600" />
-                  <span>Get Started (Open Account)</span>
-                  <ArrowRight className="h-5 w-5" />
-                </a>
-
-                <a
-                  href="#consultation"
-                  className="btn-interactive w-full sm:w-auto min-h-[52px] px-7 flex items-center justify-center gap-2 rounded-2xl bg-blue-800/80 hover:bg-blue-800 text-white font-bold text-sm border border-blue-400/40 shadow-lg backdrop-blur-md transition-all"
-                >
-                  <Clock className="h-4 w-4 text-blue-200" />
-                  <span>Book 1-to-1 Consultation</span>
-                </a>
-              </div>
-
-              {/* High-Trust Bullet Metrics */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-3 text-xs text-blue-100/90 font-semibold">
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-300" />
-                  <span>₹0 Platform Account Fees</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-300" />
-                  <span>100% Paperless 2-Min KYC</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-300" />
-                  <span>In-House Dedicated CA Desk</span>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Right Column: Ultra-High-Fidelity 3D Mobile App Mockup */}
-            <div className="lg:col-span-5 flex justify-center relative">
-              
-              {/* Floating Live Indicator Top-Left */}
-              <div className="absolute -top-4 -left-4 z-20 hidden sm:flex items-center gap-2.5 p-3 rounded-2xl bg-slate-900/95 text-white shadow-2xl border border-blue-500/30 backdrop-blur-md animate-bounce duration-1000">
-                <div className="h-7 w-7 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                  <TrendingUp className="h-4 w-4" />
-                </div>
-                <div>
-                  <span className="block text-[9px] uppercase font-bold text-slate-400">Model CAGR</span>
-                  <span className="text-xs font-black text-emerald-400">+18.4% Alpha</span>
-                </div>
-              </div>
-
-              {/* 3D Mobile Phone Device Shell */}
-              <div className="w-full max-w-[340px] rounded-[44px] bg-slate-900 p-3.5 shadow-2xl shadow-blue-950/60 ring-4 ring-blue-400/20 border border-slate-700 transform lg:rotate-1 hover:rotate-0 transition-transform duration-500">
-                
-                {/* Phone Glass Inner Screen */}
-                <div className="rounded-[36px] bg-slate-950 overflow-hidden p-5 text-white space-y-4 border border-slate-800">
-                  
-                  {/* Status Bar */}
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 font-bold border-b border-slate-800/80 pb-2.5">
-                    <span className="text-slate-300">09:41</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-[10px] text-emerald-400 font-bold">AssetPlus Direct</span>
-                    </div>
-                  </div>
-
-                  {/* Portfolio Valuation Card */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white space-y-2 shadow-lg shadow-blue-600/30">
-                    <div className="flex justify-between items-center text-xs text-blue-100">
-                      <span>Total Portfolio Value</span>
-                      <span className="text-[10px] bg-blue-800/80 px-2 py-0.5 rounded-full font-bold">Live Model</span>
-                    </div>
-                    <div className="text-2xl font-black tracking-tight">
-                      ₹48,25,400<span className="text-sm font-normal text-blue-200">.00</span>
-                    </div>
-                    <div className="flex items-center justify-between pt-1 border-t border-white/20 text-[11px]">
-                      <span className="text-emerald-300 font-extrabold flex items-center gap-1">
-                        <TrendingUp className="h-3 w-3" />
-                        +18.4% XIRR Returns
-                      </span>
-                      <span className="text-blue-100 text-[10px]">Auto-Rebalanced</span>
-                    </div>
-                  </div>
-
-                  {/* Active Services Live Breakdown */}
-                  <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2.5 text-xs">
-                    <div className="flex justify-between items-center text-slate-300">
-                      <span className="flex items-center gap-1.5 font-medium">
-                        <span className="h-2 w-2 rounded-full bg-blue-500" />
-                        Active Monthly SIP
-                      </span>
-                      <span className="font-extrabold text-white">₹10,000/mo</span>
-                    </div>
-                    <div className="flex justify-between items-center text-slate-300">
-                      <span className="flex items-center gap-1.5 font-medium">
-                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                        Term Life Shield
-                      </span>
-                      <span className="font-extrabold text-emerald-400">₹2.00 Cr Cover</span>
-                    </div>
-                    <div className="flex justify-between items-center text-slate-300">
-                      <span className="flex items-center gap-1.5 font-medium">
-                        <span className="h-2 w-2 rounded-full bg-purple-500" />
-                        LAMF Overdraft Limit
-                      </span>
-                      <span className="font-extrabold text-purple-300">₹18.50 Lakh</span>
-                    </div>
-                  </div>
-
-                  {/* In-App Direct CTA Button */}
-                  <a
-                    href={ONBOARDING_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-center text-xs font-black shadow-md transition-all tracking-wide"
-                  >
-                    Open Account (Zero Fees) →
-                  </a>
-
-                </div>
-
-              </div>
-
-              {/* Floating Badge Bottom-Right */}
-              <div className="absolute -bottom-4 -right-4 z-20 hidden sm:flex items-center gap-2 p-3 rounded-2xl bg-slate-900/95 text-white shadow-2xl border border-blue-500/30 backdrop-blur-md">
-                <div className="h-7 w-7 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
-                  <Receipt className="h-4 w-4" />
-                </div>
-                <div>
-                  <span className="block text-[9px] uppercase font-bold text-slate-400">CA Auditing</span>
-                  <span className="text-xs font-bold text-white">ITR Support Included</span>
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* Live Metrics Bar Overlay */}
-          <div className="mt-14 p-6 sm:p-8 rounded-3xl bg-blue-700/50 border border-blue-400/30 backdrop-blur-xl shadow-2xl text-white">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-y sm:divide-y-0 sm:divide-x divide-blue-500/30">
-              <div className="pt-2 sm:pt-0">
-                <p className="text-2xl sm:text-3xl font-black text-white">₹140Cr+</p>
-                <p className="text-xs text-blue-200 mt-1 uppercase font-bold tracking-wider">AUM & Capital Advised</p>
-              </div>
-              <div className="pt-4 sm:pt-0">
-                <p className="text-2xl sm:text-3xl font-black text-emerald-300">94.2%</p>
-                <p className="text-xs text-blue-200 mt-1 uppercase font-bold tracking-wider">Order Execution Rate</p>
-              </div>
-              <div className="pt-4 sm:pt-0">
-                <p className="text-2xl sm:text-3xl font-black text-white">4.9 / 5.0</p>
-                <p className="text-xs text-blue-200 mt-1 uppercase font-bold tracking-wider">Investor Rating</p>
-              </div>
-              <div className="pt-4 sm:pt-0">
-                <p className="text-2xl sm:text-3xl font-black text-blue-200">100%</p>
-                <p className="text-xs text-blue-200 mt-1 uppercase font-bold tracking-wider">Regulated & Compliant</p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 3. PRODUCT SUITE: MODULAR HIGH-FIDELITY PRODUCT CATEGORIES */}
-      {/* ========================================================================= */}
-      <section className="bg-slate-950 text-white px-4 sm:px-6 lg:px-8 py-24 space-y-28">
-        
-        <div className="mx-auto max-w-7xl text-center space-y-3">
-          <span className="text-xs font-extrabold uppercase tracking-widest text-blue-400 bg-blue-500/10 px-3.5 py-1.5 rounded-full border border-blue-500/20">
-            Institutional Product Suite
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
-            Every financial tool, visually structured.
-          </h2>
-          <p className="text-slate-400 max-w-2xl mx-auto text-base sm:text-lg">
-            Explore high-fidelity interfaces for mutual fund compounding, instant overdraft credit lines, and multi-crore life protection.
-          </p>
-        </div>
-
-        <div className="mx-auto max-w-7xl space-y-24">
-
-          {/* --------------------------------------------------------------------- */}
-          {/* PRODUCT 1: SIP & MUTUAL FUNDS (Interactive Compounding Mockup) */}
-          {/* --------------------------------------------------------------------- */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center bg-slate-900/80 p-8 sm:p-12 rounded-3xl border border-slate-800 shadow-2xl hover:border-blue-500/40 transition-all">
-            
-            {/* Copy & Details */}
-            <div className="lg:col-span-6 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold uppercase tracking-wider border border-blue-500/20">
-                <BarChart3 className="h-3.5 w-3.5" />
-                <span>Automated Wealth Creation</span>
-              </div>
-              
-              <h3 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-                Systematic Investment Plan (SIP)
-              </h3>
-              
-              <p className="text-slate-300 text-base leading-relaxed">
-                Put your wealth creation on autopilot. Discipline-driven monthly allocations across curated Flexi-Cap, Mid-Cap, and Index fund baskets with automated UPI mandates and auto-tax harvesting.
-              </p>
-
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-400 font-medium">Minimum SIP</span>
-                  <p className="text-lg font-black text-white">₹500 / month</p>
-                </div>
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-400 font-medium">Tax Exemption</span>
-                  <p className="text-lg font-black text-emerald-400">₹1.25L LTCG Free</p>
-                </div>
-              </div>
-
-              <ul className="space-y-2.5 text-sm text-slate-300">
-                <li className="flex items-center gap-2.5">
-                  <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0" />
-                  <span>Flexible step-up SIP matching your annual income growth</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0" />
-                  <span>Quarterly portfolio rebalancing & tax-loss harvesting</span>
-                </li>
-              </ul>
-
-              <div className="pt-2">
-                <a
-                  href={ONBOARDING_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-interactive inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-sm shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <span>Start SIP Portfolio →</span>
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-              </div>
-            </div>
-
-            {/* Interactive Visual Graph Mockup */}
-            <div className="lg:col-span-6 flex justify-center">
-              <div className="w-full max-w-md p-6 sm:p-8 rounded-3xl bg-slate-950 border border-slate-800 shadow-2xl space-y-5">
-                
-                <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-                  <div>
-                    <span className="text-xs text-slate-400 uppercase tracking-wider font-bold">SIP Compounding Visualizer</span>
-                    <p className="text-lg font-extrabold text-white">15.2% Targeted Alpha CAGR</p>
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-black">
-                    High Growth
-                  </span>
-                </div>
-
-                {/* Simulated Growth Chart Bars */}
-                <div className="space-y-2 pt-2">
-                  <div className="flex justify-between text-xs text-slate-400 font-medium">
-                    <span>Year 1: ₹65,000</span>
-                    <span className="text-blue-400 font-bold">Year 10: ₹27.8 Lakh+</span>
-                  </div>
-                  <div className="h-28 flex items-end gap-3 pt-4 border-b border-slate-800 pb-2">
-                    <div className="w-1/5 bg-blue-600/30 h-1/5 rounded-t-lg transition-all" title="Yr 1" />
-                    <div className="w-1/5 bg-blue-600/50 h-2/5 rounded-t-lg transition-all" title="Yr 3" />
-                    <div className="w-1/5 bg-blue-600/70 h-3/5 rounded-t-lg transition-all" title="Yr 5" />
-                    <div className="w-1/5 bg-blue-600 h-4/5 rounded-t-lg transition-all" title="Yr 7" />
-                    <div className="w-1/5 bg-emerald-500 h-full rounded-t-lg transition-all shadow-lg shadow-emerald-500/30" title="Yr 10+" />
-                  </div>
-                  <div className="flex justify-between text-[11px] text-slate-500 font-bold uppercase pt-1">
-                    <span>Year 1</span>
-                    <span>Year 3</span>
-                    <span>Year 5</span>
-                    <span>Year 7</span>
-                    <span className="text-emerald-400">Year 10+</span>
-                  </div>
-                </div>
-
-                {/* Metric Summary Card */}
-                <div className="p-3.5 rounded-2xl bg-blue-950/40 border border-blue-500/30 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="text-blue-200 block text-[11px]">Monthly SIP Allocation</span>
-                    <span className="text-base font-black text-white">₹10,000 / month</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-emerald-300 block text-[11px]">Estimated Wealth Gained</span>
-                    <span className="text-base font-black text-emerald-400">+₹15.8 Lakh</span>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-          </div>
-
-          {/* --------------------------------------------------------------------- */}
-          {/* PRODUCT 2: LOAN AGAINST MUTUAL FUNDS (Overdraft Credit Line Mockup) */}
-          {/* --------------------------------------------------------------------- */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center bg-slate-900/80 p-8 sm:p-12 rounded-3xl border border-slate-800 shadow-2xl hover:border-purple-500/40 transition-all">
-            
-            {/* Visual Credit Line Mockup Left */}
-            <div className="lg:col-span-6 order-2 lg:order-1 flex justify-center">
-              <div className="w-full max-w-md p-6 sm:p-8 rounded-3xl bg-slate-950 border border-slate-800 shadow-2xl space-y-5">
-                
-                <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-purple-400" />
-                    <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Digital Credit Line</span>
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-black">
-                    Instant Disbursal
-                  </span>
-                </div>
-
-                {/* Overdraft Valuation Box */}
-                <div className="p-5 rounded-2xl bg-gradient-to-br from-purple-950/60 to-slate-900 border border-purple-500/30 space-y-2">
-                  <span className="text-xs text-purple-200">Approved Overdraft Limit</span>
-                  <div className="text-3xl font-black text-white tracking-tight">
-                    ₹18,50,000<span className="text-sm font-normal text-slate-400"> (80% LTV)</span>
-                  </div>
-                  <p className="text-[11px] text-emerald-400 font-semibold">
-                    ✓ Interest charged ONLY on utilized funds (9.5% p.a.)
-                  </p>
-                </div>
-
-                {/* Feature Pills inside Mockup */}
-                <div className="space-y-2 text-xs">
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex justify-between">
-                    <span className="text-slate-400">Portfolio Status:</span>
-                    <span className="font-extrabold text-white">100% Units Compounding</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex justify-between">
-                    <span className="text-slate-400">Disbursal Speed:</span>
-                    <span className="font-extrabold text-purple-300">Same-Day Direct to Bank</span>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            {/* Copy & Details Right */}
-            <div className="lg:col-span-6 order-1 lg:order-2 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-bold uppercase tracking-wider border border-purple-500/20">
-                <CreditCard className="h-3.5 w-3.5" />
-                <span>Instant Liquidity Credit</span>
-              </div>
-              
-              <h3 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-                Loan Against Mutual Funds (LAMF)
-              </h3>
-              
-              <p className="text-slate-300 text-base leading-relaxed">
-                Need urgent liquidity for business operations or personal cashflow? Never break your compounding. Digitally pledge your mutual fund portfolio and unlock instant bank overdraft credit within hours.
-              </p>
-
-              <ul className="space-y-2.5 text-sm text-slate-300">
-                <li className="flex items-center gap-2.5">
-                  <CheckCircle2 className="h-4 w-4 text-purple-400 shrink-0" />
-                  <span>Zero exit loads and zero capital gains tax triggered</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <CheckCircle2 className="h-4 w-4 text-purple-400 shrink-0" />
-                  <span>Pay interest only on the exact amount and days used</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <CheckCircle2 className="h-4 w-4 text-purple-400 shrink-0" />
-                  <span>Your units continue earning dividends, gains, and alpha</span>
-                </li>
-              </ul>
-
-              <div className="pt-2">
-                <a
-                  href={ONBOARDING_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-interactive inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-sm shadow-lg shadow-purple-600/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <span>Check Overdraft Limit →</span>
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-              </div>
-            </div>
-
-          </div>
-
-          {/* --------------------------------------------------------------------- */}
-          {/* PRODUCT 3: TERM & HEALTH INSURANCE (Digital Policy Card Mockup) */}
-          {/* --------------------------------------------------------------------- */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center bg-slate-900/80 p-8 sm:p-12 rounded-3xl border border-slate-800 shadow-2xl hover:border-emerald-500/40 transition-all">
-            
-            {/* Copy & Details */}
-            <div className="lg:col-span-6 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-wider border border-emerald-500/20">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                <span>IRDAI Licensed Protection</span>
-              </div>
-              
-              <h3 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-                Term Life & Health Mediclaim Cards
-              </h3>
-              
-              <p className="text-slate-300 text-base leading-relaxed">
-                Protect your multi-generational wealth against life and health contingencies. Institutional risk underwriting providing multi-crore term life protection and cashless health cards across 10,000+ top hospitals.
-              </p>
-
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-400 font-medium">Life Protection</span>
-                  <p className="text-lg font-black text-white">Up to ₹10Cr+ Cover</p>
-                </div>
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-400 font-medium">Cashless Network</span>
-                  <p className="text-lg font-black text-emerald-400">10,000+ Hospitals</p>
-                </div>
-              </div>
-
-              <ul className="space-y-2.5 text-sm text-slate-300">
-                <li className="flex items-center gap-2.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                  <span>Dedicated in-house claims assistance & emergency settlement desk</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                  <span>Instant digital health cards with zero hospitalization hassles</span>
-                </li>
-              </ul>
-
-              <div className="pt-2">
-                <a
-                  href={WHATSAPP_CONSULT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-interactive inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Request Insurance Quote via WhatsApp →</span>
-                </a>
-              </div>
-            </div>
-
-            {/* Visual Digital Policy Mockup Right */}
-            <div className="lg:col-span-6 flex justify-center">
-              <div className="w-full max-w-md p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-emerald-950 via-slate-950 to-slate-900 border border-emerald-500/40 shadow-2xl space-y-5">
-                
-                <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <Umbrella className="h-5 w-5 text-emerald-400" />
-                    <span className="text-xs text-emerald-300 font-bold uppercase tracking-wider">Digital Policy Card</span>
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-black">
-                    Verified Active
-                  </span>
-                </div>
-
-                <div className="p-5 rounded-2xl bg-emerald-900/30 border border-emerald-500/30 space-y-1">
-                  <span className="text-xs text-emerald-300">Term Life Cover Approved</span>
-                  <div className="text-3xl font-black text-white tracking-tight">₹2,00,00,000</div>
-                  <span className="text-[11px] text-slate-300">Annual Premium Shielded via Section 80C</span>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-teal-900/30 border border-teal-500/30 flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-teal-200">Mediclaim Health Card</span>
-                    <p className="text-sm font-black text-white">Cashless Network Active</p>
-                  </div>
-                  <span className="text-xs font-extrabold text-teal-300 bg-teal-950 px-3 py-1 rounded-full border border-teal-500/30">
-                    10k+ Hospitals
-                  </span>
-                </div>
-
-              </div>
-            </div>
-
-          </div>
-
-          {/* --------------------------------------------------------------------- */}
-          {/* PRODUCT 4: SWP/STP, FIXED DEPOSITS & NPS */}
-          {/* --------------------------------------------------------------------- */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            
-            {/* Card A: SWP & STP Automation */}
-            <div className="p-8 sm:p-10 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-xl hover:border-blue-500/40 transition-all flex flex-col justify-between space-y-6">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div className="h-12 w-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold">
-                    <Activity className="h-6 w-6" />
-                  </div>
-                  <span className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-wider">
-                    Cashflow Engine
-                  </span>
-                </div>
-
-                <h4 className="text-2xl font-black text-white">SWP & STP Automation</h4>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  Take control of cash flows. Set up Systematic Withdrawal Plans (SWP) for monthly income or Systematic Transfer Plans (STP) to optimize market dips safely.
-                </p>
-
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex justify-between items-center text-xs">
-                  <span className="text-slate-400">Monthly Payout to Bank:</span>
-                  <span className="font-black text-white text-base">₹25,000 / mo</span>
-                </div>
-              </div>
-
-              <a
-                href={ONBOARDING_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-center text-xs font-black shadow-md transition-all block"
-              >
-                Setup SWP Payouts →
-              </a>
-            </div>
-
-            {/* Card B: Fixed Deposits & NPS */}
-            <div className="p-8 sm:p-10 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-xl hover:border-amber-500/40 transition-all flex flex-col justify-between space-y-6">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div className="h-12 w-12 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
-                    <Landmark className="h-6 w-6" />
-                  </div>
-                  <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold uppercase tracking-wider">
-                    AAA Yields & Pension
-                  </span>
-                </div>
-
-                <h4 className="text-2xl font-black text-white">Fixed Deposits & NPS</h4>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  Lock in secure yields with AAA-rated corporate FDs alongside tax-saving retirement compounding through the National Pension System (NPS Tier I & II).
-                </p>
-
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex justify-between items-center text-xs">
-                  <span className="text-slate-400">Target AAA Yield:</span>
-                  <span className="font-black text-amber-400 text-base">Up to 8.65% p.a.</span>
-                </div>
-              </div>
-
-              <a
-                href={ONBOARDING_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-center text-xs font-black shadow-md transition-all block"
-              >
-                Invest in FDs & NPS →
-              </a>
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 4. 1-TO-1 ADVISORY CONSULTATION HUB */}
-      {/* ========================================================================= */}
-      <section id="consultation" className="bg-gradient-to-b from-blue-900 to-blue-950 text-white px-4 sm:px-6 lg:px-8 py-24 text-center border-t border-blue-800">
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
           
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-blue-200 text-xs font-bold uppercase tracking-wider border border-white/20">
-            <PhoneCall className="h-3.5 w-3.5 text-emerald-300" />
-            <span>Direct Advisor Desk</span>
-          </div>
-
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
-            Book a 1-to-1 Advisory Consultation
-          </h2>
-          
-          <p className="text-blue-100 text-base sm:text-xl max-w-2xl mx-auto leading-relaxed">
-            Discuss your portfolio asset allocation, tax-saving strategies, term life coverage, or business overdraft limits directly with our Senior Wealth Directors.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-            <a
-              href={WHATSAPP_CONSULT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-interactive w-full sm:w-auto px-8 py-4 rounded-2xl bg-white text-blue-900 font-black text-base shadow-2xl hover:bg-blue-50 transition-all flex items-center justify-center gap-2.5 hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <MessageSquare className="h-5 w-5 text-emerald-600" />
-              <span>Schedule via WhatsApp (+91 90427 47590)</span>
-            </a>
-
-            <a
-              href="tel:+919042747590"
-              className="btn-interactive w-full sm:w-auto px-7 py-4 rounded-2xl bg-blue-800/80 hover:bg-blue-800 text-white font-bold text-sm border border-blue-400/30 transition-all flex items-center justify-center gap-2"
-            >
-              <PhoneCall className="h-4 w-4 text-blue-200" />
-              <span>Direct Desk Call</span>
-            </a>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 5. MANDATORY REGULATORY COMPLIANCE FOOTER */}
-      {/* ========================================================================= */}
-      <footer className="bg-slate-950 border-t border-slate-900 px-4 sm:px-6 lg:px-8 py-14 text-slate-400 text-xs">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
-          
-          {/* Company Bio */}
-          <div className="space-y-1.5 max-w-md">
-            <div className="font-extrabold text-white text-base flex items-center justify-center md:justify-start gap-2">
-              <Shield className="h-4 w-4 text-blue-500" />
-              <span>Brewrich Wealth (Brewrich Trading)</span>
+          {/* Hero Left Content */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="lg:col-span-7 space-y-6"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/30 border border-blue-400/40 text-xs font-semibold tracking-wide uppercase backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              Brewrich Institutional Wealth & Protection Platform
             </div>
-            <p className="text-slate-400 text-xs leading-relaxed">
-              Headquartered in Theni, Tamil Nadu • Professional institutional wealth management, mutual fund distribution, and corporate insurance advisory.
+
+            <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight">
+              Build wealth with confidence and ease.
+            </h1>
+
+            <p className="text-lg sm:text-xl text-blue-100 font-normal max-w-2xl leading-relaxed">
+              Institutional-grade mutual fund advisory, automated tax-loss harvesting, instant liquidity credit lines, and multi-crore protection designed for modern investors.
             </p>
+
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <a
+                href={onboardingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-8 py-4 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-bold text-base shadow-xl hover:shadow-yellow-400/20 transition-all duration-300 transform hover:-translate-y-0.5"
+              >
+                Get Started Now &rarr;
+              </a>
+              <a
+                href={`https://wa.me/${phoneWhatsAppNumber.replace('+', '')}?text=Hi,%20I%20would%20like%20to%20schedule%20a%201-to-1%20wealth%20consultation.`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-4 rounded-xl bg-blue-700/80 hover:bg-blue-700 text-white font-semibold text-base border border-blue-400/30 backdrop-blur-md transition-all duration-300"
+              >
+                Talk to Advisor (WhatsApp)
+              </a>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-blue-500/40 text-blue-100 text-sm">
+              <div>
+                <p className="font-bold text-white text-lg">₹500 / mo</p>
+                <p className="text-xs text-blue-200">Minimum SIP Entry</p>
+              </div>
+              <div>
+                <p className="font-bold text-white text-lg">₹1.25L</p>
+                <p className="text-xs text-blue-200">LTCG Tax Free Cap</p>
+              </div>
+              <div>
+                <p className="font-bold text-white text-lg">100% Digital</p>
+                <p className="text-xs text-blue-200">Paperless Execution</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Hero Right Device Mockup (Betterment-Style Smartphone Frame) */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="lg:col-span-5 flex justify-center"
+          >
+            <div className="relative w-full max-w-sm bg-slate-900 rounded-[2.5rem] p-4 border-4 border-slate-700/60 shadow-2xl shadow-black/80">
+              {/* Notch */}
+              <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-28 h-5 bg-slate-950 rounded-full z-20 flex items-center justify-center">
+                <div className="w-12 h-1.5 bg-slate-800 rounded-full" />
+              </div>
+
+              {/* Screen Content */}
+              <div className="bg-slate-950 rounded-2xl p-4 pt-8 space-y-4 border border-slate-800 text-left">
+                <div className="flex justify-between items-center text-xs text-slate-400">
+                  <span>Automated Portfolio</span>
+                  <span className="text-emerald-400 font-semibold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/50">Active XIRR 16.4%</span>
+                </div>
+
+                <div>
+                  <p className="text-xs text-slate-400">Total Portfolio Value</p>
+                  <p className="text-2xl font-bold text-white">₹48,93,420.10</p>
+                  <p className="text-xs text-emerald-400 font-medium mt-0.5">+₹4,22,150.80 (All time)</p>
+                </div>
+
+                {/* Progress Card */}
+                <div className="bg-blue-950/40 border border-blue-800/40 rounded-xl p-3 space-y-2">
+                  <div className="flex justify-between text-xs font-medium">
+                    <span className="text-blue-200">Retirement Milestone</span>
+                    <span className="text-blue-400">88% on track</span>
+                  </div>
+                  <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div className="bg-blue-500 h-full rounded-full w-[88%]" />
+                  </div>
+                </div>
+
+                {/* Mini Chart Mockup */}
+                <div className="pt-2">
+                  <div className="text-xs text-slate-400 mb-2">Compounding Trajectory (10Y)</div>
+                  <div className="h-24 w-full flex items-end gap-1.5 pt-2 border-b border-l border-slate-800 px-1">
+                    {[35, 42, 50, 58, 65, 74, 82, 95, 110, 135].map((val, idx) => (
+                      <div 
+                        key={idx} 
+                        style={{ height: `${val}%` }} 
+                        className="flex-1 bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-sm"
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+        </div>
+      </section>
+
+
+      {/* ================= MODULAR PRODUCT SUITES (Dark Slate Blocks) ================= */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-16">
+        
+        <div className="text-center space-y-3">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-blue-500">Precision Architecture</h2>
+          <p className="text-3xl sm:text-4xl font-bold text-white">Institutional Product Suites</p>
+          <p className="text-slate-400 max-w-xl mx-auto text-sm sm:text-base">
+            Engineered for disciplined wealth accumulation, immediate liquidity, and robust family security.
+          </p>
+        </div>
+
+        {/* 3-Column Betterment-Style Modular Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          {/* Card 1: SIP & Mutual Funds */}
+          <motion.div 
+            whileHover={{ y: -4 }}
+            transition={{ duration: 0.2 }}
+            className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="space-y-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 font-bold">
+                01
+              </div>
+              <h3 className="text-xl font-bold text-white">SIP & Mutual Funds</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Automated monthly compounding with smart portfolio rebalancing and tax optimization.
+              </p>
+
+              {/* Interactive SIP Slider Widget */}
+              <div className="bg-slate-950/80 rounded-xl p-4 border border-slate-800/80 space-y-3">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-400">Monthly Allocation:</span>
+                  <span className="font-bold text-blue-400">₹{sipAmount.toLocaleString('en-IN')}/mo</span>
+                </div>
+                <input 
+                  type="range" 
+                  min={1000} 
+                  max={100000} 
+                  step={1000}
+                  value={sipAmount}
+                  onChange={(e) => setSipAmount(Number(e.target.value))}
+                  className="w-full accent-blue-500 bg-slate-800 rounded-lg h-2 cursor-pointer"
+                />
+                <div className="pt-2 border-t border-slate-800/60 flex justify-between items-center text-xs">
+                  <span className="text-slate-400">Est. Wealth Gained (10Y):</span>
+                  <span className="font-bold text-emerald-400">+₹{(estimatedGains / 100000).toFixed(2)} Lakhs</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-6">
+              <a 
+                href={onboardingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-center w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all shadow-lg shadow-blue-600/20"
+              >
+                Start SIP Portfolio &rarr;
+              </a>
+            </div>
+          </motion.div>
+
+          {/* Card 2: Loan Against Mutual Funds (LAMF) */}
+          <motion.div 
+            whileHover={{ y: -4 }}
+            transition={{ duration: 0.2 }}
+            className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="space-y-4">
+              <div className="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400 font-bold">
+                02
+              </div>
+              <h3 className="text-xl font-bold text-white">Loan Against Mutual Funds</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Unlock instant bank overdraft limits while your underlying units remain 100% invested and compounding.
+              </p>
+
+              {/* Interactive LAMF Widget */}
+              <div className="bg-slate-950/80 rounded-xl p-4 border border-slate-800/80 space-y-3">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-400">Pledged Portfolio:</span>
+                  <span className="font-bold text-purple-400">₹{(portfolioValue / 100000).toFixed(1)} Lakhs</span>
+                </div>
+                <input 
+                  type="range" 
+                  min={500000} 
+                  max={10000000} 
+                  step={500000}
+                  value={portfolioValue}
+                  onChange={(e) => setPortfolioValue(Number(e.target.value))}
+                  className="w-full accent-purple-500 bg-slate-800 rounded-lg h-2 cursor-pointer"
+                />
+                <div className="pt-2 border-t border-slate-800/60 flex justify-between items-center text-xs">
+                  <span className="text-slate-400">Approved Overdraft Limit (80% LTV):</span>
+                  <span className="font-bold text-emerald-400">₹{approvedLimit.toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-6">
+              <a 
+                href={onboardingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-center w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm transition-all border border-slate-700"
+              >
+                Access Credit Line &rarr;
+              </a>
+            </div>
+          </motion.div>
+
+          {/* Card 3: Term & Health Insurance Protection */}
+          <motion.div 
+            whileHover={{ y: -4 }}
+            transition={{ duration: 0.2 }}
+            className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-600/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="space-y-4">
+              <div className="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold">
+                03
+              </div>
+              <h3 className="text-xl font-bold text-white">Term & Health Protection</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Multi-crore life cover and comprehensive cashless health networks designed for complete family security.
+              </p>
+
+              {/* Digital Policy Card Mockup */}
+              <div className="bg-gradient-to-br from-slate-950 to-emerald-950/40 rounded-xl p-4 border border-emerald-500/20 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Composite Cover</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                </div>
+                <div className="text-lg font-bold text-white">₹10 Crore+ Life Cover</div>
+                <p className="text-xs text-slate-400">Cashless hospital network across 10,000+ elite medical centers pan-India.</p>
+              </div>
+            </div>
+
+            <div className="pt-6">
+              <a 
+                href={onboardingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-center w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm transition-all border border-slate-700"
+              >
+                Explore Protection Plans &rarr;
+              </a>
+            </div>
+          </motion.div>
+
+        </div>
+
+        {/* Secondary Grid Row: SWP, STP, Fixed Deposits & NPS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          
+          {/* SWP / STP Module */}
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="inline-block px-3 py-1 rounded bg-blue-500/20 text-blue-400 text-xs font-bold uppercase">Cashflow Management</div>
+              <h3 className="text-2xl font-bold text-white">SWP & STP Automation</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Systematic Withdrawal Plans (SWP) for tax-efficient retirement cashflows and Systematic Transfer Plans (STP) to dollar-cost average lumpsum capital safely into equities.
+              </p>
+              <ul className="space-y-2 text-sm text-slate-300 pt-2">
+                <li className="flex items-center gap-2">✓ Automated monthly payouts directly to your bank account</li>
+                <li className="flex items-center gap-2">✓ Zero capital gains tax on principal drawdown components</li>
+                <li className="flex items-center gap-2">✓ Dynamic asset rebalancing between debt and equity</li>
+              </ul>
+            </div>
+            <div className="pt-8">
+              <a 
+                href={onboardingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 font-bold text-sm"
+              >
+                Configure Cashflows &rarr;
+              </a>
+            </div>
           </div>
 
-          {/* Compliance & Regulatory Badges */}
-          <div className="flex flex-wrap justify-center gap-4">
-            
-            <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-left">
-              <span className="block font-extrabold text-white text-xs mb-0.5">AMFI Registered MFD</span>
-              <span className="text-slate-400 font-mono text-[11px]">ARN-335693 | EUIN: E637441</span>
+          {/* NPS & Fixed Deposits Module */}
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="inline-block px-3 py-1 rounded bg-purple-500/20 text-purple-400 text-xs font-bold uppercase">Retirement & Safety</div>
+              <h3 className="text-2xl font-bold text-white">NPS & Fixed Deposits</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                National Pension System (NPS) tier-1 & tier-2 allocations for additional ₹50,000 tax deductions under Sec 80CCD(1B), combined with high-yield corporate fixed deposits.
+              </p>
+              <ul className="space-y-2 text-sm text-slate-300 pt-2">
+                <li className="flex items-center gap-2">✓ Extra tax savings under Section 80CCD</li>
+                <li className="flex items-center gap-2">✓ Curated high-yield corporate FD instruments</li>
+                <li className="flex items-center gap-2">✓ Low-cost pension fund management options</li>
+              </ul>
             </div>
-
-            <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-left">
-              <span className="block font-extrabold text-white text-xs mb-0.5">IRDAI Licensed Advisor</span>
-              <span className="text-slate-400 font-mono text-[11px]">URN: CAI0405260445 (Composite)</span>
+            <div className="pt-8">
+              <a 
+                href={onboardingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 font-bold text-sm"
+              >
+                Secure Retirement &rarr;
+              </a>
             </div>
-
-            <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-left">
-              <span className="block font-extrabold text-white text-xs mb-0.5">ISO 9001:2015 Certified</span>
-              <span className="text-slate-400 font-mono text-[11px]">Udyam: UDYAM-TN-23-0001645</span>
-            </div>
-
           </div>
 
         </div>
 
-        <div className="max-w-7xl mx-auto mt-10 pt-6 border-t border-slate-900 text-center text-slate-500 text-[11px]">
-          Mutual fund investments are subject to market risks. Please read all scheme-related documents carefully before investing. Past performance is not indicative of future returns.
+      </section>
+
+
+      {/* ================= CONSULTATION HUB SECTION ================= */}
+      <section className="bg-blue-900/20 border-y border-blue-800/30 py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center space-y-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white">Need Customized Portfolio Allocation?</h2>
+          <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto">
+            Book a 1-to-1 consultation session with our certified financial planners. Get your portfolio audited and optimized for maximum alpha and risk mitigation.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4 pt-2">
+            <a
+              href={`https://wa.me/${phoneWhatsAppNumber.replace('+', '')}?text=Hello,%20I%20would%20like%20to%20schedule%20a%20wealth%20consultation.`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-8 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base shadow-lg transition-all"
+            >
+              Chat on WhatsApp ({phoneWhatsAppNumber})
+            </a>
+            <a
+              href={`tel:${phoneWhatsAppNumber}`}
+              className="px-8 py-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-base border border-slate-700 transition-all"
+            >
+              Direct Call ({phoneWhatsAppNumber})
+            </a>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ================= MANDATORY REGULATORY COMPLIANCE FOOTER ================= */}
+      <footer className="bg-slate-950 border-t border-slate-900 text-slate-400 py-12 px-4 sm:px-6 lg:px-8 text-xs">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-8 border-b border-slate-900">
+          
+          <div className="space-y-3">
+            <p className="font-bold text-white text-sm uppercase tracking-wider">Brewrich Wealth</p>
+            <p>Helping individuals build long-term wealth using structured, disciplined, and AI-driven intelligent financial planning.</p>
+            <p className="text-slate-500">Based in Theni, Tamil Nadu.</p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="font-bold text-white text-sm uppercase tracking-wider">Regulatory Credentials</p>
+            <p><strong className="text-slate-300">AMFI Registered MFD:</strong> ARN-335693</p>
+            <p><strong className="text-slate-300">EUIN:</strong> E637441</p>
+            <p><strong className="text-slate-300">IRDAI Licensed Advisor:</strong> URN: CAI0405260445 (Composite)</p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="font-bold text-white text-sm uppercase tracking-wider">Accreditations & Quality</p>
+            <p><strong className="text-slate-300">ISO 9001:2015 Certified:</strong> UDYAM-TN-23-0001645</p>
+            <p><strong className="text-slate-300">Certifications:</strong> CFP | NISM Series V-A | NISM Series VII Certified</p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="font-bold text-white text-sm uppercase tracking-wider">Client Onboarding</p>
+            <p className="text-slate-400">Direct secure digital account opening powered by authorized institutional infrastructure.</p>
+            <a 
+              href={onboardingUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-block text-blue-400 hover:underline font-semibold pt-1"
+            >
+              Launch Client Portal &rarr;
+            </a>
+          </div>
+
+        </div>
+
+        <div className="max-w-7xl mx-auto pt-8 flex flex-col sm:flex-row justify-between items-center text-slate-500 gap-4">
+          <p>&copy; {new Date().getFullYear()} Brewrich Wealth. All rights reserved.</p>
+          <p className="text-center sm:text-right">Mutual fund investments are subject to market risks. Read all scheme related documents carefully.</p>
         </div>
       </footer>
 
