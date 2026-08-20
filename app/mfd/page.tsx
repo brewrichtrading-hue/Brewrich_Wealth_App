@@ -7,19 +7,17 @@ export default function MfdPage() {
   // Interactive State for SIP Calculator
   const [sipAmount, setSipAmount] = useState<number>(10000);
   const sipYears = 10;
-  const expectedReturn = 0.14; 
+  const expectedReturn = 0.14; // 14% p.a. historical equity expectation
+  
   const monthlyRate = expectedReturn / 12;
   const totalMonths = sipYears * 12;
   const investedAmount = sipAmount * totalMonths;
   const futureValue = sipAmount * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) * (1 + monthlyRate);
   const estimatedGains = futureValue - investedAmount;
 
-  // Interactive State for Custom Portfolio / Mutual Funds Allocator
-  const [allocationWeight, setAllocationWeight] = useState<number>(25);
-
   // Interactive State for Loan Against Mutual Funds (LAMF)
   const [portfolioValue, setPortfolioValue] = useState<number>(2500000);
-  const approvedLimit = portfolioValue * 0.80;
+  const approvedLimit = portfolioValue * 0.80; // 80% LTV
 
   const onboardingUrl = "https://mweb.assetplus.in/client_onboarding/?advisor=688b3679af6048595923afd2";
   const phoneWhatsAppNumber = "+919042747590";
@@ -141,7 +139,7 @@ export default function MfdPage() {
       </section>
 
 
-      {/* ================= BETTERMENT EXACT 3-COLUMN PRODUCT SUITES ================= */}
+      {/* ================= BETTERMENT-STYLE 3-COLUMN PRODUCT GRID ================= */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-16">
         
         <div className="text-center space-y-3">
@@ -152,139 +150,141 @@ export default function MfdPage() {
           </p>
         </div>
 
-        {/* 3-Column Grid mirroring Betterment's exact card layout */}
+        {/* 3-Column Card Grid with White Top & Royal Blue Interactive Bottom */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
-          {/* Card 1: Automated SIP Investing (Betterment style with embedded growth chart mockup) */}
+          {/* Card 1: SIP & Mutual Funds */}
           <motion.div 
             whileHover={{ y: -6 }}
             transition={{ duration: 0.2 }}
-            className="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden flex flex-col justify-between"
+            className="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden flex flex-col justify-between"
           >
             <div className="p-8 space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Most Popular</span>
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">
+                01
               </div>
-              <h3 className="text-2xl font-serif font-bold text-slate-900">Automated SIP Investing</h3>
+              <h3 className="text-2xl font-serif font-bold text-slate-900">SIP & Mutual Funds</h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Get a globally diversified mutual fund portfolio and let us handle all trading, rebalancing, and tax management for you.
+                Build long-term wealth with automated monthly disciplined allocations and smart tax harvesting.
               </p>
-              <a href={onboardingUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-blue-600 font-bold text-sm hover:underline">
-                Get started &rarr;
-              </a>
             </div>
 
-            {/* Embedded Mini UI Mockup matching Betterment reference */}
-            <div className="bg-gradient-to-b from-slate-50 to-blue-900/10 p-6 border-t border-slate-100 space-y-4">
-              <div className="bg-white rounded-2xl p-4 shadow-md border border-slate-200 space-y-3">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-slate-500 font-medium">SIP Core Portfolio</span>
-                  <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">14% p.a.</span>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500">Monthly Allocation</p>
-                  <p className="text-xl font-black text-slate-900">₹{sipAmount.toLocaleString('en-IN')}</p>
-                </div>
-                <input 
-                  type="range" 
-                  min={1000} 
-                  max={100000} 
-                  step={1000}
-                  value={sipAmount}
-                  onChange={(e) => setSipAmount(Number(e.target.value))}
-                  className="w-full accent-blue-600 bg-slate-200 rounded-lg h-2 cursor-pointer"
-                />
-                <div className="pt-2 border-t border-slate-100 flex justify-between text-xs font-semibold">
-                  <span className="text-slate-500">Est. 10Y Return:</span>
-                  <span className="text-emerald-600">+₹{(estimatedGains / 100000).toFixed(2)} Lakhs</span>
-                </div>
+            {/* Interactive Blue Bottom Module */}
+            <div className="bg-blue-600 p-6 text-white space-y-4">
+              <div className="flex justify-between items-center text-xs text-blue-100">
+                <span>Monthly Allocation:</span>
+                <span className="font-bold text-white bg-blue-700 px-2.5 py-1 rounded-lg">₹{sipAmount.toLocaleString('en-IN')}/mo</span>
               </div>
+              <input 
+                type="range" 
+                min={1000} 
+                max={100000} 
+                step={1000}
+                value={sipAmount}
+                onChange={(e) => setSipAmount(Number(e.target.value))}
+                className="w-full accent-yellow-400 bg-blue-700 rounded-lg h-2 cursor-pointer"
+              />
+              <div className="pt-2 border-t border-blue-500/60 flex justify-between items-center text-xs">
+                <span className="text-blue-100">Est. 10Y Growth:</span>
+                <span className="font-bold text-yellow-300">+₹{(estimatedGains / 100000).toFixed(2)} Lakhs</span>
+              </div>
+              <a 
+                href={onboardingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-center w-full py-3.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-bold text-sm shadow-lg transition-all"
+              >
+                Start SIP Portfolio &rarr;
+              </a>
             </div>
           </motion.div>
 
-
-          {/* Card 2: Self-Directed Equity & Mutual Funds (Betterment stock ticker pills style) */}
+          {/* Card 2: Loan Against Mutual Funds (LAMF) */}
           <motion.div 
             whileHover={{ y: -6 }}
             transition={{ duration: 0.2 }}
-            className="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden flex flex-col justify-between"
+            className="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden flex flex-col justify-between"
           >
             <div className="p-8 space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1 rounded-full">High Alpha</span>
+              <div className="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 font-bold text-lg">
+                02
               </div>
-              <h3 className="text-2xl font-serif font-bold text-slate-900">Self-Directed Investing</h3>
+              <h3 className="text-2xl font-serif font-bold text-slate-900">Loan Against Mutual Funds</h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Select and manage your direct equity baskets and mutual funds along with institutional tax insights you won't get anywhere else.
+                Unlock instant bank overdraft liquidity without breaking your compounding or triggering capital gains tax.
               </p>
-              <a href={onboardingUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-blue-600 font-bold text-sm hover:underline">
-                Get started &rarr;
-              </a>
             </div>
 
-            {/* Embedded Stock/Fund Ticker Pill UI Mockup */}
-            <div className="bg-gradient-to-b from-slate-50 to-purple-900/10 p-6 border-t border-slate-100 space-y-3">
-              <div className="bg-white rounded-2xl p-4 shadow-md border border-slate-200 space-y-3">
-                <div className="text-xs font-bold text-slate-700">Selected Tickers & Asset Baskets</div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 text-center text-xs font-bold text-slate-800 shadow-sm">NIFTY 50</div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 text-center text-xs font-bold text-slate-800 shadow-sm">RELIANCE</div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 text-center text-xs font-bold text-slate-800 shadow-sm">TCS</div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 text-center text-xs font-bold text-slate-800 shadow-sm">HDFC</div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 text-center text-xs font-bold text-slate-800 shadow-sm">INFY</div>
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-2 text-center text-xs font-bold text-blue-700 shadow-sm">+ Custom</div>
-                </div>
+            {/* Interactive Blue/Purple Bottom Module */}
+            <div className="bg-slate-900 p-6 text-white space-y-4">
+              <div className="flex justify-between items-center text-xs text-slate-400">
+                <span>Pledged Portfolio:</span>
+                <span className="font-bold text-white bg-slate-800 px-2.5 py-1 rounded-lg">₹{(portfolioValue / 100000).toFixed(1)} Lakhs</span>
               </div>
+              <input 
+                type="range" 
+                min={500000} 
+                max={10000000} 
+                step={500000}
+                value={portfolioValue}
+                onChange={(e) => setPortfolioValue(Number(e.target.value))}
+                className="w-full accent-blue-500 bg-slate-800 rounded-lg h-2 cursor-pointer"
+              />
+              <div className="pt-2 border-t border-slate-800 flex justify-between items-center text-xs">
+                <span className="text-slate-400">Overdraft Limit (80% LTV):</span>
+                <span className="font-bold text-emerald-400">₹{approvedLimit.toLocaleString('en-IN')}</span>
+              </div>
+              <a 
+                href={onboardingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-center w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg transition-all"
+              >
+                Access Credit Line &rarr;
+              </a>
             </div>
           </motion.div>
 
-
-          {/* Card 3: Custom Portfolios & Loan Against Mutual Funds (LAMF Slider style) */}
+          {/* Card 3: Term & Health Insurance Protection */}
           <motion.div 
             whileHover={{ y: -6 }}
             transition={{ duration: 0.2 }}
-            className="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden flex flex-col justify-between"
+            className="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden flex flex-col justify-between"
           >
             <div className="p-8 space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">Instant Liquidity</span>
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-lg">
+                03
               </div>
-              <h3 className="text-2xl font-serif font-bold text-slate-900">Custom Portfolios & LAMF</h3>
+              <h3 className="text-2xl font-serif font-bold text-slate-900">Term & Health Protection</h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Design custom equity/debt allocations and unlock instant bank overdraft credit lines while units remain fully invested.
+                Multi-crore life cover and cashless health networks across 10,000+ top hospitals for family security.
               </p>
-              <a href={onboardingUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-blue-600 font-bold text-sm hover:underline">
-                Get started &rarr;
-              </a>
             </div>
 
-            {/* Embedded LAMF Slider UI Mockup */}
-            <div className="bg-gradient-to-b from-slate-50 to-emerald-900/10 p-6 border-t border-slate-100 space-y-3">
-              <div className="bg-white rounded-2xl p-4 shadow-md border border-slate-200 space-y-3">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-slate-500 font-medium">Pledged Portfolio</span>
-                  <span className="font-bold text-slate-900">₹{(portfolioValue / 100000).toFixed(1)} Lakhs</span>
-                </div>
-                <input 
-                  type="range" 
-                  min={500000} 
-                  max={10000000} 
-                  step={500000}
-                  value={portfolioValue}
-                  onChange={(e) => setPortfolioValue(Number(e.target.value))}
-                  className="w-full accent-emerald-600 bg-slate-200 rounded-lg h-2 cursor-pointer"
-                />
-                <div className="pt-2 border-t border-slate-100 flex justify-between text-xs font-bold">
-                  <span className="text-slate-500">Overdraft Limit (80% LTV):</span>
-                  <span className="text-emerald-700">₹{approvedLimit.toLocaleString('en-IN')}</span>
-                </div>
+            {/* Digital Policy Card Visual Bottom Module */}
+            <div className="bg-emerald-950 p-6 text-white space-y-4">
+              <div className="flex justify-between items-center text-xs text-emerald-300">
+                <span className="font-bold uppercase tracking-wider">Verified Active Cover</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
               </div>
+              <div className="bg-emerald-900/60 border border-emerald-500/30 rounded-2xl p-3.5">
+                <p className="text-xs text-emerald-200">Composite Life Protection</p>
+                <p className="text-xl font-black text-white">₹10 Crore+ Life Cover</p>
+              </div>
+              <a 
+                href={onboardingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-center w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-lg transition-all"
+              >
+                Explore Protection Plans &rarr;
+              </a>
             </div>
           </motion.div>
 
         </div>
 
-        {/* Secondary Row: SWP/STP & Term/Health Protection */}
+        {/* Secondary Row: SWP/STP & NPS/FD */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           
           <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-lg flex flex-col justify-between">
@@ -308,19 +308,19 @@ export default function MfdPage() {
 
           <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-lg flex flex-col justify-between">
             <div className="space-y-4">
-              <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wide">Family Security</span>
-              <h3 className="text-3xl font-serif font-bold text-slate-900">Term Life & Health Cover</h3>
+              <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold uppercase tracking-wide">Retirement & Tax Shield</span>
+              <h3 className="text-3xl font-serif font-bold text-slate-900">NPS & High-Yield FDs</h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Multi-crore term life protection (₹10Cr+) and cashless medical cards across 10,000+ top hospitals pan-India.
+                National Pension System (NPS) allocations for additional tax deductions under Sec 80CCD(1B), combined with elite corporate fixed deposits.
               </p>
               <ul className="space-y-2 text-sm font-medium text-slate-700 pt-2">
-                <li className="flex items-center gap-2">✓ Instant digital policy cards with zero hospital hassles</li>
-                <li className="flex items-center gap-2">✓ Dedicated in-house claims assistance desk</li>
+                <li className="flex items-center gap-2">✓ Extra tax savings under Section 80CCD</li>
+                <li className="flex items-center gap-2">✓ Curated high-yield corporate FD instruments</li>
               </ul>
             </div>
             <div className="pt-8">
-              <a href={onboardingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-emerald-700 hover:text-emerald-800 font-bold text-sm">
-                Explore Protection Plans &rarr;
+              <a href={onboardingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-bold text-sm">
+                Secure Retirement &rarr;
               </a>
             </div>
           </div>
