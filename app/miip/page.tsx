@@ -35,12 +35,26 @@ import {
   Clock,
   Target,
   ExternalLink,
+  QrCode,
+  Copy,
+  X,
+  Building2,
 } from 'lucide-react';
 
 function MipContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [autoTrigger, setAutoTrigger] = useState(false);
   const searchParams = useSearchParams();
+
+  const handleCopy = (text: string, fieldName: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedField(fieldName);
+      setTimeout(() => setCopiedField(null), 2000);
+    }
+  };
 
   // Interactive CAGR Simulator States
   const [initialCapital, setInitialCapital] = useState<number>(1000000); // Default ₹10,00,000
@@ -1524,20 +1538,31 @@ function MipContent() {
 
             {/* Registration Action Area */}
             <div className="space-y-4 pt-4 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(true)}
-                className="btn-interactive w-full min-h-[56px] flex items-center justify-center gap-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-lg shadow-xl shadow-blue-600/30 transition-all hover:scale-[1.01] active:scale-[0.99]"
-              >
-                <Sparkles className="h-5 w-5 text-amber-300" />
-                <span>Register Now • ₹46,000</span>
-                <ArrowRight className="h-5 w-5" />
-              </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(true)}
+                  className="btn-interactive w-full min-h-[56px] flex items-center justify-center gap-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-base shadow-xl shadow-blue-600/30 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                >
+                  <Sparkles className="h-5 w-5 text-amber-300" />
+                  <span>Register via Razorpay • ₹46,000</span>
+                  <ArrowRight className="h-5 w-5" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsQrModalOpen(true)}
+                  className="btn-interactive w-full min-h-[56px] flex items-center justify-center gap-2.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-base border border-slate-700 shadow-xl shadow-slate-900/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                >
+                  <QrCode className="h-5 w-5 text-emerald-400" />
+                  <span>Scan & Pay via UPI / QR</span>
+                </button>
+              </div>
 
               <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500 font-semibold pt-2">
                 <div className="flex items-center gap-1.5">
                   <Lock className="h-4 w-4 text-blue-600" />
-                  <span>256-Bit SSL Razorpay Encrypted</span>
+                  <span>256-Bit SSL Razorpay & Direct UPI Encrypted</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <ShieldCheck className="h-4 w-4 text-emerald-600" />
@@ -1559,7 +1584,7 @@ function MipContent() {
       {/* 11. STICKY MOBILE-FRIENDLY "REGISTER NOW" BOTTOM BAR */}
       {/* ========================================================================= */}
       <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 p-3 sm:p-4 md:hidden pb-safe shadow-2xl">
-        <div className="flex items-center justify-between gap-3 max-w-md mx-auto">
+        <div className="flex items-center justify-between gap-2.5 max-w-md mx-auto">
           <div className="flex flex-col">
             <span className="text-[10px] uppercase font-bold text-blue-700 tracking-wider">
               MIP Live Cohort
@@ -1570,15 +1595,27 @@ function MipContent() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsModalOpen(true)}
-            className="btn-interactive flex-1 min-h-[48px] flex items-center justify-center gap-2 rounded-full bg-blue-600 active:bg-blue-700 text-white font-extrabold text-sm shadow-md shadow-blue-600/30"
-          >
-            <Sparkles className="h-4 w-4 text-amber-300" />
-            <span>Register Now</span>
-            <ArrowRight className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-2 flex-1 justify-end">
+            <button
+              type="button"
+              onClick={() => setIsQrModalOpen(true)}
+              className="btn-interactive min-h-[46px] px-3.5 flex items-center justify-center gap-1.5 rounded-full bg-slate-900 active:bg-slate-800 text-white font-bold text-xs shadow-md"
+              title="Scan QR Code"
+            >
+              <QrCode className="h-4 w-4 text-emerald-400" />
+              <span>QR Pay</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className="btn-interactive min-h-[46px] px-4 flex items-center justify-center gap-1.5 rounded-full bg-blue-600 active:bg-blue-700 text-white font-extrabold text-xs shadow-md shadow-blue-600/30"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-amber-300" />
+              <span>Register</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1591,6 +1628,154 @@ function MipContent() {
         }}
         autoTriggerCheckout={autoTrigger}
       />
+
+      {/* ========================================================================= */}
+      {/* SCAN & PAY VIA UPI / QR CODE MODAL POPUP */}
+      {/* ========================================================================= */}
+      {isQrModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg rounded-3xl bg-white border border-slate-200 p-6 sm:p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+            
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setIsQrModalOpen(false)}
+              className="absolute top-4 right-4 h-10 w-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-all focus:outline-none"
+              aria-label="Close modal"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                <QrCode className="h-6 w-6" />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                  Instant UPI Transfer
+                </span>
+                <h3 className="text-xl font-extrabold text-slate-900 mt-0.5">
+                  Scan & Pay via UPI / QR
+                </h3>
+              </div>
+            </div>
+
+            {/* Fee Banner */}
+            <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200/80 flex items-center justify-between gap-2 mb-6">
+              <div>
+                <span className="text-xs text-blue-700 font-bold block">Program Tuition Fee</span>
+                <span className="text-2xl font-extrabold text-slate-900">₹46,000 <span className="text-xs font-normal text-slate-500">INR</span></span>
+              </div>
+              <span className="text-xs font-bold text-blue-800 bg-blue-100 px-3 py-1.5 rounded-full border border-blue-200">
+                All-Inclusive
+              </span>
+            </div>
+
+            {/* Official QR Code Card */}
+            <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 text-center space-y-3 mb-6">
+              <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-200/60 inline-block">
+                <img
+                  src="/qr-code.png"
+                  alt="Official HDFC UPI QR Code"
+                  className="w-56 h-56 sm:w-64 sm:h-64 object-contain rounded-xl mx-auto"
+                />
+              </div>
+              <p className="text-xs text-slate-500 font-medium">
+                Scan with Google Pay, PhonePe, Paytm, BHIM, or any UPI App
+              </p>
+            </div>
+
+            {/* Account & Bank Details Container */}
+            <div className="space-y-3 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs mb-6">
+              <p className="font-extrabold text-slate-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                <Building2 className="h-4 w-4 text-blue-600" />
+                <span>Direct Bank / UPI Details</span>
+              </p>
+
+              <div className="flex justify-between items-center py-1.5 border-b border-slate-200/60">
+                <span className="text-slate-500">Account Name:</span>
+                <span className="font-bold text-slate-900 text-right">YOGESHNATH SETHURAM</span>
+              </div>
+
+              <div className="flex justify-between items-center py-1.5 border-b border-slate-200/60">
+                <span className="text-slate-500">UPI ID:</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold text-blue-700">9042747590@hdfc</span>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy('9042747590@hdfc', 'upi')}
+                    className="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                    title="Copy UPI ID"
+                  >
+                    {copiedField === 'upi' ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center py-1.5 border-b border-slate-200/60">
+                <span className="text-slate-500">Bank & Business Name:</span>
+                <span className="font-bold text-slate-900">Brewrich Trading (HDFC Bank)</span>
+              </div>
+
+              <div className="flex justify-between items-center py-1.5 border-b border-slate-200/60">
+                <span className="text-slate-500">HDFC A/C No:</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold text-slate-900">50200063471012</span>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy('50200063471012', 'ac')}
+                    className="p-1.5 rounded-lg bg-slate-200/70 text-slate-700 hover:bg-slate-300 transition-colors"
+                    title="Copy Account Number"
+                  >
+                    {copiedField === 'ac' ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center py-1.5 border-b border-slate-200/60">
+                <span className="text-slate-500">IFSC Code:</span>
+                <span className="font-mono font-bold text-slate-900">HDFC0000776</span>
+              </div>
+
+              <div className="flex justify-between items-center pt-1">
+                <span className="text-slate-500">Branch:</span>
+                <span className="font-bold text-slate-900">Theni Allinagaram</span>
+              </div>
+            </div>
+
+            {/* WhatsApp Confirmation Step */}
+            <div className="space-y-3">
+              <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1">
+                <p className="font-bold">Step 2: Confirm on WhatsApp</p>
+                <p className="text-amber-800 leading-relaxed">
+                  After transferring ₹46,000, please send your transaction screenshot on WhatsApp for instant portal activation & cohort verification.
+                </p>
+              </div>
+
+              <a
+                href="https://wa.me/919042747590?text=Hi,%20I%20have%20completed%20the%20₹46,000%20payment%20via%20QR%20code%20for%20MIIP.%20Here%20is%20my%20screenshot."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-interactive w-full min-h-[52px] flex items-center justify-center gap-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm shadow-lg shadow-emerald-600/30 transition-all hover:scale-[1.01] active:scale-[0.99]"
+              >
+                <MessageCircle className="h-5 w-5 text-white" />
+                <span>Send Payment Screenshot on WhatsApp</span>
+                <ArrowRight className="h-4 w-4" />
+              </a>
+
+              <button
+                type="button"
+                onClick={() => setIsQrModalOpen(false)}
+                className="w-full py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors text-center"
+              >
+                Close & Return
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
