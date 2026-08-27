@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import LiveClassCard from '@/components/LiveClassCard';
 import QuizModuleCard from '@/components/QuizModuleCard';
+import { WhatsAppInlineBanner } from '@/components/WhatsAppPromoBanner';
 import { LiveClassSchedule } from '@/lib/types';
 import { 
   GraduationCap, 
@@ -281,6 +282,14 @@ export default async function DashboardPage() {
             </div>
 
           </div>
+        </section>
+
+        {/* 5. OFFICIAL WHATSAPP BROADCAST CHANNEL */}
+        <section className="pt-2">
+          <WhatsAppInlineBanner 
+            title="Official Student WhatsApp Broadcast"
+            subtitle="Get instant push notifications for Google Meet links 15 minutes before class, weekend class schedule updates, and live institutional trade setups."
+          />
         </section>
 
       </div>

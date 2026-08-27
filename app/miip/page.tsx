@@ -40,6 +40,7 @@ import {
   X,
   Building2,
 } from 'lucide-react';
+import { WhatsAppInlineBanner } from '@/components/WhatsAppPromoBanner';
 
 function MipContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -997,6 +998,14 @@ function MipContent() {
             </div>
           </div>
 
+          {/* Inline WhatsApp Channel Promotion Card */}
+          <div className="pt-4">
+            <WhatsAppInlineBanner 
+              title="Get Real-Time Momentum Signals & Live Class Reminders"
+              subtitle="Join over 1,000+ serious traders on the official Brewrich WhatsApp broadcast. Receive pre-market blueprints, institutional order flow breakdowns, and direct Google Meet links."
+            />
+          </div>
+
         </div>
       </section>
 
@@ -1445,6 +1454,12 @@ function MipContent() {
               <span>Ask Yogesh Nath directly on WhatsApp &rarr;</span>
             </a>
           </div>
+
+          <WhatsAppInlineBanner 
+            title="Join the Trader Community on WhatsApp"
+            subtitle="Get instant access to real-time market debriefs, weekend Google Meet access links, and algorithmic sector rotation models directly on your phone."
+            className="mt-6"
+          />
 
         </div>
       </section>

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { WhatsAppInlineBanner } from '@/components/WhatsAppPromoBanner';
 
 export default function MfdPage() {
   // Interactive State for SIP Calculator
@@ -326,6 +327,13 @@ export default function MfdPage() {
           </div>
 
         </div>
+
+        {/* Global WhatsApp Channel Inline Conversion Banner */}
+        <WhatsAppInlineBanner 
+          title="Stay Ahead With Institutional Market Insights"
+          subtitle="Join our exclusive WhatsApp broadcast for real-time SIP fund rebalancing alerts, IPO analysis, tax-saving strategies, and live weekend webinars."
+          className="mt-8"
+        />
 
       </section>
 
