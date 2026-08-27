@@ -77,7 +77,7 @@ export async function POST(request: Request) {
         .from('module_status')
         .update({
           is_paid: true,
-          amount_paid: 22000,
+          amount_paid: 46000,
           currency: 'INR',
           order_id: razorpay_order_id,
           payment_id: razorpay_payment_id,
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
           user_id: userId,
           email: userEmail,
           is_paid: true,
-          amount_paid: 22000,
+          amount_paid: 46000,
           currency: 'INR',
           order_id: razorpay_order_id,
           payment_id: razorpay_payment_id,

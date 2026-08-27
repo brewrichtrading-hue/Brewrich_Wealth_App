@@ -346,7 +346,7 @@ export default function Navbar() {
                   className="btn-interactive w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-full bg-blue-600 text-white font-extrabold text-base shadow-lg shadow-blue-600/25"
                 >
                   <Sparkles className="h-5 w-5" />
-                  <span>Join MIP Mentorship (₹22,000)</span>
+                  <span>Join MIP Mentorship (₹46,000)</span>
                 </Link>
               </div>
             )}

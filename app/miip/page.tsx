@@ -202,16 +202,18 @@ function MipContent() {
     },
     {
       week: 'Week 04',
-      title: 'Build Your Portfolio',
-      subtitle: 'Asset Allocation & 1-on-1 Audit',
-      badge: 'Module 04: Live Deployment',
-      description: 'Construct a resilient multi-asset portfolio and participate in a personal strategy audit.',
+      title: 'Build Your Portfolio & Immersion',
+      subtitle: 'Asset Allocation, 1-on-1 Audit & Campus Immersion',
+      badge: 'Module 04: Live Deployment & Campus Immersion',
+      description: 'Construct a resilient multi-asset portfolio, complete a 1-on-1 strategy audit, and attend the mandatory 2-day live campus immersion.',
       topics: [
         'Institutional Asset Allocation (Core Equities, Momentum, Hedging, Cash)',
         'Dynamic Portfolio Rebalancing & Systematic Profit Locking',
         'Formulating Your Personal Institutional Trading Playbook',
-        'Assessment Certifications (Quiz 1 & Quiz 2 Unlocks)',
+        'Mandatory 2-Day Live Campus Immersion (Trading Floor & Real-Time Execution)',
+        'Full Hospitality: Breakfast, Lunch, Dinner & Accommodation Provided for Both Days',
         'Personal 1-on-1 Strategy Audit with Lead Strategist Yogesh Nath S',
+        'Assessment Certifications (Quiz 1 & Quiz 2 Unlocks)',
       ],
     },
   ];
@@ -231,8 +233,8 @@ function MipContent() {
   // FAQ Data
   const faqs = [
     {
-      q: 'What is the exact schedule and format of the weekend live sessions?',
-      a: 'The Momentum Investing Program runs for 4 consecutive weeks. Live sessions take place every Saturday and Sunday via Google Meet (typically 10:00 AM - 12:30 PM IST). Every session is highly interactive with live screen-sharing, market case studies, and dedicated Q&A. All sessions are recorded in full HD and uploaded to your Student Portal within 2 hours.',
+      q: 'What is the schedule, and how does the mandatory 2-day campus immersion work?',
+      a: 'The Momentum Investing Program spans 4 intensive weeks. It combines live weekend interactive Google Meet masterclasses (Saturdays and Sundays with live screen-sharing and full HD recordings) with a mandatory 2-day live campus immersion. During the 2-day campus immersion, students experience live market order flow execution and direct 1-on-1 strategy calibration with Yogesh Nath S. All accommodation and meals (breakfast, lunch, and dinner) are fully arranged and included in your ₹46,000 tuition.',
     },
     {
       q: 'Do I need a coding or advanced mathematical background?',
@@ -240,7 +242,7 @@ function MipContent() {
     },
     {
       q: 'How does the 1-on-1 Strategy Audit process work?',
-      a: 'During Week 4, each student schedules a private 45-minute 1-on-1 strategy session with Lead Strategist Yogesh Nath S. You will review your customized momentum playbook, analyze your portfolio sizing, calibrate your risk parameters, and address personal execution bottlenecks.',
+      a: 'During Week 4 and the campus immersion, each student undergoes a private 1-on-1 strategy audit with Lead Strategist Yogesh Nath S. You will review your customized momentum playbook, analyze your portfolio sizing, calibrate your risk parameters, and address personal execution bottlenecks.',
     },
     {
       q: 'How long do I have access to the Student Portal and recordings?',
@@ -255,8 +257,8 @@ function MipContent() {
       a: 'The framework works effectively for portfolios ranging from ₹1,00,000 to ₹50,00,000+. Because position sizing is expressed mathematically as a percentage of capital and volatility, the rules apply equally to small accounts and institutional sizes.',
     },
     {
-      q: 'What happens after I complete payment of ₹22,000?',
-      a: 'Payment via Razorpay is verified instantly. Your account is immediately granted access to the Student Portal, and you receive an email with your Google Meet cohort link, calendar invites, preparatory syllabus reading materials, and Discord alpha desk access.',
+      q: 'What happens after I complete payment of ₹46,000?',
+      a: 'Payment via Razorpay is verified instantly. Your account is immediately granted access to the Student Portal, and you receive an email with your Google Meet cohort link, calendar invites, campus immersion details and hospitality briefing, preparatory syllabus reading materials, and Discord alpha desk access.',
     },
   ];
 
@@ -290,17 +292,21 @@ function MipContent() {
           </p>
 
           {/* Trust Badges */}
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 pt-2 text-xs sm:text-sm text-blue-100 font-semibold">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 pt-2 text-xs sm:text-sm text-blue-100 font-semibold">
             <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/15 backdrop-blur-sm">
               <Calendar className="h-4 w-4 text-amber-300 shrink-0" />
               <span>Weekend Live Batches</span>
             </div>
             <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/15 backdrop-blur-sm">
               <Video className="h-4 w-4 text-emerald-300 shrink-0" />
-              <span>Google Meet Live Interactive</span>
+              <span>2-Day Live Campus Immersion</span>
             </div>
             <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/15 backdrop-blur-sm">
-              <Award className="h-4 w-4 text-teal-300 shrink-0" />
+              <Sparkles className="h-4 w-4 text-teal-300 shrink-0" />
+              <span>Meals & Stay Fully Provided</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/15 backdrop-blur-sm">
+              <Award className="h-4 w-4 text-amber-300 shrink-0" />
               <span>Certification on Quiz Completion</span>
             </div>
           </div>
@@ -331,10 +337,10 @@ function MipContent() {
           {/* Quick Metrics Strip */}
           <div className="pt-6 flex flex-wrap items-center justify-center gap-3 max-w-3xl mx-auto text-xs text-blue-100">
             <span className="px-3 py-1 rounded-full bg-white/10 border border-white/15">
-              <strong>1 Month</strong> Live Cohort
+              <strong>4-Week</strong> Masterclass
             </span>
             <span className="px-3 py-1 rounded-full bg-white/10 border border-white/15">
-              <strong>10 Pillars</strong> Architecture
+              <strong>2-Day</strong> Campus Immersion (Stay & Meals Incl.)
             </span>
             <span className="px-3 py-1 rounded-full bg-white/10 border border-white/15">
               <strong>1-on-1</strong> Strategy Audit
@@ -1407,7 +1413,7 @@ function MipContent() {
                 </span>
                 <div className="flex items-baseline gap-2 mt-1">
                   <span className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight">
-                    ₹22,000
+                    ₹46,000
                   </span>
                   <span className="text-sm font-bold text-slate-500">
                     INR (All-Inclusive)
@@ -1417,7 +1423,7 @@ function MipContent() {
 
               <div className="text-left sm:text-right">
                 <span className="text-xs font-extrabold px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
-                  Lifetime Student Portal Access
+                  4-Wk Cohort + 2-Day Campus Stay
                 </span>
               </div>
             </div>
@@ -1425,18 +1431,20 @@ function MipContent() {
             {/* What is Included Checklist */}
             <div className="space-y-4">
               <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Everything Included in Your ₹22,000 Enrollment:
+                Everything Included in Your ₹46,000 Enrollment:
               </p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {[
-                  '4-Week Intensive Weekend Live Sessions (Saturday & Sunday on Google Meet)',
-                  'Personal 1-on-1 Strategy Audit directly with Yogesh Nath S',
-                  'Protected Student Portal Dashboard with HD Recordings & Algorithmic Models',
-                  'Quantitative Position Sizing Calculators & Factor Backtesting Engines',
-                  'Dual Assessment Unlocks (Quiz 1 & Quiz 2) with Verified Certificate',
-                  'Exclusive Discord & WhatsApp Alpha Desk for Daily Order Flow Insights',
-                  'Lifetime Access to Strategy Updates & Refinements',
+                  '4-Week Intensive Masterclass (Weekend Live Online Interactive Google Meet)',
+                  'Mandatory 2-Day Live Campus Immersion (Trading Floor & Live Strategy Calibration)',
+                  'Full Hospitality: Breakfast, Lunch, Dinner & Accommodation Fully Provided for Both Days',
+                  'Personal 1-on-1 Strategy Audit directly with Lead Strategist Yogesh Nath S',
+                  'Protected Student Portal Dashboard with Lifetime HD Recordings & Algorithmic Models',
+                  'Quantitative Position Sizing Calculators & Multi-Regime Factor Backtesting Engines',
+                  'Dual Assessment Unlocks (Quiz 1 & Quiz 2) with Verified SEBI-Analyst Backed Certificate',
+                  'Exclusive Discord & WhatsApp Alpha Desk for Real-Time Order Flow Insights',
+                  'Lifetime Access to Strategy Updates & Institutional Refinements',
                   'Zero Hidden Fees • 100% Tax Invoice Provided',
                 ].map((feature) => (
                   <div key={feature} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700 font-medium">
@@ -1455,7 +1463,7 @@ function MipContent() {
                 className="btn-interactive w-full min-h-[56px] flex items-center justify-center gap-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-lg shadow-xl shadow-blue-600/30 transition-all hover:scale-[1.01] active:scale-[0.99]"
               >
                 <Sparkles className="h-5 w-5 text-amber-300" />
-                <span>Register Now • ₹22,000</span>
+                <span>Register Now • ₹46,000</span>
                 <ArrowRight className="h-5 w-5" />
               </button>
 
@@ -1490,7 +1498,7 @@ function MipContent() {
               MIP Live Cohort
             </span>
             <div className="flex items-baseline gap-1">
-              <span className="text-lg font-extrabold text-slate-900">₹22,000</span>
+              <span className="text-lg font-extrabold text-slate-900">₹46,000</span>
               <span className="text-[10px] text-slate-500 font-semibold">INR</span>
             </div>
           </div>

@@ -19,8 +19,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // MIIP Program Fee: ₹22,000 INR (amount in paise = 22000 * 100 = 2200000)
-    const amountInPaise = 22000 * 100;
+    // MIIP Program Fee: ₹46,000 INR (amount in paise = 46000 * 100 = 4600000)
+    const amountInPaise = 46000 * 100;
     const receiptId = `miip_rcpt_${Date.now().toString().slice(-8)}_${Math.random().toString(36).substring(2, 6)}`;
 
     const options = {

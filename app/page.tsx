@@ -251,7 +251,7 @@ export default function HomePage() {
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center justify-between">
                   <div className="space-y-0.5">
                     <span className="text-[11px] font-bold uppercase text-slate-500">Mentorship Format</span>
-                    <p className="text-xs font-extrabold text-slate-900">Weekend Live Batches (Google Meet)</p>
+                    <p className="text-xs font-extrabold text-slate-900">4-Wk Cohort + 2-Day Live Campus Immersion</p>
                   </div>
                   <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
                     Enrolling Now
@@ -261,15 +261,15 @@ export default function HomePage() {
                 <ul className="space-y-3">
                   <li className="flex items-start gap-3 text-sm text-slate-700 font-medium">
                     <CheckCircle2 className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                    <span>Live Saturday & Sunday institutional strategy workshops with screen sharing</span>
+                    <span>Weekend live online strategy workshops & order flow breakdown</span>
                   </li>
                   <li className="flex items-start gap-3 text-sm text-slate-700 font-medium">
                     <CheckCircle2 className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                    <span>Knowledge mastery assessment unlock engine (Quiz 1 & Quiz 2)</span>
+                    <span>Mandatory 2-day live campus immersion with all meals & stay included</span>
                   </li>
                   <li className="flex items-start gap-3 text-sm text-slate-700 font-medium">
                     <CheckCircle2 className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                    <span>Lifetime student portal access & private Discord alpha desk</span>
+                    <span>1-on-1 strategy audit & SEBI research-backed assessment certificate</span>
                   </li>
                 </ul>
               </div>
@@ -279,7 +279,7 @@ export default function HomePage() {
                   href="/miip"
                   className="btn-interactive w-full flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm shadow-lg shadow-slate-900/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
                 >
-                  <span>Join MIP Program (₹22,000)</span>
+                  <span>Join MIP Program (₹46,000)</span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>

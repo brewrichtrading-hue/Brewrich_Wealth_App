@@ -125,7 +125,7 @@ export default function RegisterFlowModal({
     setErrorMessage(null);
 
     try {
-      // 1. Create order on server (₹22,000 INR)
+      // 1. Create order on server (₹46,000 INR)
       const res = await fetch('/api/razorpay/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -249,11 +249,11 @@ export default function RegisterFlowModal({
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-600 font-medium">Program Fee:</span>
-                <span className="font-extrabold text-slate-900 text-lg">₹22,000 <span className="text-xs font-normal text-slate-500">INR</span></span>
+                <span className="font-extrabold text-slate-900 text-lg">₹46,000 <span className="text-xs font-normal text-slate-500">INR</span></span>
               </div>
               <div className="flex justify-between items-center text-xs text-slate-500 border-t border-slate-200/60 pt-2 font-medium">
                 <span>Access Duration:</span>
-                <span className="text-blue-700 font-bold">Lifetime + Weekend Live Classes</span>
+                <span className="text-blue-700 font-bold">4-Wk Cohort + 2-Day Campus Stay</span>
               </div>
             </div>
 
@@ -262,7 +262,7 @@ export default function RegisterFlowModal({
                 Step 1: Authenticate with Google
               </p>
               <p className="text-xs text-slate-600 leading-relaxed">
-                To link your institutional student portal credentials and unlocked assessments, please sign in with your Google account.
+                To link your institutional student portal credentials, campus immersion pass, and unlocked assessments, please sign in with your Google account.
               </p>
 
               {errorMessage && (
@@ -318,10 +318,10 @@ export default function RegisterFlowModal({
             <div className="space-y-2 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-600 font-medium">Total Enrollment:</span>
-                <span className="text-2xl font-extrabold text-slate-900">₹22,000</span>
+                <span className="text-2xl font-extrabold text-slate-900">₹46,000</span>
               </div>
-              <p className="text-xs text-slate-500">
-                Includes Weekend Live Classes, Order Flow Engine, Assessment Certifications, and Discord Alpha Desk access.
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Includes 4-Week Masterclass, Mandatory 2-Day Live Campus Immersion (Breakfast, Lunch, Dinner & Accommodation Fully Provided), Order Flow Engine, Assessments, and Discord Alpha Desk access.
               </p>
             </div>
 
@@ -339,7 +339,7 @@ export default function RegisterFlowModal({
               className="btn-interactive w-full min-h-[52px] flex items-center justify-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-base shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
             >
               <CreditCard className="h-5 w-5" />
-              <span>Proceed to Razorpay Checkout (₹22,000)</span>
+              <span>Proceed to Razorpay Checkout (₹46,000)</span>
               <ArrowRight className="h-5 w-5" />
             </button>
           </div>
