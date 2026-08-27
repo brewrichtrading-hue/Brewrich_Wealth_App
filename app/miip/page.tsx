@@ -916,6 +916,73 @@ function MipContent() {
             ))}
           </div>
 
+          {/* CAMPUS IMMERSION & ALL-INCLUSIVE PERKS CARDS */}
+          <div className="mt-16 pt-12 border-t border-slate-200/80">
+            <div className="text-center mb-10 space-y-2">
+              <span className="px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold uppercase tracking-widest inline-block">
+                🏨 All-Inclusive Physical Immersion Experience
+              </span>
+              <h3 className="text-2xl md:text-3xl font-extrabold text-slate-900 mt-3">
+                What&apos;s Included in Your Campus Experience
+              </h3>
+              <p className="text-slate-600 text-sm max-w-xl mx-auto mt-1">
+                Every detail is meticulously planned so you can focus 100% on mastering institutional quantitative strategies.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              
+              {/* Card 1: Immersion Duration */}
+              <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 hover:border-blue-500/50 transition-all shadow-xl group">
+                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                  🏛️
+                </div>
+                <div className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1">Mandatory Immersion</div>
+                <h4 className="text-lg font-bold text-white mb-2">2 Days Live Campus</h4>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  Intensive face-to-face mentorship, live order flow execution, and networking with elite traders.
+                </p>
+              </div>
+
+              {/* Card 2: Accommodation */}
+              <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 transition-all shadow-xl group">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                  🛏️
+                </div>
+                <div className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1">Stay Included</div>
+                <h4 className="text-lg font-bold text-white mb-2">Full Accommodation</h4>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  Comfortable, premium stay provided for the duration of the 2-day live campus program.
+                </p>
+              </div>
+
+              {/* Card 3: Dining / Food */}
+              <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 transition-all shadow-xl group">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                  🍽️
+                </div>
+                <div className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">All Meals Provided</div>
+                <h4 className="text-lg font-bold text-white mb-2">Breakfast, Lunch & Dinner</h4>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  Fully catered gourmet meals, refreshments, and high-tea provided throughout both immersion days.
+                </p>
+              </div>
+
+              {/* Card 4: Program Duration */}
+              <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 hover:border-purple-500/50 transition-all shadow-xl group">
+                <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                  📈
+                </div>
+                <div className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-1">Complete Curriculum</div>
+                <h4 className="text-lg font-bold text-white mb-2">4-Week Program</h4>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  Blended structure combining structured weekend live sessions, portal access, and the live immersion.
+                </p>
+              </div>
+
+            </div>
+          </div>
+
         </div>
       </section>
 
