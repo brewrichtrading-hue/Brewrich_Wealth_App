@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import RegisterFlowModal from '@/components/RegisterFlowModal';
+import BrokerageSavingsSection from '@/components/BrokerageSavingsSection';
 import {
   Sparkles,
   ShieldCheck,
@@ -1463,6 +1464,11 @@ function MipContent() {
 
         </div>
       </section>
+
+      {/* ========================================================================= */}
+      {/* 9.5. BROKERAGE SAVINGS ADVANTAGE (EQUITY DELIVERY ZERO BROKERAGE) */}
+      {/* ========================================================================= */}
+      <BrokerageSavingsSection />
 
       {/* ========================================================================= */}
       {/* 10. BOTTOM PRICING, LIVE SCARCITY TRACKER & REGISTRATION CARD */}
