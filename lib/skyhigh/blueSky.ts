@@ -1,14 +1,20 @@
 /**
- * BREWRICH SKY HIGH - BLUE SKY STRATEGY ENGINE (MILESTONE 4)
+ * BREWRICH SKY HIGH - BANANAPATTERNS BLUE SKY STRATEGY ENGINE
  * 
- * Quantitative momentum and breakout screening engine operating exclusively
- * on verified records from public.skyhigh_market_data in Supabase.
- * 
- * Complies with strict Zero-Mock and Data-Integrity principles:
- * - Operates entirely on actual historical records.
- * - Distinguishes between 1-day and multi-day observation datasets.
- * - Uses explicitly declared, configurable parameters with documented defaults.
- * - No synthetic stocks, fabricated CAGR, or imaginary signals.
+ * Strict implementation of the approved BananaPatterns Blue Sky Specification:
+ * 1. Historical All-Time High (ATH): Maximum HIGH across complete available historical dataset.
+ * 2. Blue Sky Pivot: The historical ATH itself (pivot = ATH).
+ * 3. Pre-Breakout Candidate Proximity: Within 20% of pivot (distanceToPivot <= 20.0%).
+ * 4. Relative Strength Ranking (RS 1-99):
+ *    - TrailingReturn252 = (CurrentPrice / Price252SessionsAgo) - 1.
+ *    - Cross-sectional ranking: RS = 1 + 98 * (countLower / (N - 1)), clamped to 1-99.
+ *    - Mandatory filter: RS >= 70.
+ * 5. Breakout Trigger: Current Close > Pivot (strictly clearing the ATH ceiling).
+ * 6. Eligible Universe:
+ *    - Market Cap >= ₹500 Cr (marked DATA UNAVAILABLE if shares data absent, never fabricated).
+ *    - Average Daily Traded Value >= ₹5 Cr (daily turnover Close * Volume >= 50,000,000).
+ * 7. Base Detection: Explicitly exposed as UNRESOLVED (not fabricated).
+ * 8. Zero VCP, zero 252-day/52-week rolling high substitution, zero look-ahead bias.
  */
 
 import { createClient } from '@/lib/supabase/client';
@@ -18,30 +24,22 @@ import {
   BlueSkySummary, 
   BlueSkyEngineResult, 
   BreakoutStatus, 
-  BlueSkyStatus 
+  BlueSkyStatus,
+  BaseStatus
 } from './types';
 import { formatDisplayDate } from './normalizer';
 
 // ==============================================================================
-// 1. DEFAULT ENGINE CONFIGURATION
-// (Explicitly adjustable screening parameters — not hardcoded trading dogma)
+// 1. APPROVED BLUE SKY CONFIGURATION
 // ==============================================================================
 
 export const DEFAULT_BLUE_SKY_CONFIG: BlueSkyConfig = {
-  // Proximity percentage from highest high to qualify as active breakout (e.g. within 0.5%)
-  breakoutTolerancePercent: 0.5,
-
-  // Proximity percentage from highest high to qualify for the watchlist (e.g. within 3.0%)
-  watchlistProximityPercent: 3.0,
-
-  // Minimum volume threshold to filter out illiquid securities (e.g. 10,000 shares)
-  minVolume: 10000,
-
-  // Minimum stock price to filter out extreme micro-penny instruments (e.g. ₹10.00)
-  minPrice: 10.0,
-
-  // Standard equity series permitted for primary strategy execution
-  allowedSeries: ['EQ', 'BE', 'SM'],
+  proximityThresholdPercent: 20.0,    // Approved 20.0% candidate proximity to pivot
+  minRelativeStrength: 70,           // Approved mandatory RS >= 70 (scale 1-99)
+  minMarketCapCrores: 500,           // Approved ₹500 Cr Market Cap floor
+  minAvgDailyTradedValueCrores: 5,   // Approved ₹5 Cr Average Daily Traded Value floor
+  minTradingSessionsForRS: 252,      // Approved 252 trading sessions lookback for RS
+  allowedSeries: ['EQ', 'BE', 'SM'], // Standard NSE primary equity series
 };
 
 // ==============================================================================
@@ -102,18 +100,25 @@ export async function fetchAllMarketDataFromCloud(
 // 3. DETERMINISTIC BLUE SKY STRATEGY CALCULATION ENGINE
 // ==============================================================================
 
+export interface StrategyCalculationOptions {
+  evaluationDate?: string;               // Evaluation date cut-off (prevents look-ahead bias)
+  marketCapMap?: Record<string, number>; // Optional known market caps in ₹ Crores
+  companyMap?: Record<string, string>;   // Optional security company names
+}
+
 export function calculateBlueSkyStrategy(
   records: RawMarketRecord[],
-  config: BlueSkyConfig = DEFAULT_BLUE_SKY_CONFIG
+  config: BlueSkyConfig = DEFAULT_BLUE_SKY_CONFIG,
+  options?: StrategyCalculationOptions
 ): BlueSkyEngineResult {
   if (!records || records.length === 0) {
     return {
       summary: {
         tradingDate: '—',
         totalUniverse: 0,
-        qualifiedCount: 0,
-        watchlistCount: 0,
-        noSignalCount: 0,
+        breakoutCount: 0,
+        candidateCount: 0,
+        notQualifiedCount: 0,
         insufficientHistoryCount: 0,
         isSingleDayDataset: true,
         totalHistoricalDays: 0,
@@ -124,16 +129,40 @@ export function calculateBlueSkyStrategy(
     };
   }
 
-  // 1. Identify distinct historical dates
-  const distinctDates = Array.from(new Set(records.map(r => r.trading_date))).sort();
+  // 1. Apply Evaluation Date Filtering (Data-history awareness — NO look-ahead bias)
+  const evalDate = options?.evaluationDate;
+  const filteredRecords = evalDate
+    ? records.filter(r => r.trading_date <= evalDate)
+    : records;
+
+  if (filteredRecords.length === 0) {
+    return {
+      summary: {
+        tradingDate: evalDate || '—',
+        totalUniverse: 0,
+        breakoutCount: 0,
+        candidateCount: 0,
+        notQualifiedCount: 0,
+        insufficientHistoryCount: 0,
+        isSingleDayDataset: true,
+        totalHistoricalDays: 0,
+        calculatedAt: new Date().toLocaleString('en-IN'),
+      },
+      securities: [],
+      config,
+    };
+  }
+
+  // 2. Identify distinct trading dates up to evaluation date
+  const distinctDates = Array.from(new Set(filteredRecords.map(r => r.trading_date))).sort();
   const totalHistoricalDays = distinctDates.length;
   const isSingleDayDataset = totalHistoricalDays <= 1;
   const latestDateIso = distinctDates[distinctDates.length - 1];
   const displayTradingDate = formatDisplayDate(latestDateIso);
 
-  // 2. Group records by security symbol
+  // 3. Group records by security symbol
   const bySymbol: Record<string, RawMarketRecord[]> = {};
-  for (const r of records) {
+  for (const r of filteredRecords) {
     const sym = r.symbol.trim().toUpperCase();
     if (!bySymbol[sym]) {
       bySymbol[sym] = [];
@@ -141,20 +170,40 @@ export function calculateBlueSkyStrategy(
     bySymbol[sym].push(r);
   }
 
-  const rawMetricsList: SecurityHistoricalMetrics[] = [];
   const symbols = Object.keys(bySymbol);
 
-  let qualifiedCount = 0;
-  let watchlistCount = 0;
-  let noSignalCount = 0;
-  let insufficientHistoryCount = 0;
+  // Intermediate candidate metrics per symbol
+  interface IntermediateMetrics {
+    symbol: string;
+    company?: string;
+    series?: string;
+    evaluationDate: string;
+    latestClose: number;
+    latestOpen: number;
+    latestHigh: number;
+    latestLow: number;
+    latestVolume: number;
+    allTimeHigh: number;
+    pivot: number;
+    distanceToPivotPercent: number;
+    trailingReturn252: number | null;
+    marketCapCrores: number | null;
+    avgDailyTradedValueCrores: number;
+    totalSessionsAvailable: number;
+    isSeriesAllowed: boolean;
+    isLiquid: boolean;
+    isMarketCapValid: boolean | 'UNAVAILABLE';
+  }
 
-  // 3. Calculate per-security metrics
+  const intermediateList: IntermediateMetrics[] = [];
+
   for (const sym of symbols) {
     const history = bySymbol[sym];
+    // Sort strictly chronological ascending
     history.sort((a, b) => a.trading_date.localeCompare(b.trading_date));
 
-    const latest = history[history.length - 1];
+    const totalSessions = history.length;
+    const latest = history[totalSessions - 1];
     const latestClose = Number(latest.close);
     const latestOpen = Number(latest.open);
     const latestHigh = Number(latest.high);
@@ -162,147 +211,277 @@ export function calculateBlueSkyStrategy(
     const latestVolume = Number(latest.volume);
     const series = latest.series?.trim().toUpperCase() || undefined;
 
-    // Highest high & highest close across all available historical days
-    const historicalHighestHigh = Math.max(...history.map(h => Number(h.high)));
-    const historicalHighestClose = Math.max(...history.map(h => Number(h.close)));
+    // Rule 1 & Rule 3: ATH = maximum high across COMPLETE available history up to evaluationDate
+    // NOT rolling 252-day or 52-week
+    const allTimeHigh = Math.max(...history.map(h => Number(h.high)));
 
-    // Distance to high percentage: ((Highest High - Latest Close) / Highest High) * 100
-    const rawDistance = historicalHighestHigh > 0
-      ? ((historicalHighestHigh - latestClose) / historicalHighestHigh) * 100
+    // Rule 2: Blue Sky Pivot IS the Historical ATH ceiling to clear.
+    // If multiple sessions exist, the pivot ceiling being cleared/tested is the prior ATH
+    // (or allTimeHigh if price has not yet cleared it).
+    const priorHistory = history.slice(0, totalSessions - 1);
+    const priorAth = priorHistory.length > 0
+      ? Math.max(...priorHistory.map(h => Number(h.high)))
+      : allTimeHigh;
+
+    const pivot = (latestClose > priorAth && priorAth > 0) ? priorAth : allTimeHigh;
+
+    // Rule 5: 20% Proximity Rule: distanceToPivotPercent = ((pivot - latestClose) / pivot) * 100
+    // If latestClose > pivot (breakout), distance is 0.0%
+    const rawDistance = pivot > 0 && latestClose <= pivot
+      ? ((pivot - latestClose) / pivot) * 100
       : 0;
-    const distanceToHighPercent = Math.max(0, parseFloat(rawDistance.toFixed(2)));
+    const distanceToPivotPercent = Math.max(0, parseFloat(rawDistance.toFixed(2)));
 
-    // Multi-day momentum (requires >= 2 days of historical observations)
-    let recentMomentumPercent: number | null = null;
-    if (history.length >= 2) {
-      const priorClose = Number(history[history.length - 2].close);
+    // Rule 1 & 6: Eligible Universe & Average Daily Traded Value
+    // Average daily traded turnover (Close * Volume) in ₹ Crores
+    let totalTradedValue = 0;
+    for (const h of history) {
+      totalTradedValue += Number(h.close) * Number(h.volume);
+    }
+    const avgDailyTradedValueRupees = totalSessions > 0 ? totalTradedValue / totalSessions : 0;
+    const avgDailyTradedValueCrores = parseFloat((avgDailyTradedValueRupees / 10000000).toFixed(2));
+
+    // Rule 1: Market Cap
+    const marketCapCrores = options?.marketCapMap?.[sym] ?? null;
+    let isMarketCapValid: boolean | 'UNAVAILABLE' = 'UNAVAILABLE';
+    if (marketCapCrores !== null) {
+      isMarketCapValid = marketCapCrores >= config.minMarketCapCrores;
+    }
+
+    const isSeriesAllowed = !series || config.allowedSeries.includes(series);
+    const isLiquid = avgDailyTradedValueCrores >= config.minAvgDailyTradedValueCrores;
+
+    // Rule 2: Trailing 252-Session Return calculation
+    // TrailingReturn252 = (CurrentPrice / Price252SessionsAgo) - 1
+    let trailingReturn252: number | null = null;
+    if (totalSessions >= config.minTradingSessionsForRS) {
+      // Find session 252 sessions prior
+      const priorIndex = totalSessions - 1 - config.minTradingSessionsForRS;
+      const priorSession = history[Math.max(0, priorIndex)];
+      const priorClose = Number(priorSession.close);
       if (priorClose > 0) {
-        recentMomentumPercent = parseFloat((((latestClose - priorClose) / priorClose) * 100).toFixed(2));
+        trailingReturn252 = (latestClose / priorClose) - 1;
       }
     }
 
-    // Intraday return: ((Close - Open) / Open) * 100
-    const intradayReturnPercent = latestOpen > 0
-      ? parseFloat((((latestClose - latestOpen) / latestOpen) * 100).toFixed(2))
-      : 0;
+    const company = options?.companyMap?.[sym] || undefined;
 
-    // Determine Breakout Status
-    let breakoutStatus: BreakoutStatus = 'Below High';
-    if (distanceToHighPercent <= config.breakoutTolerancePercent) {
-      breakoutStatus = 'Breakout';
-    } else if (distanceToHighPercent <= config.watchlistProximityPercent) {
-      breakoutStatus = 'Near Breakout';
-    }
-
-    // Filter validations
-    const reasons: string[] = [];
-    const isAllowedSeries = !series || config.allowedSeries.includes(series);
-    if (!isAllowedSeries) {
-      reasons.push(`Series "${series}" not in allowed equity segments (${config.allowedSeries.join(', ')})`);
-    }
-
-    const isLiquid = latestVolume >= config.minVolume;
-    if (!isLiquid) {
-      reasons.push(`Volume (${latestVolume.toLocaleString('en-IN')}) below minimum (${config.minVolume.toLocaleString('en-IN')})`);
-    }
-
-    const isPriceValid = latestClose >= config.minPrice;
-    if (!isPriceValid) {
-      reasons.push(`Price (₹${latestClose}) below ₹${config.minPrice}`);
-    }
-
-    // Determine Final Blue Sky Qualification Status
-    let status: BlueSkyStatus = 'No Signal';
-
-    if (breakoutStatus === 'Breakout') {
-      if (isAllowedSeries && isLiquid && isPriceValid) {
-        status = 'Qualified';
-        reasons.push('Trading within breakout tolerance of historical high with verified volume.');
-        qualifiedCount++;
-      } else {
-        status = 'Watchlist';
-        watchlistCount++;
-      }
-    } else if (breakoutStatus === 'Near Breakout') {
-      if (isAllowedSeries && isLiquid && isPriceValid) {
-        status = 'Watchlist';
-        reasons.push('Within proximity of high (watchlist setup).');
-        watchlistCount++;
-      } else {
-        status = 'No Signal';
-        noSignalCount++;
-      }
-    } else {
-      status = 'No Signal';
-      noSignalCount++;
-    }
-
-    rawMetricsList.push({
+    intermediateList.push({
       symbol: sym,
+      company,
       series,
-      latestTradingDate: latest.trading_date,
+      evaluationDate: latest.trading_date,
       latestClose,
       latestOpen,
       latestHigh,
       latestLow,
       latestVolume,
-      historicalHighestClose,
-      historicalHighestHigh,
-      distanceToHighPercent,
-      recentMomentumPercent,
-      intradayReturnPercent,
-      tradingDaysCount: history.length,
-      breakoutStatus,
-      relativeStrengthPercentile: null, // Computed below across universe
-      status,
-      reasons,
+      allTimeHigh,
+      pivot,
+      distanceToPivotPercent,
+      trailingReturn252,
+      marketCapCrores,
+      avgDailyTradedValueCrores,
+      totalSessionsAvailable: totalSessions,
+      isSeriesAllowed,
+      isLiquid,
+      isMarketCapValid,
     });
   }
 
-  // 4. Calculate Universe Relative Strength Percentiles (0 to 100)
-  // Ranked by proximity to high (lowest distance to high gets highest RS percentile)
-  const sortedForRs = [...rawMetricsList].sort((a, b) => a.distanceToHighPercent - b.distanceToHighPercent);
-  const totalCount = sortedForRs.length;
+  // ==============================================================================
+  // 4. CROSS-SECTIONAL RELATIVE STRENGTH (RS) RANKING (1 TO 99)
+  // ==============================================================================
+  // Only stocks with at least 252 sessions participate in cross-sectional ranking
+  const rsEligible = intermediateList.filter(item => item.trailingReturn252 !== null);
+  const N = rsEligible.length;
 
-  for (let i = 0; i < totalCount; i++) {
-    // Percentile rank: top proximity = 99th-100th percentile
-    const percentile = Math.round(((totalCount - 1 - i) / (totalCount - 1 || 1)) * 100);
-    sortedForRs[i].relativeStrengthPercentile = percentile;
+  const rsScoreMap: Record<string, number> = {};
+
+  if (N > 0) {
+    // Extract all trailing returns
+    const allReturns = rsEligible.map(item => item.trailingReturn252 as number);
+
+    for (const item of rsEligible) {
+      const ret = item.trailingReturn252 as number;
+      // count of eligible stocks with lower trailing return
+      let countLower = 0;
+      for (const otherRet of allReturns) {
+        if (otherRet < ret) {
+          countLower++;
+        }
+      }
+
+      let score: number;
+      if (N === 1) {
+        score = 99;
+      } else {
+        // RS ≈ 1 + 98 * (countLower / (N - 1))
+        score = 1 + Math.round((98 * countLower) / (N - 1));
+      }
+
+      // Clamp between 1 and 99
+      rsScoreMap[item.symbol] = Math.min(99, Math.max(1, score));
+    }
   }
 
-  // 5. Sort final results: Qualified first, then Watchlist, then No Signal
+  // ==============================================================================
+  // 5. QUALIFICATION & BREAKOUT EVALUATION
+  // ==============================================================================
+  const finalSecurities: SecurityHistoricalMetrics[] = [];
+
+  let breakoutCount = 0;
+  let candidateCount = 0;
+  let notQualifiedCount = 0;
+  let insufficientHistoryCount = 0;
+
+  for (const item of intermediateList) {
+    const rs = rsScoreMap[item.symbol] ?? null;
+    const reasons: string[] = [];
+
+    // Eligible universe verification
+    const historyLengthPass = item.totalSessionsAvailable >= config.minTradingSessionsForRS;
+    if (!historyLengthPass) {
+      reasons.push(`Insufficient history: ${item.totalSessionsAvailable} sessions available (< ${config.minTradingSessionsForRS} required for RS ranking).`);
+    }
+
+    const liquidityPass = item.isLiquid;
+    if (!liquidityPass) {
+      reasons.push(`Average daily traded value (₹${item.avgDailyTradedValueCrores} Cr) below ₹${config.minAvgDailyTradedValueCrores} Cr floor.`);
+    }
+
+    const seriesPass = item.isSeriesAllowed;
+    if (!seriesPass) {
+      reasons.push(`Series "${item.series}" not in allowed equity segments (${config.allowedSeries.join(', ')}).`);
+    }
+
+    let marketCapPass = item.isMarketCapValid;
+    if (marketCapPass === false) {
+      reasons.push(`Market Cap (₹${item.marketCapCrores} Cr) below ₹${config.minMarketCapCrores} Cr floor.`);
+    } else if (marketCapPass === 'UNAVAILABLE') {
+      reasons.push('Market Cap data not present in daily OHLCV dataset (unresolved).');
+    }
+
+    const rsPass = rs !== null && rs >= config.minRelativeStrength;
+    if (rs !== null && !rsPass) {
+      reasons.push(`Relative Strength (${rs}) below mandatory threshold (${config.minRelativeStrength}).`);
+    }
+
+    // Breakout condition: Current Close > Pivot (clearing the pivot)
+    const isBreakout = item.latestClose > item.pivot;
+
+    // Candidate proximity condition: within 20% of pivot
+    const isWithin20Percent = item.distanceToPivotPercent <= config.proximityThresholdPercent;
+
+    let breakoutStatus: BreakoutStatus;
+    if (isBreakout) {
+      breakoutStatus = 'Breakout';
+    } else if (isWithin20Percent) {
+      breakoutStatus = 'Within 20% Pivot';
+    } else {
+      breakoutStatus = 'Below Pivot (>20%)';
+      reasons.push(`Distance to pivot (${item.distanceToPivotPercent}%) exceeds 20.0% candidate window.`);
+    }
+
+    // Base detection status is explicitly exposed as UNRESOLVED
+    const baseStatus: BaseStatus = 'UNRESOLVED (Conceptual Requirement)';
+
+    // Overall Blue Sky status
+    let status: BlueSkyStatus;
+
+    const passesUniverseAndLiquidity = seriesPass && liquidityPass && marketCapPass !== false;
+
+    if (!historyLengthPass) {
+      status = 'INSUFFICIENT HISTORY';
+      insufficientHistoryCount++;
+    } else if (isBreakout && rsPass && passesUniverseAndLiquidity) {
+      status = 'BLUE SKY BREAKOUT';
+      reasons.push('Price cleared the All-Time High pivot with Relative Strength >= 70.');
+      breakoutCount++;
+    } else if (isWithin20Percent && rsPass && passesUniverseAndLiquidity) {
+      status = 'BLUE SKY CANDIDATE';
+      reasons.push('Within 20% candidate proximity of ATH pivot with Relative Strength >= 70.');
+      candidateCount++;
+    } else {
+      status = 'NOT QUALIFIED';
+      notQualifiedCount++;
+    }
+
+    finalSecurities.push({
+      symbol: item.symbol,
+      company: item.company,
+      series: item.series,
+      evaluationDate: item.evaluationDate,
+      latestClose: item.latestClose,
+      latestOpen: item.latestOpen,
+      latestHigh: item.latestHigh,
+      latestLow: item.latestLow,
+      latestVolume: item.latestVolume,
+      allTimeHigh: item.allTimeHigh,
+      pivot: item.pivot,
+      distanceToPivotPercent: item.distanceToPivotPercent,
+      trailingReturn252: item.trailingReturn252 !== null ? parseFloat((item.trailingReturn252 * 100).toFixed(2)) : null,
+      relativeStrengthScore: rs,
+      marketCapCrores: item.marketCapCrores,
+      avgDailyTradedValueCrores: item.avgDailyTradedValueCrores,
+      totalSessionsAvailable: item.totalSessionsAvailable,
+      baseStatus,
+      breakoutStatus,
+      status,
+      reasons,
+      eligibility: {
+        marketCapPass,
+        liquidityPass,
+        historyLengthPass,
+        rsPass,
+        proximityPass: isWithin20Percent,
+        breakoutPass: isBreakout,
+      },
+    });
+  }
+
+  // ==============================================================================
+  // 6. SORT RESULTS DETERMINISTICALLY
+  // ==============================================================================
+  // Priority: BLUE SKY BREAKOUT -> BLUE SKY CANDIDATE -> NOT QUALIFIED -> INSUFFICIENT HISTORY
   const statusPriority: Record<BlueSkyStatus, number> = {
-    'Qualified': 1,
-    'Watchlist': 2,
-    'Insufficient History': 3,
-    'No Signal': 4,
+    'BLUE SKY BREAKOUT': 1,
+    'BLUE SKY CANDIDATE': 2,
+    'NOT QUALIFIED': 3,
+    'INSUFFICIENT HISTORY': 4,
   };
 
-  rawMetricsList.sort((a, b) => {
+  finalSecurities.sort((a, b) => {
     if (statusPriority[a.status] !== statusPriority[b.status]) {
       return statusPriority[a.status] - statusPriority[b.status];
     }
-    // Secondary sort: closest distance to high first
-    if (a.distanceToHighPercent !== b.distanceToHighPercent) {
-      return a.distanceToHighPercent - b.distanceToHighPercent;
+    // Secondary sort: highest RS first
+    const rsA = a.relativeStrengthScore ?? -1;
+    const rsB = b.relativeStrengthScore ?? -1;
+    if (rsA !== rsB) {
+      return rsB - rsA;
     }
-    // Tertiary sort: highest volume first
-    return b.latestVolume - a.latestVolume;
+    // Tertiary sort: closest distance to pivot first
+    if (a.distanceToPivotPercent !== b.distanceToPivotPercent) {
+      return a.distanceToPivotPercent - b.distanceToPivotPercent;
+    }
+    // Quaternary sort: highest average daily turnover
+    return b.avgDailyTradedValueCrores - a.avgDailyTradedValueCrores;
   });
 
   return {
     summary: {
       tradingDate: displayTradingDate,
       totalUniverse: symbols.length,
-      qualifiedCount,
-      watchlistCount,
-      noSignalCount,
+      breakoutCount,
+      candidateCount,
+      notQualifiedCount,
       insufficientHistoryCount,
       isSingleDayDataset,
       totalHistoricalDays,
       calculatedAt: new Date().toLocaleString('en-IN'),
     },
-    securities: rawMetricsList,
+    securities: finalSecurities,
     config,
   };
 }

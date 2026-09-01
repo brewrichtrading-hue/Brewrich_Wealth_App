@@ -67,47 +67,79 @@ export interface CloudVerificationResult {
 }
 
 // ==============================================================================
-// MILESTONE 4: BLUE SKY STRATEGY ENGINE TYPES
+// MILESTONE 4: APPROVED BANANAPATTERNS BLUE SKY STRATEGY TYPES
 // ==============================================================================
 
-export type BlueSkyStatus = 'Qualified' | 'Watchlist' | 'No Signal' | 'Insufficient History';
-export type BreakoutStatus = 'Breakout' | 'Near Breakout' | 'Below High';
+export type BlueSkyStatus = 
+  | 'BLUE SKY BREAKOUT' 
+  | 'BLUE SKY CANDIDATE' 
+  | 'NOT QUALIFIED' 
+  | 'INSUFFICIENT HISTORY';
+
+export type BreakoutStatus = 
+  | 'Breakout'          // Current Close > Pivot
+  | 'Within 20% Pivot'  // distanceToPivot <= 20% and Close <= Pivot
+  | 'Below Pivot (>20%)'; // distanceToPivot > 20%
+
+export type BaseStatus = 'UNRESOLVED (Conceptual Requirement)';
 
 export interface BlueSkyConfig {
-  breakoutTolerancePercent: number; // e.g. 0.5% (close within 0.5% of high considered at breakout level)
-  watchlistProximityPercent: number; // e.g. 3.0% (close within 3.0% considered near breakout)
-  minVolume: number; // e.g. 10,000 shares
-  minPrice: number; // e.g. ₹10.00
-  allowedSeries: string[]; // e.g. ['EQ', 'BE', 'SM']
+  proximityThresholdPercent: number;    // approved 20.0%
+  minRelativeStrength: number;          // approved 70 (RS 70-99)
+  minMarketCapCrores: number;           // approved ₹500 Cr
+  minAvgDailyTradedValueCrores: number; // approved ₹5 Cr daily traded value
+  minTradingSessionsForRS: number;      // approved 252 trading sessions
+  allowedSeries: string[];              // ['EQ', 'BE', 'SM']
 }
 
 export interface SecurityHistoricalMetrics {
   symbol: string;
+  company?: string;
   series?: string;
-  latestTradingDate: string;
+  evaluationDate: string;
   latestClose: number;
   latestOpen: number;
   latestHigh: number;
   latestLow: number;
   latestVolume: number;
-  historicalHighestClose: number;
-  historicalHighestHigh: number;
-  distanceToHighPercent: number; // ((high - close) / high) * 100
-  recentMomentumPercent: number | null; // null if only 1 day available
-  intradayReturnPercent: number; // ((close - open) / open) * 100
-  tradingDaysCount: number;
+  
+  // ATH & Pivot (Pivot is the Historical ATH itself)
+  allTimeHigh: number;                  // Maximum high observed in complete available history up to evaluationDate
+  pivot: number;                        // Historical All-Time High itself
+  distanceToPivotPercent: number;       // ((pivot - latestClose) / pivot) * 100 for close <= pivot, 0 if close > pivot
+  
+  // Relative Strength Ranking (1-99 from 252-session Trailing Return)
+  trailingReturn252: number | null;     // (CurrentPrice / Price252SessionsAgo) - 1
+  relativeStrengthScore: number | null; // 1 to 99 integer percentile rank across universe
+  
+  // Eligible Universe / Liquidity
+  marketCapCrores: number | null;       // null / DATA UNAVAILABLE if not present in dataset
+  avgDailyTradedValueCrores: number;    // Average daily traded turnover (Close * Volume) in ₹ Crores
+  totalSessionsAvailable: number;       // Count of historical trading sessions available up to evaluationDate
+  
+  // Statuses
+  baseStatus: BaseStatus;               // Explicitly exposed as UNRESOLVED
   breakoutStatus: BreakoutStatus;
-  relativeStrengthPercentile: number | null; // 0 - 100 percentile rank vs universe
   status: BlueSkyStatus;
+  
+  // Explainability & Gate Details
   reasons: string[];
+  eligibility: {
+    marketCapPass: boolean | 'UNAVAILABLE';
+    liquidityPass: boolean;
+    historyLengthPass: boolean;
+    rsPass: boolean;
+    proximityPass: boolean;
+    breakoutPass: boolean;
+  };
 }
 
 export interface BlueSkySummary {
   tradingDate: string;
   totalUniverse: number;
-  qualifiedCount: number;
-  watchlistCount: number;
-  noSignalCount: number;
+  breakoutCount: number;
+  candidateCount: number;
+  notQualifiedCount: number;
   insufficientHistoryCount: number;
   isSingleDayDataset: boolean;
   totalHistoricalDays: number;

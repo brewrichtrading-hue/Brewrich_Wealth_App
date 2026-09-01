@@ -19,7 +19,8 @@ import {
   ShieldCheck,
   Zap,
   Eye,
-  XCircle
+  XCircle,
+  HelpCircle
 } from 'lucide-react';
 import { 
   fetchAllMarketDataFromCloud, 
@@ -70,9 +71,9 @@ export default function SkyHighBlueSky({ onRefreshNeeded }: SkyHighBlueSkyProps)
           summary: {
             tradingDate: '—',
             totalUniverse: 0,
-            qualifiedCount: 0,
-            watchlistCount: 0,
-            noSignalCount: 0,
+            breakoutCount: 0,
+            candidateCount: 0,
+            notQualifiedCount: 0,
             insufficientHistoryCount: 0,
             isSingleDayDataset: true,
             totalHistoricalDays: 0,
@@ -148,7 +149,7 @@ export default function SkyHighBlueSky({ onRefreshNeeded }: SkyHighBlueSkyProps)
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-bold text-xs uppercase tracking-wider">
                 <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                Milestone 4 Strategy Engine
+                BananaPatterns Blue Sky Strategy Engine
               </div>
               
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-xs">
@@ -161,7 +162,7 @@ export default function SkyHighBlueSky({ onRefreshNeeded }: SkyHighBlueSkyProps)
               BLUE SKY STRATEGY
             </h3>
             <p className="text-sm text-slate-500 mt-1">
-              Quantitative breakout screener evaluating all-time high proximity and universe relative strength.
+              Screening stocks basing at all-time high with Relative Strength (1–99) and 20% pivot proximity.
             </p>
           </div>
 
@@ -175,7 +176,7 @@ export default function SkyHighBlueSky({ onRefreshNeeded }: SkyHighBlueSkyProps)
               }`}
             >
               <Sliders className="w-3.5 h-3.5" />
-              <span>{showConfig ? 'Hide Config' : 'Engine Config'}</span>
+              <span>{showConfig ? 'Hide Config' : 'Engine Rules'}</span>
             </button>
 
             <button
@@ -189,61 +190,59 @@ export default function SkyHighBlueSky({ onRefreshNeeded }: SkyHighBlueSkyProps)
           </div>
         </div>
 
-        {/* CONFIGURATION PANEL (EXPLICIT CONFIGURATION DISCLOSURE) */}
+        {/* CONFIGURATION & SPECIFICATION PANEL */}
         {showConfig && (
           <div className="my-6 p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Sliders className="w-4 h-4 text-blue-600" />
-                  Engine Screening Parameters (Configuration Defaults)
-                </h4>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  These adjustable parameters define proximity thresholds and liquidity filters. They represent configurable engine logic, not hardcoded dogma.
-                </p>
-              </div>
+            <div>
+              <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-blue-600" />
+                Approved BananaPatterns Blue Sky Specification
+              </h4>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Core rules operating on complete historical prices without rolling 252-day ATH limits or VCP logic.
+              </p>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
               <div className="p-3 bg-white rounded-xl border border-slate-200">
-                <span className="text-[11px] font-semibold text-slate-400 block">Breakout Proximity</span>
-                <span className="text-sm font-bold text-slate-800">≤ {config.breakoutTolerancePercent}%</span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">Distance to high</span>
+                <span className="text-[11px] font-semibold text-slate-400 block">Candidate Proximity</span>
+                <span className="text-sm font-bold text-slate-800">≤ {config.proximityThresholdPercent}%</span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Distance to ATH Pivot</span>
               </div>
               <div className="p-3 bg-white rounded-xl border border-slate-200">
-                <span className="text-[11px] font-semibold text-slate-400 block">Watchlist Proximity</span>
-                <span className="text-sm font-bold text-slate-800">≤ {config.watchlistProximityPercent}%</span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">Near breakout level</span>
+                <span className="text-[11px] font-semibold text-slate-400 block">Relative Strength (RS)</span>
+                <span className="text-sm font-bold text-emerald-700">≥ {config.minRelativeStrength} (1–99)</span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">252-session Trailing Return</span>
               </div>
               <div className="p-3 bg-white rounded-xl border border-slate-200">
-                <span className="text-[11px] font-semibold text-slate-400 block">Min Volume</span>
-                <span className="text-sm font-bold text-slate-800">{config.minVolume.toLocaleString('en-IN')} shares</span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">Liquidity filter</span>
+                <span className="text-[11px] font-semibold text-slate-400 block">Min Daily Traded Value</span>
+                <span className="text-sm font-bold text-slate-800">≥ ₹{config.minAvgDailyTradedValueCrores} Cr</span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Average Daily Turnover</span>
               </div>
               <div className="p-3 bg-white rounded-xl border border-slate-200">
-                <span className="text-[11px] font-semibold text-slate-400 block">Min Stock Price</span>
-                <span className="text-sm font-bold text-slate-800">₹{config.minPrice.toFixed(2)}</span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">Micro-penny filter</span>
+                <span className="text-[11px] font-semibold text-slate-400 block">Min Market Cap</span>
+                <span className="text-sm font-bold text-slate-800">≥ ₹{config.minMarketCapCrores} Cr</span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Pending Shares Feed</span>
               </div>
               <div className="p-3 bg-white rounded-xl border border-slate-200">
-                <span className="text-[11px] font-semibold text-slate-400 block">Allowed Series</span>
-                <span className="text-sm font-bold text-slate-800">{config.allowedSeries.join(', ')}</span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">Equity segments</span>
+                <span className="text-[11px] font-semibold text-slate-400 block">Breakout Condition</span>
+                <span className="text-sm font-bold text-blue-700">Close &gt; Pivot</span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Clears ATH Ceiling</span>
               </div>
             </div>
           </div>
         )}
 
-        {/* HONEST DATASET NOTICE FOR SINGLE-DAY / LIMITED DATASETS */}
+        {/* DATASET AWARENESS NOTICE */}
         {engineResult && engineResult.summary.isSingleDayDataset && (
           <div className="my-6 p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-900 text-xs sm:text-sm flex items-start gap-3">
             <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="space-y-1">
               <span className="font-bold text-amber-950 block">
-                Single-Day Observation Notice ({engineResult.summary.tradingDate})
+                Historical Dataset Notice ({engineResult.summary.tradingDate})
               </span>
               <p className="text-xs text-amber-800 leading-relaxed">
-                The current cloud repository contains 1 trading day. Multi-day rate-of-change momentum will automatically unlock as subsequent NSE Bhavcopies are uploaded. Calculations currently evaluate intraday high breakouts and universe relative strength percentiles against all {engineResult.summary.totalUniverse.toLocaleString('en-IN')} securities.
+                The current repository contains {engineResult.summary.totalHistoricalDays} trading session(s). The 252-session Trailing Return for Relative Strength ranking (RS 1–99) requires at least 252 trading sessions. Stocks with fewer than 252 sessions are accurately marked as <span className="font-bold font-mono">INSUFFICIENT HISTORY</span> without synthetic data generation.
               </p>
             </div>
           </div>
@@ -281,54 +280,54 @@ export default function SkyHighBlueSky({ onRefreshNeeded }: SkyHighBlueSkyProps)
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
                 <div className="flex items-center gap-1.5 text-slate-400 text-xs font-semibold mb-1">
                   <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                  Latest Trading Date
+                  Evaluation Date
                 </div>
                 <div className="text-lg font-bold text-slate-900 truncate">
                   {engineResult.summary.tradingDate}
                 </div>
               </div>
 
-              {/* Universe */}
+              {/* Total Universe */}
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
                 <div className="flex items-center gap-1.5 text-slate-400 text-xs font-semibold mb-1">
                   <Layers className="w-3.5 h-3.5 text-blue-600" />
-                  Universe
+                  Total Universe
                 </div>
                 <div className="text-lg font-bold text-slate-900">
                   {engineResult.summary.totalUniverse.toLocaleString('en-IN')}
                 </div>
               </div>
 
-              {/* Qualified */}
+              {/* Breakout Count */}
+              <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200">
+                <div className="flex items-center gap-1.5 text-blue-800 text-xs font-bold mb-1">
+                  <Zap className="w-3.5 h-3.5 text-blue-600" />
+                  Blue Sky Breakout
+                </div>
+                <div className="text-xl font-extrabold text-blue-900">
+                  {engineResult.summary.breakoutCount.toLocaleString('en-IN')}
+                </div>
+              </div>
+
+              {/* Candidate Count */}
               <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200">
                 <div className="flex items-center gap-1.5 text-emerald-800 text-xs font-bold mb-1">
-                  <Zap className="w-3.5 h-3.5 text-emerald-600" />
-                  Qualified
+                  <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                  Blue Sky Candidate
                 </div>
                 <div className="text-xl font-extrabold text-emerald-900">
-                  {engineResult.summary.qualifiedCount.toLocaleString('en-IN')}
+                  {engineResult.summary.candidateCount.toLocaleString('en-IN')}
                 </div>
               </div>
 
-              {/* Watchlist */}
-              <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200">
-                <div className="flex items-center gap-1.5 text-amber-800 text-xs font-bold mb-1">
-                  <Eye className="w-3.5 h-3.5 text-amber-600" />
-                  Watchlist
-                </div>
-                <div className="text-xl font-extrabold text-amber-900">
-                  {engineResult.summary.watchlistCount.toLocaleString('en-IN')}
-                </div>
-              </div>
-
-              {/* No Signal */}
+              {/* Not Qualified / Insufficient History */}
               <div className="col-span-2 sm:col-span-1 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
                 <div className="flex items-center gap-1.5 text-slate-400 text-xs font-semibold mb-1">
                   <XCircle className="w-3.5 h-3.5 text-slate-500" />
-                  No Signal
+                  Other / Unqualified
                 </div>
                 <div className="text-lg font-bold text-slate-700">
-                  {engineResult.summary.noSignalCount.toLocaleString('en-IN')}
+                  {(engineResult.summary.notQualifiedCount + engineResult.summary.insufficientHistoryCount).toLocaleString('en-IN')}
                 </div>
               </div>
 
@@ -355,35 +354,47 @@ export default function SkyHighBlueSky({ onRefreshNeeded }: SkyHighBlueSkyProps)
                   All ({engineResult.summary.totalUniverse.toLocaleString('en-IN')})
                 </button>
                 <button
-                  onClick={() => { setStatusFilter('Qualified'); setCurrentPage(1); }}
+                  onClick={() => { setStatusFilter('BLUE SKY BREAKOUT'); setCurrentPage(1); }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    statusFilter === 'Qualified'
+                    statusFilter === 'BLUE SKY BREAKOUT'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-blue-800 hover:bg-blue-50'
+                  }`}
+                >
+                  Breakout ({engineResult.summary.breakoutCount.toLocaleString('en-IN')})
+                </button>
+                <button
+                  onClick={() => { setStatusFilter('BLUE SKY CANDIDATE'); setCurrentPage(1); }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    statusFilter === 'BLUE SKY CANDIDATE'
                       ? 'bg-emerald-600 text-white shadow-sm'
                       : 'text-emerald-800 hover:bg-emerald-50'
                   }`}
                 >
-                  Qualified ({engineResult.summary.qualifiedCount.toLocaleString('en-IN')})
+                  Candidate ({engineResult.summary.candidateCount.toLocaleString('en-IN')})
                 </button>
                 <button
-                  onClick={() => { setStatusFilter('Watchlist'); setCurrentPage(1); }}
+                  onClick={() => { setStatusFilter('NOT QUALIFIED'); setCurrentPage(1); }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    statusFilter === 'Watchlist'
-                      ? 'bg-amber-500 text-white shadow-sm'
-                      : 'text-amber-800 hover:bg-amber-50'
-                  }`}
-                >
-                  Watchlist ({engineResult.summary.watchlistCount.toLocaleString('en-IN')})
-                </button>
-                <button
-                  onClick={() => { setStatusFilter('No Signal'); setCurrentPage(1); }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    statusFilter === 'No Signal'
+                    statusFilter === 'NOT QUALIFIED'
                       ? 'bg-slate-700 text-white shadow-sm'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  No Signal ({engineResult.summary.noSignalCount.toLocaleString('en-IN')})
+                  Not Qualified ({engineResult.summary.notQualifiedCount.toLocaleString('en-IN')})
                 </button>
+                {engineResult.summary.insufficientHistoryCount > 0 && (
+                  <button
+                    onClick={() => { setStatusFilter('INSUFFICIENT HISTORY'); setCurrentPage(1); }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      statusFilter === 'INSUFFICIENT HISTORY'
+                        ? 'bg-amber-600 text-white shadow-sm'
+                        : 'text-amber-800 hover:bg-amber-50'
+                    }`}
+                  >
+                    &lt; 252d ({engineResult.summary.insufficientHistoryCount.toLocaleString('en-IN')})
+                  </button>
+                )}
               </div>
 
               {/* Search & Series Dropdown */}
@@ -434,34 +445,31 @@ export default function SkyHighBlueSky({ onRefreshNeeded }: SkyHighBlueSkyProps)
                 <thead className="bg-slate-100/90 text-slate-600 font-semibold border-b border-slate-200">
                   <tr>
                     <th className="p-3">Symbol</th>
-                    <th className="p-3">Series</th>
                     <th className="p-3 text-right">Latest Close</th>
-                    <th className="p-3 text-right">Historical High</th>
-                    <th className="p-3 text-right">Distance to High</th>
-                    <th className="p-3 text-right">Momentum</th>
-                    <th className="p-3 text-center">Breakout</th>
-                    <th className="p-3 text-center">Relative Strength</th>
+                    <th className="p-3 text-right">All-Time High (ATH)</th>
+                    <th className="p-3 text-right">Blue Sky Pivot</th>
+                    <th className="p-3 text-right">Distance to Pivot %</th>
+                    <th className="p-3 text-center">RS Score (1–99)</th>
+                    <th className="p-3 text-right">Avg Daily Traded Value</th>
+                    <th className="p-3 text-center">Market Cap</th>
+                    <th className="p-3 text-center">Base Status</th>
+                    <th className="p-3 text-center">Breakout Status</th>
                     <th className="p-3 text-center">Blue Sky Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
                   {paginatedSecurities.map((sec) => {
-                    const isQualified = sec.status === 'Qualified';
-                    const isWatchlist = sec.status === 'Watchlist';
+                    const isBreakout = sec.status === 'BLUE SKY BREAKOUT';
+                    const isCandidate = sec.status === 'BLUE SKY CANDIDATE';
+                    const isInsufficient = sec.status === 'INSUFFICIENT HISTORY';
 
                     return (
                       <tr key={sec.symbol} className="hover:bg-slate-50/80 transition-colors">
                         
                         {/* Symbol */}
-                        <td className="p-3 font-bold text-slate-900">
-                          {sec.symbol}
-                        </td>
-
-                        {/* Series */}
                         <td className="p-3">
-                          <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-mono text-[10px] font-semibold">
-                            {sec.series || '—'}
-                          </span>
+                          <div className="font-bold text-slate-900">{sec.symbol}</div>
+                          <div className="text-[10px] text-slate-400 font-mono">{sec.series || 'EQ'}</div>
                         </td>
 
                         {/* Latest Close */}
@@ -469,77 +477,96 @@ export default function SkyHighBlueSky({ onRefreshNeeded }: SkyHighBlueSkyProps)
                           ₹{sec.latestClose.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
 
-                        {/* Historical High */}
+                        {/* Historical All-Time High */}
                         <td className="p-3 text-right font-mono text-slate-600">
-                          ₹{sec.historicalHighestHigh.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ₹{sec.allTimeHigh.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
 
-                        {/* Distance to High */}
+                        {/* Blue Sky Pivot */}
+                        <td className="p-3 text-right font-mono font-semibold text-blue-700">
+                          ₹{sec.pivot.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </td>
+
+                        {/* Distance to Pivot % */}
                         <td className="p-3 text-right font-mono font-semibold">
                           <span className={`${
-                            sec.distanceToHighPercent === 0 
+                            sec.distanceToPivotPercent === 0 
                               ? 'text-emerald-700 font-bold' 
-                              : sec.distanceToHighPercent <= 3.0 
-                                ? 'text-amber-700 font-semibold' 
-                                : 'text-slate-600'
+                              : sec.distanceToPivotPercent <= 20.0 
+                                ? 'text-blue-700 font-semibold' 
+                                : 'text-slate-500'
                           }`}>
-                            {sec.distanceToHighPercent === 0 ? '0.00% (At High)' : `-${sec.distanceToHighPercent.toFixed(2)}%`}
+                            {sec.distanceToPivotPercent === 0 ? '0.00% (At Pivot)' : `-${sec.distanceToPivotPercent.toFixed(2)}%`}
                           </span>
                         </td>
 
-                        {/* Momentum */}
-                        <td className="p-3 text-right font-mono">
-                          {sec.recentMomentumPercent !== null ? (
-                            <span className={sec.recentMomentumPercent >= 0 ? 'text-emerald-700 font-semibold' : 'text-rose-700'}>
-                              {sec.recentMomentumPercent >= 0 ? '+' : ''}{sec.recentMomentumPercent.toFixed(2)}%
+                        {/* Relative Strength Score (1-99) */}
+                        <td className="p-3 text-center font-mono">
+                          {sec.relativeStrengthScore !== null ? (
+                            <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${
+                              sec.relativeStrengthScore >= 70
+                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                : 'bg-slate-100 text-slate-600'
+                            }`}>
+                              RS {sec.relativeStrengthScore}
                             </span>
                           ) : (
-                            <span className="text-slate-400 text-[11px]" title="Single day observation — requires 2+ days for multi-day momentum">
-                              — (1 Day)
+                            <span className="text-[10px] text-slate-400 font-sans" title="Requires >= 252 sessions">
+                              &lt;252d
                             </span>
                           )}
                         </td>
 
-                        {/* Breakout */}
+                        {/* Avg Daily Traded Value */}
+                        <td className="p-3 text-right font-mono">
+                          <span className={`${sec.avgDailyTradedValueCrores >= 5 ? 'text-slate-800 font-semibold' : 'text-slate-400'}`}>
+                            ₹{sec.avgDailyTradedValueCrores.toFixed(2)} Cr
+                          </span>
+                        </td>
+
+                        {/* Market Cap */}
+                        <td className="p-3 text-center">
+                          {sec.marketCapCrores !== null ? (
+                            <span className="font-mono text-slate-800">₹{sec.marketCapCrores} Cr</span>
+                          ) : (
+                            <span className="inline-flex px-2 py-0.5 rounded bg-slate-100 text-slate-400 text-[10px] font-mono" title="Shares outstanding data unavailable in raw daily OHLCV">
+                              DATA UNAVAILABLE
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Base Status */}
+                        <td className="p-3 text-center">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-bold" title="Conceptually required by BananaPatterns; exact mathematical detection formula not supplied">
+                            UNRESOLVED
+                          </span>
+                        </td>
+
+                        {/* Breakout Status */}
                         <td className="p-3 text-center">
                           <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${
                             sec.breakoutStatus === 'Breakout'
                               ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                              : sec.breakoutStatus === 'Near Breakout'
-                                ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                              : sec.breakoutStatus === 'Within 20% Pivot'
+                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                                 : 'bg-slate-100 text-slate-500'
                           }`}>
                             {sec.breakoutStatus}
                           </span>
                         </td>
 
-                        {/* Relative Strength */}
-                        <td className="p-3 text-center font-mono">
-                          {sec.relativeStrengthPercentile !== null ? (
-                            <span className={`text-[11px] font-bold ${
-                              sec.relativeStrengthPercentile >= 80 
-                                ? 'text-emerald-700' 
-                                : sec.relativeStrengthPercentile >= 50 
-                                  ? 'text-blue-700' 
-                                  : 'text-slate-500'
-                            }`}>
-                              {sec.relativeStrengthPercentile}th %ile
-                            </span>
-                          ) : (
-                            <span className="text-slate-400">—</span>
-                          )}
-                        </td>
-
-                        {/* Blue Sky Status */}
+                        {/* Overall Blue Sky Status */}
                         <td className="p-3 text-center">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide ${
-                            isQualified
-                              ? 'bg-emerald-600 text-white shadow-xs'
-                              : isWatchlist
-                                ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                                : 'bg-slate-100 text-slate-500'
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider ${
+                            isBreakout
+                              ? 'bg-blue-600 text-white shadow-xs'
+                              : isCandidate
+                                ? 'bg-emerald-600 text-white shadow-xs'
+                                : isInsufficient
+                                  ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                  : 'bg-slate-100 text-slate-500'
                           }`}>
-                            {isQualified && <CheckCircle2 className="w-3 h-3 text-white inline" />}
+                            {(isBreakout || isCandidate) && <CheckCircle2 className="w-3 h-3 text-white inline" />}
                             {sec.status}
                           </span>
                         </td>
