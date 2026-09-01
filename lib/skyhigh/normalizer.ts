@@ -5,7 +5,7 @@
 
 import { NormalizedRecord, ValidationReport } from './types';
 
-// Supported column name variations in NSE formats across historical versions
+// Supported column name variations in NSE formats across historical and modern versions
 const FIELD_CANDIDATES: Record<string, string[]> = {
   symbol: [
     'SYMBOL',
@@ -19,43 +19,46 @@ const FIELD_CANDIDATES: Record<string, string[]> = {
   ],
   date: [
     'TIMESTAMP',
+    'DATE1',
     'TRADDT',
     'DATE',
     'TRADE DATE',
+    'TRADE_DATE',
     'TRADEDATE',
     'BIZDT',
-    'TRADE_DATE',
   ],
   open: [
     'OPEN',
-    'OPNPRIC',
     'OPEN_PRICE',
+    'OPNPRIC',
     'OPEN PRICE',
     'OPENING_PRICE',
   ],
   high: [
     'HIGH',
-    'HGHPRIC',
     'HIGH_PRICE',
+    'HGHPRIC',
     'HIGH PRICE',
   ],
   low: [
     'LOW',
-    'LWPRIC',
     'LOW_PRICE',
+    'LWPRIC',
     'LOW PRICE',
   ],
   close: [
     'CLOSE',
-    'CLSPRIC',
     'CLOSE_PRICE',
+    'CLSPRIC',
     'CLOSE PRICE',
-    'LAST',
-    'LASTPRIC',
     'CLOSING_PRICE',
+    'LAST',
+    'LAST_PRICE',
+    'LASTPRIC',
   ],
   volume: [
     'TOTTRDQTY',
+    'TTL_TRD_QNTY',
     'TTLTRADGVOL',
     'TOTAL_TRADED_QUANTITY',
     'TOTAL TRADED QUANTITY',
@@ -63,10 +66,13 @@ const FIELD_CANDIDATES: Record<string, string[]> = {
     'VOL',
     'QTY',
     'TRADED_QTY',
+    'TTL_TRD_QTY',
     'NO_OF_SHARES',
     'TTLNBROFSHRSTRAD',
   ],
 };
+
+const SERIES_CANDIDATES = ['SERIES', 'SCTYSRS', 'SEGMENT', 'SERIES/SEGMENT'];
 
 const MONTH_MAP: Record<string, string> = {
   JAN: '01',
@@ -88,9 +94,9 @@ const MONTH_MAP: Record<string, string> = {
  */
 export function normalizeDate(raw: string): string | null {
   if (!raw) return null;
-  const str = raw.trim();
+  const str = raw.trim().replace(/^["']|["']$/g, '');
 
-  // Format 1: 01-SEP-2026 or 01-Sep-2026 or 1-SEP-2026
+  // Format 1: 31-AUG-2026, 31-Aug-2026, 31/AUG/2026, 1-SEP-2026
   const regexDdmmyyyy = /^(\d{1,2})[-/ ]([A-Za-z]{3})[-/ ](\d{4})$/;
   const match1 = str.match(regexDdmmyyyy);
   if (match1) {
@@ -100,8 +106,8 @@ export function normalizeDate(raw: string): string | null {
     if (month) return `${year}-${month}-${day}`;
   }
 
-  // Format 2: YYYY-MM-DD or YYYYMMDD
-  const regexIso = /^(\d{4})[-/]?(\d{2})[-/]?(\d{2})$/;
+  // Format 2: ISO with separators YYYY-MM-DD or YYYY/MM/DD
+  const regexIso = /^(\d{4})[-/](\d{2})[-/](\d{2})$/;
   const match2 = str.match(regexIso);
   if (match2) {
     return `${match2[1]}-${match2[2]}-${match2[3]}`;
@@ -115,6 +121,19 @@ export function normalizeDate(raw: string): string | null {
     const month = match3[2].padStart(2, '0');
     const year = match3[3];
     return `${year}-${month}-${day}`;
+  }
+
+  // Format 4: 8-digit compact date (YYYYMMDD or DDMMYYYY)
+  if (/^\d{8}$/.test(str)) {
+    const first4 = parseInt(str.substring(0, 4), 10);
+    const last4 = parseInt(str.substring(4, 8), 10);
+    if (first4 >= 1990 && first4 <= 2100) {
+      // YYYYMMDD
+      return `${str.substring(0, 4)}-${str.substring(4, 6)}-${str.substring(6, 8)}`;
+    } else if (last4 >= 1990 && last4 <= 2100) {
+      // DDMMYYYY (standard Indian compact date e.g. 31082026)
+      return `${str.substring(4, 8)}-${str.substring(2, 4)}-${str.substring(0, 2)}`;
+    }
   }
 
   // Fallback: Date.parse
@@ -143,15 +162,16 @@ export function formatDisplayDate(isoDate: string): string {
 }
 
 /**
- * Split CSV line taking quoted commas into account
+ * Split CSV line taking quoted commas and spaces into account
  */
 function splitCsvLine(line: string): string[] {
+  const cleanLine = line.replace(/^\uFEFF/, '');
   const result: string[] = [];
   let current = '';
   let inQuotes = false;
 
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
+  for (let i = 0; i < cleanLine.length; i++) {
+    const char = cleanLine[i];
     if (char === '"' || char === "'") {
       inQuotes = !inQuotes;
     } else if (char === ',' && !inQuotes) {
@@ -171,7 +191,8 @@ export interface ParseResult {
 }
 
 /**
- * Main normalization & validation pipeline
+ * Main normalization & validation pipeline supporting authentic NSE Bhavcopies,
+ * sec_bhavdata_full files, and generic OHLCV files.
  */
 export function parseAndValidateNseCsv(csvText: string): ParseResult {
   const lines = csvText.split(/\r\n|\n/).filter(line => line.trim().length > 0);
@@ -192,14 +213,27 @@ export function parseAndValidateNseCsv(csvText: string): ParseResult {
     };
   }
 
-  // 1. Detect headers
-  const headerTokens = splitCsvLine(lines[0]).map(h => h.toUpperCase().replace(/\s+/g, ' ').trim());
+  // 1. Detect headers with token cleanup and alphanumeric fallback
+  const rawHeaders = splitCsvLine(lines[0]);
+  const cleanHeaders = rawHeaders.map(h => 
+    h.replace(/^\uFEFF/, '').replace(/["']/g, '').replace(/\s+/g, ' ').trim().toUpperCase()
+  );
+  const alphaHeaders = cleanHeaders.map(h => h.replace(/[^A-Z0-9]/g, ''));
 
   const columnMap: Record<string, number> = {};
   const missingFields: string[] = [];
 
   for (const [canonicalKey, candidates] of Object.entries(FIELD_CANDIDATES)) {
-    const foundIdx = headerTokens.findIndex(h => candidates.includes(h));
+    const alphaCandidates = candidates.map(c => c.replace(/[^A-Z0-9]/g, ''));
+
+    // Try exact candidate match first
+    let foundIdx = cleanHeaders.findIndex(h => candidates.includes(h));
+
+    // Fallback to alphanumeric match (ignores spaces, underscores, dashes)
+    if (foundIdx === -1) {
+      foundIdx = alphaHeaders.findIndex(ah => alphaCandidates.includes(ah));
+    }
+
     if (foundIdx !== -1) {
       columnMap[canonicalKey] = foundIdx;
     } else {
@@ -207,10 +241,14 @@ export function parseAndValidateNseCsv(csvText: string): ParseResult {
     }
   }
 
-  // Optional SERIES column
-  const seriesIdx = headerTokens.findIndex(h => ['SERIES', 'SCTYSRS', 'SEGMENT'].includes(h));
+  // Optional SERIES column detection
+  let seriesIdx = cleanHeaders.findIndex(h => SERIES_CANDIDATES.includes(h));
+  if (seriesIdx === -1) {
+    const alphaSeriesCandidates = SERIES_CANDIDATES.map(c => c.replace(/[^A-Z0-9]/g, ''));
+    seriesIdx = alphaHeaders.findIndex(ah => alphaSeriesCandidates.includes(ah));
+  }
 
-  // If any of the 7 required fields are missing, return validation failure
+  // If any required field is missing, return detailed validation failure
   if (missingFields.length > 0) {
     return {
       report: {
@@ -223,7 +261,7 @@ export function parseAndValidateNseCsv(csvText: string): ParseResult {
         missingColumns: missingFields,
         rejectionReasons: [
           `Required columns missing from file header: ${missingFields.join(', ')}.`,
-          `Supported headers must contain symbol, date, open, high, low, close, and volume.`,
+          `Supported headers must contain symbol, date (e.g. TIMESTAMP/DATE1), open, high, low, close, and volume (e.g. TOTTRDQTY/TTL_TRD_QNTY).`,
         ],
       },
       records: [],
@@ -258,7 +296,7 @@ export function parseAndValidateNseCsv(csvText: string): ParseResult {
     const rawLow = cells[columnMap.low].replace(/,/g, '');
     const rawClose = cells[columnMap.close].replace(/,/g, '');
     const rawVolume = cells[columnMap.volume].replace(/,/g, '');
-    const series = seriesIdx !== -1 ? cells[seriesIdx] : undefined;
+    const series = seriesIdx !== -1 ? cells[seriesIdx]?.trim() : undefined;
 
     // Validate Symbol
     if (!rawSymbol || rawSymbol.trim().length === 0) {
@@ -268,7 +306,7 @@ export function parseAndValidateNseCsv(csvText: string): ParseResult {
     }
     const symbol = rawSymbol.trim().toUpperCase();
 
-    // Validate Date
+    // Validate Date (maps TIMESTAMP or DATE1 to normalized trading_date)
     const normalizedDt = normalizeDate(rawDate);
     if (!normalizedDt) {
       rejectedCount++;
@@ -322,7 +360,7 @@ export function parseAndValidateNseCsv(csvText: string): ParseResult {
       low,
       close,
       volume,
-      series,
+      series: series || undefined,
     });
   }
 
