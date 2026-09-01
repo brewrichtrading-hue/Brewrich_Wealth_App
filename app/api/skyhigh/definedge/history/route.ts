@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ingestDefinedgeHistoricalData } from '@/lib/skyhigh/definedgeService';
+import { getActiveServerSessionKey } from '@/lib/skyhigh/definedgeAuth';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,12 +23,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Resolve session key from request body, server session, or HttpOnly cookie
+    const cookieValue = request.cookies.get('definedge_session')?.value;
+    const resolvedSessionKey = sessionKey?.trim() || getActiveServerSessionKey(cookieValue) || undefined;
+
     const result = await ingestDefinedgeHistoricalData({
       symbol,
       token,
       fromDate,
       toDate,
-      sessionKey,
+      sessionKey: resolvedSessionKey,
     });
 
     return NextResponse.json(result);

@@ -11,6 +11,7 @@
 import https from 'https';
 import { createClient } from '@/lib/supabase/client';
 import { lookupDefinedgeSymbol, lookupDefinedgeToken, DefinedgeSecurity } from './definedgeMaster';
+import { getActiveServerSessionKey } from './definedgeAuth';
 
 export interface DefinedgeHistoricalRequest {
   symbol?: string;
@@ -188,11 +189,11 @@ export async function ingestDefinedgeHistoricalData(
 ): Promise<DefinedgeIngestionResult> {
   const { symbol: rawSymbol, token: rawToken, fromDate, toDate, sessionKey: providedKey } = params;
 
-  // 1. Validate Session Key (Server-side environment or provided session key)
-  const apiKey = providedKey?.trim() || process.env.DEFINEDGE_API_SESSION_KEY?.trim();
+  // 1. Validate Session Key (Provided key, active server 2FA session, or server environment)
+  const apiKey = providedKey?.trim() || getActiveServerSessionKey() || process.env.DEFINEDGE_API_SESSION_KEY?.trim();
   if (!apiKey) {
     throw new Error(
-      'Authentication Error: Definedge API Session Key is required. Please set DEFINEDGE_API_SESSION_KEY in your server environment or provide an active session key.'
+      'Authentication Error: No active Definedge API Session Key found. Please complete the 2-Factor Authentication step above or set DEFINEDGE_API_SESSION_KEY in your server environment.'
     );
   }
 
