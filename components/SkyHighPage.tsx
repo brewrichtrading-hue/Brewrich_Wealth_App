@@ -23,6 +23,7 @@ import {
   ArrowUpCircle
 } from 'lucide-react';
 import SkyHighDataUpload from './SkyHighDataUpload';
+import SkyHighDefinedgeTest from './SkyHighDefinedgeTest';
 import SkyHighBlueSky from './SkyHighBlueSky';
 import { 
   getCloudDataHistoryStats, 
@@ -294,8 +295,14 @@ export default function SkyHighPage() {
             </div>
           )}
 
-          {/* 1. NSE DATA UPLOAD CARD */}
+          {/* 1. NSE DATA UPLOAD CARD (MANUAL BHAVCOPY CSV PIPELINE) */}
           <SkyHighDataUpload onImportComplete={() => {
+            loadCloudHistory();
+            setRefreshTrigger(prev => prev + 1);
+          }} />
+
+          {/* 2. DEFINEDGE HISTORICAL DATA INTEGRATION (PHASE 4) */}
+          <SkyHighDefinedgeTest onIngestionComplete={() => {
             loadCloudHistory();
             setRefreshTrigger(prev => prev + 1);
           }} />
