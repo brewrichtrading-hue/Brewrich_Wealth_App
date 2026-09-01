@@ -23,6 +23,7 @@ import {
   ArrowUpCircle
 } from 'lucide-react';
 import SkyHighDataUpload from './SkyHighDataUpload';
+import SkyHighBlueSky from './SkyHighBlueSky';
 import { 
   getCloudDataHistoryStats, 
   getCloudImportedDays, 
@@ -45,6 +46,7 @@ export default function SkyHighPage() {
   const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(true);
   const [migrationStatus, setMigrationStatus] = useState<string | null>(null);
   const [isMigrating, setIsMigrating] = useState<boolean>(false);
+  const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
 
   const loadCloudHistory = useCallback(async () => {
     try {
@@ -76,6 +78,7 @@ export default function SkyHighPage() {
             `Successfully migrated ${result.migratedDays} historical trading day (${result.migratedRecords.toLocaleString('en-IN')} records) to Supabase Cloud.`
           );
           await loadCloudHistory();
+          setRefreshTrigger(prev => prev + 1);
         }
       } catch (err) {
         console.warn('⚠️ [SKY HIGH] Local migration check warning:', err);
@@ -98,6 +101,7 @@ export default function SkyHighPage() {
         setMigrationStatus('All local datasets are already synchronized with Supabase Cloud.');
       }
       await loadCloudHistory();
+      setRefreshTrigger(prev => prev + 1);
     } catch (err: any) {
       setMigrationStatus(`Migration error: ${err?.message || 'Failed to sync local data'}`);
     } finally {
@@ -110,6 +114,7 @@ export default function SkyHighPage() {
       await clearAllSkyHighStorage();
       await loadCloudHistory();
       setMigrationStatus(null);
+      setRefreshTrigger(prev => prev + 1);
     }
   };
 
@@ -118,16 +123,16 @@ export default function SkyHighPage() {
       id: 1,
       title: 'NSE DATA',
       subtitle: 'Upload daily NSE data',
-      status: 'active',
-      badge: 'Current Milestone',
+      status: 'completed',
+      badge: 'Completed ✓',
       icon: Database,
     },
     {
       id: 2,
       title: 'BLUE SKY',
-      subtitle: 'Strategy engine — next milestone',
-      status: 'upcoming',
-      badge: 'Next Milestone',
+      subtitle: 'Strategy engine active',
+      status: 'active',
+      badge: 'Current Milestone',
       icon: Sparkles,
     },
     {
@@ -172,7 +177,7 @@ export default function SkyHighPage() {
             </div>
             
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-200 text-xs font-bold uppercase tracking-wider">
-              <span>CURRENT MILESTONE: PERSISTENT CLOUD DATA FOUNDATION</span>
+              <span>CURRENT MILESTONE: BLUE SKY STRATEGY ENGINE</span>
             </div>
           </div>
 
@@ -203,7 +208,7 @@ export default function SkyHighPage() {
             </div>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-100 text-blue-800 text-xs font-bold">
               <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
-              Milestone 3 Active: Cloud Persistence
+              Milestone 4 Active: Blue Sky Strategy
             </div>
           </div>
 
@@ -211,29 +216,36 @@ export default function SkyHighPage() {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 pt-6">
             {steps.map((step) => {
               const isActive = step.status === 'active';
+              const isCompleted = step.status === 'completed';
 
               return (
                 <div 
                   key={step.id} 
                   className={`relative p-4 rounded-xl transition-all border ${
                     isActive 
-                      ? 'bg-blue-50/70 border-blue-300 shadow-sm' 
-                      : 'bg-slate-50/70 border-slate-200/80 opacity-80'
+                      ? 'bg-blue-50/70 border-blue-300 shadow-sm ring-1 ring-blue-400/50' 
+                      : isCompleted
+                        ? 'bg-emerald-50/50 border-emerald-200'
+                        : 'bg-slate-50/70 border-slate-200/80 opacity-80'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-3">
                     <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
                       isActive 
                         ? 'bg-blue-600 text-white' 
-                        : 'bg-slate-200 text-slate-600'
+                        : isCompleted
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-slate-200 text-slate-600'
                     }`}>
-                      {step.id}
+                      {isCompleted ? '✓' : step.id}
                     </span>
                     
                     <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                       isActive
                         ? 'bg-blue-600 text-white'
-                        : 'bg-slate-200 text-slate-600'
+                        : isCompleted
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                          : 'bg-slate-200 text-slate-600'
                     }`}>
                       {step.badge}
                     </span>
@@ -241,13 +253,17 @@ export default function SkyHighPage() {
 
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5">
-                      <span className={`text-base font-bold ${isActive ? 'text-blue-900' : 'text-slate-700'}`}>
+                      <span className={`text-base font-bold ${
+                        isActive ? 'text-blue-900' : isCompleted ? 'text-emerald-900' : 'text-slate-700'
+                      }`}>
                         {step.title}
                       </span>
                     </div>
 
                     <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isActive ? 'bg-blue-600' : 'bg-slate-400'}`} />
+                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                        isActive ? 'bg-blue-600' : isCompleted ? 'bg-emerald-500' : 'bg-slate-400'
+                      }`} />
                       <span>{step.subtitle}</span>
                     </p>
                   </div>
@@ -278,10 +294,13 @@ export default function SkyHighPage() {
             </div>
           )}
 
-          {/* NSE DATA UPLOAD CARD (CHUNKED CLOUD INGESTION & REAL VERIFICATION) */}
-          <SkyHighDataUpload onImportComplete={loadCloudHistory} />
+          {/* 1. NSE DATA UPLOAD CARD */}
+          <SkyHighDataUpload onImportComplete={() => {
+            loadCloudHistory();
+            setRefreshTrigger(prev => prev + 1);
+          }} />
 
-          {/* DATA HISTORY SECTION (POWERED BY SUPABASE CLOUD REPOSITORY) */}
+          {/* 2. DATA HISTORY SECTION */}
           <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-10 shadow-betterment transition-all">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
               <div>
@@ -438,13 +457,16 @@ export default function SkyHighPage() {
             )}
           </div>
 
-          {/* UPCOMING PIPELINE MODULES */}
+          {/* 3. MILESTONE 4: REAL BLUE SKY STRATEGY SECTION */}
+          <SkyHighBlueSky key={refreshTrigger} />
+
+          {/* 4. UPCOMING PIPELINE MODULES (MILESTONES 5+) */}
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <h3 className="text-xl font-bold text-slate-900">Future Pipeline Stages</h3>
                 <p className="text-sm text-slate-500">
-                  These downstream engines will activate in subsequent milestones upon NSE data validation.
+                  Downstream engines activating in subsequent milestones upon strategy qualification.
                 </p>
               </div>
               <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -452,38 +474,8 @@ export default function SkyHighPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               
-              {/* STAGE 2: BLUE SKY */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between relative overflow-hidden group">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
-                      <Sparkles className="w-5 h-5" />
-                    </div>
-                    <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                      COMING NEXT
-                    </span>
-                  </div>
-
-                  <div>
-                    <h4 className="text-base font-bold text-slate-900">Blue Sky Strategy</h4>
-                    <p className="text-xs font-semibold text-blue-600 mt-0.5">Strategy engine — next milestone</p>
-                    <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                      Screens NSE universe for all-time high breakouts, momentum filters, and relative strength pivots.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-                  <span className="flex items-center gap-1">
-                    <Lock className="w-3.5 h-3.5" />
-                    Milestone 4
-                  </span>
-                  <span className="font-semibold text-slate-400">Locked</span>
-                </div>
-              </div>
-
               {/* STAGE 3: BACKTEST */}
               <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between relative overflow-hidden group">
                 <div className="space-y-4">
@@ -508,7 +500,7 @@ export default function SkyHighPage() {
                 <div className="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
                   <span className="flex items-center gap-1">
                     <Lock className="w-3.5 h-3.5" />
-                    Milestone 4
+                    Milestone 5
                   </span>
                   <span className="font-semibold text-slate-400">Locked</span>
                 </div>
@@ -587,7 +579,7 @@ export default function SkyHighPage() {
                 Brewrich Quantitative Rigor & Zero-Mock Principle
               </h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Brewrich Sky High strictly operates on verified exchange records. No placeholder stock names, simulated CAGR, synthetic returns, or imaginary trades are shown. Every metric in downstream modules will derive strictly from your verified daily NSE data history stored securely in Supabase cloud persistence.
+                Brewrich Sky High strictly operates on verified exchange records. No placeholder stock names, simulated CAGR, synthetic returns, or imaginary trades are shown. Every metric in the Blue Sky Strategy engine derives strictly from verified daily NSE data stored securely in Supabase cloud persistence.
               </p>
             </div>
           </div>
