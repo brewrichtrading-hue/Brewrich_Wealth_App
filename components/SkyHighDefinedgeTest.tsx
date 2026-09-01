@@ -317,7 +317,7 @@ export default function SkyHighDefinedgeTest({ onIngestionComplete }: SkyHighDef
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-bold text-xs uppercase tracking-wider">
               <Server className="w-3.5 h-3.5 text-blue-600" />
-              Phase 4A: Definedge Historical Ingestion & 2FA
+              Definedge Data Integration & 2FA
             </div>
 
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-xs">
@@ -327,10 +327,10 @@ export default function SkyHighDefinedgeTest({ onIngestionComplete }: SkyHighDef
           </div>
 
           <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
-            DEFINEDGE HISTORICAL DATA INTEGRATION
+            DEFINEDGE MARKET DATA INTEGRATION
           </h3>
           <p className="text-sm text-slate-500 mt-1">
-            Connects to Definedge Securities API (<code className="text-xs font-mono bg-slate-100 px-1 py-0.5 rounded">data.definedgesecurities.com</code>) to ingest multi-year NSE daily historical OHLCV data.
+            Connects to Definedge Securities API (<code className="text-xs font-mono bg-slate-100 px-1 py-0.5 rounded">data.definedgesecurities.com</code>) for secure 2FA authentication and historical OHLCV data ingestion.
           </p>
         </div>
 
@@ -530,34 +530,6 @@ export default function SkyHighDefinedgeTest({ onIngestionComplete }: SkyHighDef
               Select NSE Security
             </label>
             <span className="text-[11px] text-slate-400">Tokens dynamically resolved from Definedge Master</span>
-          </div>
-
-          {/* Quick select buttons */}
-          <div className="flex flex-wrap gap-2">
-            {[
-              { sym: 'RELIANCE', tok: '2885', comp: 'RELIANCE INDUSTRIES LTD' },
-              { sym: 'TCS', tok: '11536', comp: 'TATA CONSULTANCY SERV LT' },
-              { sym: 'INFY', tok: '1594', comp: 'INFOSYS LIMITED' },
-              { sym: 'HDFCBANK', tok: '1333', comp: 'HDFC BANK LTD' },
-              { sym: 'ICICIBANK', tok: '4963', comp: 'ICICI BANK LTD.' },
-            ].map((item) => (
-              <button
-                key={item.sym}
-                type="button"
-                onClick={() => {
-                  setSymbol(item.sym);
-                  setToken(item.tok);
-                  setCompanyName(item.comp);
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                  symbol === item.sym 
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
-                    : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
-                }`}
-              >
-                {item.sym} <span className="opacity-70 text-[10px]">({item.tok})</span>
-              </button>
-            ))}
           </div>
 
           {/* Autocomplete Search */}
