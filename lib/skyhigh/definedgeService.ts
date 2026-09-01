@@ -57,6 +57,17 @@ export interface DefinedgeIngestionResult {
     sampleClose?: number;
   };
   error?: string;
+  diagnostic?: {
+    statusCode: number;
+    contentType: string;
+    responseFormat: string;
+    itemCount: number;
+    topLevelKeys?: string[];
+    rawSnippet: string;
+    sampleFirstRecord?: any;
+    sampleFieldTypes?: Record<string, string>;
+    rejectionReasons: string[];
+  };
   barsPreview?: Array<{
     trading_date: string;
     open: number;
@@ -115,14 +126,14 @@ function parseDefinedgeDate(dateStr: string): string | null {
 /**
  * Executes an authenticated HTTPS GET request to Definedge Historical Data API.
  */
-function fetchDefinedgeHistoricalCsv(
+function fetchDefinedgeHistoricalRaw(
   segment: string,
   token: string,
   timeframe: string,
   fromStr: string,
   toStr: string,
   apiKey: string
-): Promise<string> {
+): Promise<{ data: string; statusCode: number; contentType: string }> {
   return new Promise((resolve, reject) => {
     const path = `/sds/history/${encodeURIComponent(segment)}/${encodeURIComponent(token)}/${encodeURIComponent(timeframe)}/${encodeURIComponent(fromStr)}/${encodeURIComponent(toStr)}`;
     
@@ -133,7 +144,7 @@ function fetchDefinedgeHistoricalCsv(
       method: 'GET',
       headers: {
         'Authorization': apiKey,
-        'Accept': 'text/csv, text/plain, */*',
+        'Accept': 'text/csv, application/json, text/plain, */*',
         'User-Agent': 'BrewrichSkyHigh/1.0',
       },
       timeout: 20000,
@@ -162,7 +173,11 @@ function fetchDefinedgeHistoricalCsv(
           return reject(new Error(`Definedge Error: HTTP ${res.statusCode} - ${data.slice(0, 200)}`));
         }
 
-        resolve(data);
+        resolve({
+          data,
+          statusCode: res.statusCode || 200,
+          contentType: res.headers['content-type'] || 'unknown',
+        });
       });
     });
 
@@ -225,9 +240,55 @@ export async function ingestDefinedgeHistoricalData(
   const toStr = toDefinedgeDateString(toDate, true);
 
   // 5. Fetch Historical Data from Definedge
-  const csvData = await fetchDefinedgeHistoricalCsv(segment, token, 'day', fromStr, toStr, apiKey);
+  const { data: rawResponse, statusCode, contentType } = await fetchDefinedgeHistoricalRaw(segment, token, 'day', fromStr, toStr, apiKey);
 
-  if (!csvData || !csvData.trim()) {
+  // SAFE DIAGNOSTIC ANALYSIS
+  let isJson = false;
+  let parsedJson: any = null;
+  try {
+    parsedJson = JSON.parse(rawResponse);
+    isJson = true;
+  } catch {
+    isJson = false;
+  }
+
+  console.log('\n================== [DEFINEDGE DIAGNOSTIC LOG START] ==================');
+  console.log(`[DEFINEDGE DIAGNOSTIC] HTTP Status: ${statusCode}`);
+  console.log(`[DEFINEDGE DIAGNOSTIC] Content-Type: ${contentType}`);
+  console.log(`[DEFINEDGE DIAGNOSTIC] Response Shape: ${isJson ? (Array.isArray(parsedJson) ? 'JSON Array' : 'JSON Object') : 'CSV / Plain Text'}`);
+  console.log(`[DEFINEDGE DIAGNOSTIC] Raw Response Length: ${rawResponse.length} chars`);
+  console.log(`[DEFINEDGE DIAGNOSTIC] First 300 chars:`, rawResponse.slice(0, 300));
+
+  if (isJson) {
+    if (Array.isArray(parsedJson)) {
+      console.log(`[DEFINEDGE DIAGNOSTIC] JSON Array Length: ${parsedJson.length}`);
+      if (parsedJson.length > 0) {
+        console.log(`[DEFINEDGE DIAGNOSTIC] Sample First Item:`, JSON.stringify(parsedJson[0]));
+        if (typeof parsedJson[0] === 'object' && parsedJson[0] !== null) {
+          console.log(`[DEFINEDGE DIAGNOSTIC] First Item Keys:`, Object.keys(parsedJson[0]));
+          console.log(`[DEFINEDGE DIAGNOSTIC] First Item Types:`, Object.fromEntries(Object.entries(parsedJson[0]).map(([k, v]) => [k, typeof v])));
+        }
+      }
+    } else if (typeof parsedJson === 'object' && parsedJson !== null) {
+      console.log(`[DEFINEDGE DIAGNOSTIC] Top-level Object Keys:`, Object.keys(parsedJson));
+      for (const k of Object.keys(parsedJson)) {
+        if (Array.isArray(parsedJson[k])) {
+          console.log(`[DEFINEDGE DIAGNOSTIC] Key "${k}" is Array of length: ${parsedJson[k].length}`);
+          if (parsedJson[k].length > 0) {
+            console.log(`[DEFINEDGE DIAGNOSTIC] First item of "${k}":`, JSON.stringify(parsedJson[k][0]));
+          }
+        }
+      }
+    }
+  } else {
+    const rawLines = rawResponse.split('\n');
+    console.log(`[DEFINEDGE DIAGNOSTIC] CSV Line Count: ${rawLines.length}`);
+    for (let i = 0; i < Math.min(5, rawLines.length); i++) {
+      console.log(`[DEFINEDGE DIAGNOSTIC] Line ${i}: "${rawLines[i]}"`);
+    }
+  }
+
+  if (!rawResponse || !rawResponse.trim()) {
     return {
       success: true,
       symbol,
@@ -252,19 +313,23 @@ export async function ingestDefinedgeHistoricalData(
     };
   }
 
-  // 6. Parse and Normalize CSV Rows
-  // Definedge Day format: Dateandtime, Open Price, High Price, Low Price, Close, Volume, Open Interest
-  const lines = csvData.split('\n');
+  // 6. Parse and Normalize Rows
+  const lines = rawResponse.split('\n');
   const validBars: DefinedgeNormalizedBar[] = [];
+  const sampleRejectionReasons: string[] = [];
   let recordsRejected = 0;
 
-  for (const line of lines) {
+  for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+    const line = lines[lineIdx];
     const trimmed = line.trim();
     if (!trimmed) continue;
 
     const parts = trimmed.split(',');
     if (parts.length < 5) {
       recordsRejected++;
+      if (sampleRejectionReasons.length < 5) {
+        sampleRejectionReasons.push(`Line ${lineIdx}: parts.length (${parts.length}) < 5. Content: "${trimmed.slice(0, 80)}"`);
+      }
       continue;
     }
 
@@ -278,6 +343,16 @@ export async function ingestDefinedgeHistoricalData(
 
     if (!trading_date || isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)) {
       recordsRejected++;
+      if (sampleRejectionReasons.length < 5) {
+        const failureDetails = [
+          !trading_date ? `Invalid date "${rawDate}"` : null,
+          isNaN(open) ? `Open NaN ("${parts[1]}")` : null,
+          isNaN(high) ? `High NaN ("${parts[2]}")` : null,
+          isNaN(low) ? `Low NaN ("${parts[3]}")` : null,
+          isNaN(close) ? `Close NaN ("${parts[4]}")` : null,
+        ].filter(Boolean).join(', ');
+        sampleRejectionReasons.push(`Line ${lineIdx}: ${failureDetails}. Raw: "${trimmed.slice(0, 80)}"`);
+      }
       continue;
     }
 
@@ -294,6 +369,26 @@ export async function ingestDefinedgeHistoricalData(
       source_file: 'Definedge Historical',
     });
   }
+
+  if (sampleRejectionReasons.length > 0) {
+    console.log(`[DEFINEDGE DIAGNOSTIC] Sample Rejection Reasons (Total Rejected: ${recordsRejected}):`);
+    sampleRejectionReasons.forEach(r => console.log(`  - ${r}`));
+  }
+  console.log(`================== [DEFINEDGE DIAGNOSTIC LOG END] ==================\n`);
+
+  const diagnostic = {
+    statusCode,
+    contentType,
+    responseFormat: isJson ? (Array.isArray(parsedJson) ? 'json-array' : 'json-object') : 'csv-text',
+    itemCount: isJson ? (Array.isArray(parsedJson) ? parsedJson.length : (parsedJson.data?.length ?? 0)) : lines.filter(l => l.trim()).length,
+    topLevelKeys: isJson && !Array.isArray(parsedJson) && parsedJson ? Object.keys(parsedJson) : undefined,
+    rawSnippet: rawResponse.slice(0, 300),
+    sampleFirstRecord: isJson ? (Array.isArray(parsedJson) ? parsedJson[0] : (parsedJson.data?.[0] ?? null)) : (lines[0] || ''),
+    sampleFieldTypes: isJson && Array.isArray(parsedJson) && parsedJson[0] && typeof parsedJson[0] === 'object'
+      ? Object.fromEntries(Object.entries(parsedJson[0]).map(([k, v]) => [k, typeof v]))
+      : undefined,
+    rejectionReasons: sampleRejectionReasons,
+  };
 
   const recordsReceived = validBars.length;
   if (recordsReceived === 0) {
@@ -313,6 +408,7 @@ export async function ingestDefinedgeHistoricalData(
       recordsSkipped: 0,
       recordsRejected,
       source: 'Definedge Historical',
+      diagnostic,
       cloudVerification: {
         verified: true,
         persistedTotalForSymbol: 0,
@@ -428,6 +524,7 @@ export async function ingestDefinedgeHistoricalData(
     recordsSkipped,
     recordsRejected,
     source: 'Definedge Historical',
+    diagnostic,
     cloudVerification: {
       verified,
       persistedTotalForSymbol: totalSymbolCount || recordsInserted,

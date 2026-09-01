@@ -54,6 +54,17 @@ interface DefinedgeIngestionReport {
     sampleClose?: number;
   };
   error?: string;
+  diagnostic?: {
+    statusCode: number;
+    contentType: string;
+    responseFormat: string;
+    itemCount: number;
+    topLevelKeys?: string[];
+    rawSnippet: string;
+    sampleFirstRecord?: any;
+    sampleFieldTypes?: Record<string, string>;
+    rejectionReasons: string[];
+  };
   barsPreview?: Array<{
     trading_date: string;
     open: number;
@@ -769,6 +780,52 @@ export default function SkyHighDefinedgeTest({ onIngestionComplete }: SkyHighDef
                   </tbody>
                 </table>
               </div>
+            </div>
+          )}
+
+          {/* Diagnostic Inspection Box */}
+          {report.diagnostic && (
+            <div className="p-4 rounded-xl bg-slate-900 text-slate-100 font-mono text-xs space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                <span className="font-bold text-amber-400">🔍 Definedge Response Diagnostics</span>
+                <span className="text-[10px] text-slate-400">Safe Server Inspection (No Credentials)</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+                <div><span className="text-slate-400 block">HTTP Status:</span> <span className="font-bold text-white">{report.diagnostic.statusCode}</span></div>
+                <div><span className="text-slate-400 block">Content-Type:</span> <span className="font-bold text-white">{report.diagnostic.contentType}</span></div>
+                <div><span className="text-slate-400 block">Format:</span> <span className="font-bold text-white">{report.diagnostic.responseFormat}</span></div>
+                <div><span className="text-slate-400 block">Total Items:</span> <span className="font-bold text-white">{report.diagnostic.itemCount}</span></div>
+              </div>
+              {report.diagnostic.topLevelKeys && (
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Top-level Keys:</span>
+                  <span className="text-emerald-400 text-[11px]">{report.diagnostic.topLevelKeys.join(', ')}</span>
+                </div>
+              )}
+              {report.diagnostic.sampleFieldTypes && (
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Sample Field Types:</span>
+                  <pre className="text-emerald-300 text-[10px] whitespace-pre-wrap">{JSON.stringify(report.diagnostic.sampleFieldTypes, null, 2)}</pre>
+                </div>
+              )}
+              {report.diagnostic.rejectionReasons && report.diagnostic.rejectionReasons.length > 0 && (
+                <div>
+                  <span className="text-rose-400 block text-[10px] font-bold">Parser Rejection Analysis:</span>
+                  <ul className="list-disc pl-4 space-y-0.5 text-[10px] text-rose-300">
+                    {report.diagnostic.rejectionReasons.map((r: string, idx: number) => (
+                      <li key={idx}>{r}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {report.diagnostic.rawSnippet && (
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Raw Response Snippet:</span>
+                  <pre className="text-slate-300 text-[10px] bg-slate-950 p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-28 overflow-y-auto">
+                    {report.diagnostic.rawSnippet}
+                  </pre>
+                </div>
+              )}
             </div>
           )}
 
