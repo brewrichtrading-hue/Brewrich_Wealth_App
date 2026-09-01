@@ -1,6 +1,6 @@
 /**
- * BREWRICH SKY HIGH - DATA TYPES & SCHEMAS (MILESTONE 2)
- * Isolated type definitions for Sky High market data ingestion, validation, and storage.
+ * BREWRICH SKY HIGH - DATA TYPES & SCHEMAS (MILESTONE 3)
+ * Isolated type definitions for Sky High market data ingestion, validation, and cloud storage.
  */
 
 export interface NormalizedRecord {
@@ -20,7 +20,8 @@ export type ProcessingStage =
   | 'reading'
   | 'validating'
   | 'normalizing'
-  | 'importing'
+  | 'persisting'
+  | 'verifying'
   | 'complete'
   | 'failed';
 
@@ -42,6 +43,7 @@ export interface StoredTradingDay {
   rowCount: number;
   importedAt: string;
   fileName: string;
+  isCloudPersisted?: boolean;
 }
 
 export interface DataHistoryStats {
@@ -50,4 +52,15 @@ export interface DataHistoryStats {
   totalSecurities: number;
   totalRecords: number;
   lastImport: string;
+  isCloudConnected: boolean;
+}
+
+export interface CloudVerificationResult {
+  verified: boolean;
+  tradingDate: string;
+  expectedCount: number;
+  cloudCount: number;
+  sampleRetrieved: number;
+  timestamp: string;
+  error?: string;
 }

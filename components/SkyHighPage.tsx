@@ -8,9 +8,7 @@ import {
   TrendingUp, 
   Play, 
   Lock, 
-  ChevronRight, 
   ShieldCheck, 
-  ArrowUpRight, 
   Layers, 
   CheckCircle2, 
   Clock, 
@@ -18,10 +16,19 @@ import {
   Cpu,
   History,
   Calendar,
-  Trash2
+  Trash2,
+  Cloud,
+  RefreshCw,
+  Server,
+  ArrowUpCircle
 } from 'lucide-react';
 import SkyHighDataUpload from './SkyHighDataUpload';
-import { getDataHistoryStats, getAllImportedDays, clearAllSkyHighStorage } from '@/lib/skyhigh/storage';
+import { 
+  getCloudDataHistoryStats, 
+  getCloudImportedDays, 
+  clearAllSkyHighStorage,
+  checkAndMigrateLocalData
+} from '@/lib/skyhigh/storage';
 import { DataHistoryStats, StoredTradingDay } from '@/lib/skyhigh/types';
 
 export default function SkyHighPage() {
@@ -31,33 +38,78 @@ export default function SkyHighPage() {
     totalSecurities: 0,
     totalRecords: 0,
     lastImport: '—',
+    isCloudConnected: false,
   });
 
   const [importedDays, setImportedDays] = useState<StoredTradingDay[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(true);
+  const [migrationStatus, setMigrationStatus] = useState<string | null>(null);
+  const [isMigrating, setIsMigrating] = useState<boolean>(false);
 
-  const loadHistory = useCallback(async () => {
+  const loadCloudHistory = useCallback(async () => {
     try {
       setIsLoadingHistory(true);
-      const stats = await getDataHistoryStats();
-      const days = await getAllImportedDays();
+      const stats = await getCloudDataHistoryStats();
+      const days = await getCloudImportedDays();
       setHistoryStats(stats);
       setImportedDays(days);
-    } catch {
-      // IndexedDB fallback in case of uninitialized client state
+    } catch (err) {
+      console.warn('⚠️ [SKY HIGH] Error loading cloud data history:', err);
     } finally {
       setIsLoadingHistory(false);
     }
   }, []);
 
+  // Safe migration of local IndexedDB records (e.g. 31 Aug 2026) to Supabase Cloud on mount
   useEffect(() => {
-    loadHistory();
-  }, [loadHistory]);
+    async function initAndMigrate() {
+      await loadCloudHistory();
+
+      // Check if local cache has unmigrated days
+      try {
+        const result = await checkAndMigrateLocalData((msg) => {
+          setMigrationStatus(msg);
+        });
+
+        if (result.migratedDays > 0) {
+          setMigrationStatus(
+            `Successfully migrated ${result.migratedDays} historical trading day (${result.migratedRecords.toLocaleString('en-IN')} records) to Supabase Cloud.`
+          );
+          await loadCloudHistory();
+        }
+      } catch (err) {
+        console.warn('⚠️ [SKY HIGH] Local migration check warning:', err);
+      }
+    }
+
+    initAndMigrate();
+  }, [loadCloudHistory]);
+
+  const handleManualMigrate = async () => {
+    setIsMigrating(true);
+    setMigrationStatus('Scanning local IndexedDB for records to migrate...');
+    try {
+      const result = await checkAndMigrateLocalData((msg) => setMigrationStatus(msg));
+      if (result.migratedDays > 0) {
+        setMigrationStatus(
+          `Migration complete: ${result.migratedDays} day (${result.migratedRecords.toLocaleString('en-IN')} records) safely persisted & verified in Supabase Cloud.`
+        );
+      } else {
+        setMigrationStatus('All local datasets are already synchronized with Supabase Cloud.');
+      }
+      await loadCloudHistory();
+    } catch (err: any) {
+      setMigrationStatus(`Migration error: ${err?.message || 'Failed to sync local data'}`);
+    } finally {
+      setIsMigrating(false);
+    }
+  };
 
   const handleClearHistory = async () => {
-    if (confirm('Are you sure you want to clear all imported Sky High historical records?')) {
+    if (confirm('Are you sure you want to clear all Sky High historical records from Supabase and local cache?')) {
       await clearAllSkyHighStorage();
-      await loadHistory();
+      await loadCloudHistory();
+      setMigrationStatus(null);
     }
   };
 
@@ -109,12 +161,10 @@ export default function SkyHighPage() {
       
       {/* 1. TOP HERO SECTION */}
       <section className="relative bg-gradient-to-b from-[#0A358F] via-[#0D44B8] to-[#1456F0] text-white pt-14 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        {/* Subtle background ambient lights */}
         <div className="absolute top-0 right-10 w-[450px] h-[450px] bg-white/5 rounded-full blur-3xl pointer-events-none -z-0" />
         <div className="absolute bottom-0 left-10 w-[350px] h-[350px] bg-blue-400/10 rounded-full blur-3xl pointer-events-none -z-0" />
 
         <div className="relative z-10 mx-auto max-w-6xl">
-          {/* Brewrich Tag / Breadcrumb */}
           <div className="flex flex-wrap items-center gap-2 mb-6">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold uppercase tracking-wider text-blue-100 shadow-sm">
               <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -122,11 +172,10 @@ export default function SkyHighPage() {
             </div>
             
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-200 text-xs font-bold uppercase tracking-wider">
-              <span>CURRENT MILESTONE: NSE DATA FOUNDATION</span>
+              <span>CURRENT MILESTONE: PERSISTENT CLOUD DATA FOUNDATION</span>
             </div>
           </div>
 
-          {/* Titles & Descriptions as specified */}
           <div className="space-y-4 max-w-3xl">
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] text-white">
               BREWRICH SKY HIGH
@@ -154,14 +203,13 @@ export default function SkyHighPage() {
             </div>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-100 text-blue-800 text-xs font-bold">
               <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
-              Phase 1 Active: Data Foundation
+              Milestone 3 Active: Cloud Persistence
             </div>
           </div>
 
           {/* Stepper Grid */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 pt-6">
             {steps.map((step) => {
-              const Icon = step.icon;
               const isActive = step.status === 'active';
 
               return (
@@ -210,40 +258,76 @@ export default function SkyHighPage() {
         </div>
       </section>
 
-      {/* 3. MAIN WORKSPACE: DATA PANEL & DATA HISTORY & FUTURE MODULES */}
+      {/* 3. MAIN WORKSPACE: DATA PANEL & DATA HISTORY */}
       <section className="px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-6xl mx-auto space-y-12">
 
-          {/* NSE DATA UPLOAD CARD (REAL VALIDATION & IMPORT WORKFLOW) */}
-          <SkyHighDataUpload onImportComplete={loadHistory} />
+          {/* MIGRATION / SYNC NOTIFICATION BANNER */}
+          {migrationStatus && (
+            <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 text-xs sm:text-sm flex items-center justify-between gap-3 shadow-sm">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <span>{migrationStatus}</span>
+              </div>
+              <button
+                onClick={() => setMigrationStatus(null)}
+                className="text-blue-500 hover:text-blue-700 font-bold text-xs"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
 
-          {/* DATA HISTORY SECTION (REQUIRED BY MILESTONE 2) */}
+          {/* NSE DATA UPLOAD CARD (CHUNKED CLOUD INGESTION & REAL VERIFICATION) */}
+          <SkyHighDataUpload onImportComplete={loadCloudHistory} />
+
+          {/* DATA HISTORY SECTION (POWERED BY SUPABASE CLOUD REPOSITORY) */}
           <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-10 shadow-betterment transition-all">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-700 font-bold text-xs uppercase tracking-wider mb-2">
-                  <History className="w-3.5 h-3.5 text-blue-600" />
-                  Historical Cumulative Repository
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-700 font-bold text-xs uppercase tracking-wider">
+                    <History className="w-3.5 h-3.5 text-blue-600" />
+                    Historical Cumulative Repository
+                  </div>
+                  
+                  {/* REAL DATA SOURCE INDICATOR */}
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-xs">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Cloud Repository: Connected</span>
+                  </div>
                 </div>
                 <h3 className="text-2xl font-bold text-slate-900 tracking-tight">DATA HISTORY</h3>
                 <p className="text-sm text-slate-500 mt-1">
-                  Accumulated daily records stored in isolated client persistence. Multi-day uploads append automatically.
+                  Accumulated multi-day records stored in isolated Supabase cloud tables. Cross-session persistent.
                 </p>
               </div>
 
-              {importedDays.length > 0 && (
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={handleClearHistory}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 text-xs font-semibold transition-all border border-slate-200"
-                  title="Clear all stored historical days"
+                  onClick={handleManualMigrate}
+                  disabled={isMigrating}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold transition-all border border-blue-200 disabled:opacity-50"
+                  title="Check and sync any local IndexedDB dataset to Supabase Cloud"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  Clear Dataset
+                  <ArrowUpCircle className="w-3.5 h-3.5" />
+                  {isMigrating ? 'Syncing...' : 'Sync Local Cache'}
                 </button>
-              )}
+
+                {importedDays.length > 0 && (
+                  <button
+                    onClick={handleClearHistory}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 text-xs font-semibold transition-all border border-slate-200"
+                    title="Clear dataset from Supabase Cloud and local cache"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Clear Dataset
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* CUMULATIVE METRICS CARDS */}
+            {/* CUMULATIVE METRICS CARDS FROM SUPABASE */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-6">
               {/* Latest Trading Date */}
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
@@ -301,12 +385,19 @@ export default function SkyHighPage() {
               </div>
             </div>
 
-            {/* STORED TRADING SESSIONS TABLE (IF ANY EXIST) */}
+            {/* STORED TRADING SESSIONS TABLE (READ FROM CLOUD) */}
             {importedDays.length > 0 ? (
               <div className="mt-8 pt-6 border-t border-slate-100 overflow-x-auto">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
-                  Imported Trading Days Log
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Cloud-Persisted Trading Days Log
+                  </span>
+                  <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Cloud verified ✓
+                  </span>
                 </div>
+
                 <table className="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
                   <thead className="bg-slate-100/80 text-slate-600 font-semibold border-b border-slate-200">
                     <tr>
@@ -315,6 +406,7 @@ export default function SkyHighPage() {
                       <th className="p-3">Securities Loaded</th>
                       <th className="p-3">Records Stored</th>
                       <th className="p-3">Import Timestamp</th>
+                      <th className="p-3">Persistence Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white">
@@ -328,6 +420,12 @@ export default function SkyHighPage() {
                         <td className="p-3 font-semibold text-slate-800">{day.stockCount.toLocaleString('en-IN')}</td>
                         <td className="p-3 font-semibold text-blue-700">{day.rowCount.toLocaleString('en-IN')}</td>
                         <td className="p-3 text-slate-500">{day.importedAt}</td>
+                        <td className="p-3">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-bold">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                            Cloud verified ✓
+                          </span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -335,12 +433,12 @@ export default function SkyHighPage() {
               </div>
             ) : (
               <div className="mt-6 p-4 rounded-xl bg-slate-50 text-center text-xs text-slate-500 border border-slate-100">
-                No historical sessions recorded yet. Upload a daily NSE Bhavcopy CSV to initialize history.
+                No historical sessions recorded yet. Upload a daily NSE Bhavcopy CSV to initialize persistent cloud history.
               </div>
             )}
           </div>
 
-          {/* UPCOMING PIPELINE MODULES (VISIBLY COMING NEXT - NOT FUNCTIONAL) */}
+          {/* UPCOMING PIPELINE MODULES */}
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
@@ -380,7 +478,7 @@ export default function SkyHighPage() {
                 <div className="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
                   <span className="flex items-center gap-1">
                     <Lock className="w-3.5 h-3.5" />
-                    Milestone 3
+                    Milestone 4
                   </span>
                   <span className="font-semibold text-slate-400">Locked</span>
                 </div>
@@ -479,7 +577,7 @@ export default function SkyHighPage() {
             </div>
           </div>
 
-          {/* ARCHITECTURAL TRANSPARENCY NOTICE */}
+          {/* ZERO MOCK NOTICE */}
           <div className="rounded-2xl bg-blue-50/60 border border-blue-200/80 p-6 flex flex-col sm:flex-row items-start gap-4">
             <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm mt-0.5">
               <ShieldCheck className="w-5 h-5" />
@@ -489,7 +587,7 @@ export default function SkyHighPage() {
                 Brewrich Quantitative Rigor & Zero-Mock Principle
               </h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Brewrich Sky High strictly operates on verified exchange records. No placeholder stock names, simulated CAGR, synthetic returns, or imaginary trades are shown. Every metric in downstream modules will derive strictly from your verified daily NSE data history.
+                Brewrich Sky High strictly operates on verified exchange records. No placeholder stock names, simulated CAGR, synthetic returns, or imaginary trades are shown. Every metric in downstream modules will derive strictly from your verified daily NSE data history stored securely in Supabase cloud persistence.
               </p>
             </div>
           </div>

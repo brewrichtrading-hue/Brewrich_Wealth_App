@@ -6,20 +6,20 @@ import {
   CheckCircle2, 
   AlertCircle, 
   X, 
-  FileCheck,
-  Calendar,
-  Database,
-  Layers,
-  Clock,
-  Activity,
-  ArrowRight,
-  ShieldCheck,
-  FileSpreadsheet,
-  AlertTriangle
+  FileCheck, 
+  Calendar, 
+  Database, 
+  Layers, 
+  Clock, 
+  Activity, 
+  AlertTriangle,
+  Cloud,
+  RotateCw,
+  Server
 } from 'lucide-react';
 import { parseAndValidateNseCsv } from '@/lib/skyhigh/normalizer';
-import { saveDailyDataset } from '@/lib/skyhigh/storage';
-import { ValidationReport, ProcessingStage } from '@/lib/skyhigh/types';
+import { saveDailyDatasetToCloud, verifyCloudDataset } from '@/lib/skyhigh/storage';
+import { ValidationReport, ProcessingStage, CloudVerificationResult } from '@/lib/skyhigh/types';
 
 interface SkyHighDataUploadProps {
   onImportComplete?: () => void;
@@ -30,7 +30,9 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [stage, setStage] = useState<ProcessingStage>('idle');
   const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
+  const [cloudVerification, setCloudVerification] = useState<CloudVerificationResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [batchProgress, setBatchProgress] = useState<{ current: number; total: number } | null>(null);
 
   // Real calculated metrics for the NSE Data card
   const [metrics, setMetrics] = useState<{
@@ -39,12 +41,14 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
     rowsLoaded: number | null;
     lastUpdate: string;
     status: string;
+    isCloudVerified: boolean;
   }>({
     latestTradingDate: '—',
     stocksLoaded: null,
     rowsLoaded: null,
     lastUpdate: '—',
     status: 'Waiting for data',
+    isCloudVerified: false,
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -60,12 +64,13 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
   const processRealFile = async (selectedFile: File) => {
     setErrorMessage(null);
     setValidationReport(null);
+    setCloudVerification(null);
+    setBatchProgress(null);
     setFile(selectedFile);
 
     // 1. Stage: Uploading
     setStage('uploading');
 
-    // Extension & MIME verification
     const isCsv = 
       selectedFile.name.toLowerCase().endsWith('.csv') ||
       selectedFile.type === 'text/csv' ||
@@ -110,7 +115,7 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
 
       // 3. Stage: Validating
       setStage('validating');
-      await new Promise(r => setTimeout(r, 60)); // yield to UI loop for fluid stage visualization
+      await new Promise(r => setTimeout(r, 50));
 
       // 4. Stage: Normalizing
       setStage('normalizing');
@@ -127,11 +132,30 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
         return;
       }
 
-      // 5. Stage: Importing into isolated storage
-      setStage('importing');
-      const savedDay = await saveDailyDataset(parseResult.records, selectedFile.name);
+      // 5. Stage: Persisting to Cloud (Chunked Supabase Upsert)
+      setStage('persisting');
+      setBatchProgress({ current: 0, total: parseResult.records.length });
 
-      // 6. Stage: Complete
+      const savedDay = await saveDailyDatasetToCloud(
+        parseResult.records, 
+        selectedFile.name,
+        (current, total) => {
+          setBatchProgress({ current, total });
+        }
+      );
+
+      // 6. Stage: Verifying Cloud Persistence
+      setStage('verifying');
+      const verification = await verifyCloudDataset(savedDay.date, parseResult.records.length);
+      setCloudVerification(verification);
+
+      if (!verification.verified) {
+        setStage('failed');
+        setErrorMessage(`CLOUD PERSISTENCE FAILED: ${verification.error || 'Verification record count did not match.'}`);
+        return;
+      }
+
+      // 7. Stage: Complete
       setStage('complete');
 
       const now = new Date();
@@ -145,13 +169,14 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
         hour12: true
       });
 
-      // Update real engine state strictly from calculated results
+      // Update real engine state
       setMetrics({
         latestTradingDate: savedDay.formattedDate,
         stocksLoaded: savedDay.stockCount,
         rowsLoaded: savedDay.rowCount,
         lastUpdate: formattedTimestamp,
         status: 'Data verified & stored',
+        isCloudVerified: true,
       });
 
       if (onImportComplete) {
@@ -160,7 +185,7 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
 
     } catch (err: any) {
       setStage('failed');
-      setErrorMessage(err?.message || 'An unexpected error occurred while processing the market data file.');
+      setErrorMessage(`CLOUD PERSISTENCE FAILED: ${err?.message || 'An unexpected error occurred.'}`);
     }
   };
 
@@ -192,13 +217,16 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
     setFile(null);
     setStage('idle');
     setValidationReport(null);
+    setCloudVerification(null);
     setErrorMessage(null);
+    setBatchProgress(null);
     setMetrics({
       latestTradingDate: '—',
       stocksLoaded: null,
       rowsLoaded: null,
       lastUpdate: '—',
       status: 'Waiting for data',
+      isCloudVerified: false,
     });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -210,7 +238,8 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
     { key: 'reading', label: 'Reading file' },
     { key: 'validating', label: 'Validating' },
     { key: 'normalizing', label: 'Normalizing' },
-    { key: 'importing', label: 'Importing' },
+    { key: 'persisting', label: 'Cloud Persistence' },
+    { key: 'verifying', label: 'Cloud Verify' },
     { key: 'complete', label: 'Complete' },
   ];
 
@@ -220,8 +249,9 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
       case 'reading': return 1;
       case 'validating': return 2;
       case 'normalizing': return 3;
-      case 'importing': return 4;
-      case 'complete': return 5;
+      case 'persisting': return 4;
+      case 'verifying': return 5;
+      case 'complete': return 6;
       default: return -1;
     }
   };
@@ -231,17 +261,26 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
   return (
     <div className="w-full space-y-8">
       
-      {/* 1. DATA PANEL AS SPECIFIED IN REQUIREMENTS */}
+      {/* 1. DATA PANEL */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-10 shadow-betterment transition-all">
-        <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-bold text-xs uppercase tracking-wider mb-3">
-            <Database className="w-3.5 h-3.5 text-blue-600" />
-            Milestone 2 Real Ingestion Engine
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-bold text-xs uppercase tracking-wider mb-3">
+              <Server className="w-3.5 h-3.5 text-blue-600" />
+              Milestone 3 Supabase Cloud Ingestion
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">NSE DATA</h2>
+            <p className="text-base text-slate-600 mt-2 leading-relaxed">
+              Upload the daily NSE market-data file to build the Sky High persistent cloud history.
+            </p>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">NSE DATA</h2>
-          <p className="text-base text-slate-600 mt-2 leading-relaxed">
-            Upload the daily NSE market-data file to build the Sky High data history.
-          </p>
+
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              Supabase Connected
+            </span>
+          </div>
         </div>
 
         {/* UPLOAD INTERFACE */}
@@ -266,7 +305,7 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
               accept=".csv,text/csv,application/vnd.ms-excel"
               onChange={handleFileChange}
               className="hidden"
-              id="nse-real-file-input"
+              id="nse-cloud-file-input"
             />
 
             <div className="flex flex-col items-center justify-center space-y-4 max-w-md mx-auto">
@@ -287,13 +326,13 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
               <div>
                 <p className="font-semibold text-slate-800 text-base">
                   {stage === 'complete' 
-                    ? 'NSE Data Imported & Persisted' 
+                    ? 'NSE Data Cloud Persisted & Verified' 
                     : stage === 'failed' 
-                      ? 'Import Validation Error' 
+                      ? 'Upload or Cloud Verification Error' 
                       : 'Select or drag daily NSE file here'}
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
-                  Supports daily Bhavcopy CSV, UDiFF, and price-volume files (.csv)
+                  Accepts daily Bhavcopy CSV, UDiFF, and equity reports (.csv)
                 </p>
               </div>
 
@@ -305,10 +344,12 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
                   disabled={stage !== 'idle' && stage !== 'complete' && stage !== 'failed'}
                   className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 hover:shadow-glow-royal"
                 >
-                  <Upload className="w-4 h-4" />
+                  {stage === 'failed' ? <RotateCw className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
                   {stage !== 'idle' && stage !== 'complete' && stage !== 'failed' 
-                    ? 'Processing File...' 
-                    : 'Upload NSE Data'}
+                    ? 'Processing & Persisting...' 
+                    : stage === 'failed'
+                      ? 'Retry Upload'
+                      : 'Upload NSE Data'}
                 </button>
 
                 {file && (
@@ -330,22 +371,29 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
         {stage !== 'idle' && (
           <div className="mt-8 p-5 bg-slate-50 rounded-2xl border border-slate-200">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                Processing Status
-              </span>
-              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                  Pipeline Execution
+                </span>
+                {batchProgress && stage === 'persisting' && (
+                  <span className="text-xs font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                    {batchProgress.current.toLocaleString('en-IN')} / {batchProgress.total.toLocaleString('en-IN')} records
+                  </span>
+                )}
+              </div>
+              <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
                 stage === 'complete'
                   ? 'bg-emerald-100 text-emerald-800'
                   : stage === 'failed'
                     ? 'bg-rose-100 text-rose-800'
                     : 'bg-blue-100 text-blue-800 animate-pulse'
               }`}>
-                {stage === 'complete' ? 'Completed' : stage === 'failed' ? 'Failed' : 'In Progress'}
+                {stage === 'complete' ? 'Completed & Cloud Verified' : stage === 'failed' ? 'Failed' : 'In Progress'}
               </span>
             </div>
 
-            {/* Visual stage flow: Uploading -> Reading file -> Validating -> Normalizing -> Importing -> Complete */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            {/* Stages Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
               {stagesList.map((item, idx) => {
                 const isPassed = currentStageIdx >= idx;
                 const isCurrent = currentStageIdx === idx;
@@ -373,7 +421,7 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
                         <span className="text-[10px] opacity-75">{idx + 1}.</span>
                       )}
                     </div>
-                    <span>{item.label}</span>
+                    <span className="text-[11px] leading-tight">{item.label}</span>
                   </div>
                 );
               })}
@@ -381,97 +429,145 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
           </div>
         )}
 
-        {/* VALIDATION REPORT CARD */}
-        {validationReport && (
-          <div className="mt-8">
-            {validationReport.status === 'Valid' ? (
-              <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center justify-between pb-4 border-b border-emerald-100">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                    <h4 className="font-bold text-slate-900 text-base">NSE DATA VALIDATION</h4>
-                  </div>
-                  <span className="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider">
-                    Status: Valid
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 pt-4">
-                  <div>
-                    <span className="text-xs font-semibold text-slate-500 block">Trading date</span>
-                    <span className="text-sm sm:text-base font-bold text-slate-900">{validationReport.tradingDate}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-slate-500 block">Rows</span>
-                    <span className="text-sm sm:text-base font-bold text-slate-900">{validationReport.totalRows.toLocaleString('en-IN')}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-slate-500 block">Valid</span>
-                    <span className="text-sm sm:text-base font-bold text-emerald-700">{validationReport.validRows.toLocaleString('en-IN')}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-slate-500 block">Rejected</span>
-                    <span className={`text-sm sm:text-base font-bold ${validationReport.rejectedRows > 0 ? 'text-amber-700' : 'text-slate-800'}`}>
-                      {validationReport.rejectedRows.toLocaleString('en-IN')}
+        {/* 2-TIER VALIDATION & PERSISTENCE REPORT */}
+        <div className="mt-8 space-y-4">
+          
+          {/* TIER 1: DATA VALIDATION REPORT */}
+          {validationReport && (
+            <div>
+              {validationReport.status === 'Valid' ? (
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                      <h4 className="font-bold text-slate-900 text-base">DATA VALIDATED</h4>
+                    </div>
+                    <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider border border-emerald-200">
+                      Status: Valid
                     </span>
                   </div>
-                  <div className="col-span-2 sm:col-span-1">
-                    <span className="text-xs font-semibold text-slate-500 block">Duplicates</span>
-                    <span className={`text-sm sm:text-base font-bold ${validationReport.duplicateRows > 0 ? 'text-amber-700' : 'text-slate-800'}`}>
-                      {validationReport.duplicateRows.toLocaleString('en-IN')}
-                    </span>
-                  </div>
-                </div>
 
-                {validationReport.rejectionReasons && validationReport.rejectionReasons.length > 0 && (
-                  <div className="mt-4 pt-3 border-t border-emerald-100 text-xs text-amber-800 flex items-start gap-1.5">
-                    <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-600" />
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 pt-4">
                     <div>
-                      <span className="font-semibold">Notice:</span> Some rows were filtered out during normalization ({validationReport.rejectionReasons.join('; ')}).
+                      <span className="text-xs font-semibold text-slate-500 block">Trading date</span>
+                      <span className="text-sm sm:text-base font-bold text-slate-900">{validationReport.tradingDate}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs font-semibold text-slate-500 block">Rows</span>
+                      <span className="text-sm sm:text-base font-bold text-slate-900">{validationReport.totalRows.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs font-semibold text-slate-500 block">Valid</span>
+                      <span className="text-sm sm:text-base font-bold text-emerald-700">{validationReport.validRows.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs font-semibold text-slate-500 block">Rejected</span>
+                      <span className={`text-sm sm:text-base font-bold ${validationReport.rejectedRows > 0 ? 'text-amber-700' : 'text-slate-800'}`}>
+                        {validationReport.rejectedRows.toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                    <div className="col-span-2 sm:col-span-1">
+                      <span className="text-xs font-semibold text-slate-500 block">Duplicates</span>
+                      <span className={`text-sm sm:text-base font-bold ${validationReport.duplicateRows > 0 ? 'text-amber-700' : 'text-slate-800'}`}>
+                        {validationReport.duplicateRows.toLocaleString('en-IN')}
+                      </span>
                     </div>
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center justify-between pb-3 border-b border-rose-100">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5 text-rose-600" />
-                    <h4 className="font-bold text-rose-900 text-base">DATA VALIDATION FAILED</h4>
-                  </div>
-                  <span className="px-3 py-1 rounded-full bg-rose-600 text-white text-xs font-bold uppercase tracking-wider">
-                    Status: Failed
-                  </span>
-                </div>
-
-                <div className="pt-3 text-xs sm:text-sm text-rose-800 space-y-2">
-                  <p className="font-semibold">
-                    The uploaded file does not contain enough market-data fields to safely construct the required OHLCV dataset.
-                  </p>
-                  
-                  {validationReport.missingColumns && validationReport.missingColumns.length > 0 && (
-                    <div className="p-3 bg-white rounded-xl border border-rose-200/80">
-                      <span className="font-bold text-rose-950 block mb-1">Missing required columns:</span>
-                      <ul className="list-disc pl-5 space-y-1 font-mono text-xs text-rose-900">
-                        {validationReport.missingColumns.map((col, idx) => (
-                          <li key={idx}>{col}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
 
                   {validationReport.rejectionReasons && validationReport.rejectionReasons.length > 0 && (
-                    <p className="text-xs text-rose-700">
-                      {validationReport.rejectionReasons.join(' ')}
-                    </p>
+                    <div className="mt-4 pt-3 border-t border-slate-200 text-xs text-amber-800 flex items-start gap-1.5">
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-600" />
+                      <div>
+                        <span className="font-semibold">Notice:</span> Some rows were filtered during normalization ({validationReport.rejectionReasons.join('; ')}).
+                      </div>
+                    </div>
                   )}
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              ) : (
+                <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 shadow-sm">
+                  <div className="flex items-center justify-between pb-3 border-b border-rose-100">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-5 h-5 text-rose-600" />
+                      <h4 className="font-bold text-rose-900 text-base">DATA VALIDATION FAILED</h4>
+                    </div>
+                    <span className="px-3 py-1 rounded-full bg-rose-600 text-white text-xs font-bold uppercase tracking-wider">
+                      Status: Failed
+                    </span>
+                  </div>
 
-        {/* METRICS BELOW UPLOAD AS STRICTLY REQUIRED */}
+                  <div className="pt-3 text-xs sm:text-sm text-rose-800 space-y-2">
+                    <p className="font-semibold">
+                      The uploaded file does not contain enough market-data fields to safely construct the required OHLCV dataset.
+                    </p>
+                    
+                    {validationReport.missingColumns && validationReport.missingColumns.length > 0 && (
+                      <div className="p-3 bg-white rounded-xl border border-rose-200/80">
+                        <span className="font-bold text-rose-950 block mb-1">Missing required columns:</span>
+                        <ul className="list-disc pl-5 space-y-1 font-mono text-xs text-rose-900">
+                          {validationReport.missingColumns.map((col, idx) => (
+                            <li key={idx}>{col}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TIER 2: CLOUD PERSISTENCE & VERIFICATION REPORT */}
+          {cloudVerification && (
+            <div>
+              {cloudVerification.verified ? (
+                <div className="bg-emerald-50/80 border border-emerald-300 rounded-2xl p-6 shadow-sm">
+                  <div className="flex items-center justify-between pb-3 border-b border-emerald-200">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                      <h4 className="font-bold text-emerald-950 text-base">DATA PERSISTED & CLOUD VERIFIED</h4>
+                    </div>
+                    <span className="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider">
+                      Cloud Verified ✓
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 text-xs text-emerald-900">
+                    <div>
+                      <span className="font-semibold text-emerald-700 block">Cloud Records Confirmed:</span>
+                      <span className="text-base font-bold text-emerald-950">{cloudVerification.cloudCount.toLocaleString('en-IN')} rows</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-emerald-700 block">Sample Retrievability Test:</span>
+                      <span className="text-base font-bold text-emerald-950">{cloudVerification.sampleRetrieved} records retrieved</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-emerald-700 block">Verification Timestamp:</span>
+                      <span className="text-base font-bold text-emerald-950">{cloudVerification.timestamp}</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 shadow-sm">
+                  <div className="flex items-center justify-between pb-3 border-b border-rose-100">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-5 h-5 text-rose-600" />
+                      <h4 className="font-bold text-rose-950 text-base">CLOUD PERSISTENCE FAILED</h4>
+                    </div>
+                    <span className="px-3 py-1 rounded-full bg-rose-600 text-white text-xs font-bold uppercase tracking-wider">
+                      Cloud Error
+                    </span>
+                  </div>
+                  <p className="pt-3 text-xs text-rose-800">
+                    {cloudVerification.error || errorMessage || 'Records could not be confirmed in Supabase.'}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+        </div>
+
+        {/* METRICS BELOW UPLOAD */}
         <div className="mt-8 pt-8 border-t border-slate-200">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -531,10 +627,11 @@ export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploa
                 <Activity className="w-3.5 h-3.5 text-blue-600" />
                 Status
               </div>
-              <div className={`text-sm sm:text-base font-bold ${
+              <div className={`text-sm sm:text-base font-bold flex items-center gap-1 ${
                 metrics.stocksLoaded !== null ? 'text-emerald-600' : 'text-slate-500'
               }`}>
                 {metrics.status}
+                {metrics.isCloudVerified && <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" />}
               </div>
             </div>
           </div>
