@@ -11,28 +11,42 @@ import {
   Database,
   Layers,
   Clock,
-  Activity
+  Activity,
+  ArrowRight,
+  ShieldCheck,
+  FileSpreadsheet,
+  AlertTriangle
 } from 'lucide-react';
+import { parseAndValidateNseCsv } from '@/lib/skyhigh/normalizer';
+import { saveDailyDataset } from '@/lib/skyhigh/storage';
+import { ValidationReport, ProcessingStage } from '@/lib/skyhigh/types';
 
-interface ParsedSummary {
-  fileName: string;
-  fileSizeFormatted: string;
-  uploadStatus: string;
-  validationStatus: string;
-  isValid: boolean;
-  latestDate: string;
-  stocksLoaded: number;
-  rowsLoaded: number;
-  lastUpdate: string;
+interface SkyHighDataUploadProps {
+  onImportComplete?: () => void;
 }
 
-export default function SkyHighDataUpload() {
+export default function SkyHighDataUpload({ onImportComplete }: SkyHighDataUploadProps) {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [parsedData, setParsedData] = useState<ParsedSummary | null>(null);
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  
+  const [stage, setStage] = useState<ProcessingStage>('idle');
+  const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Real calculated metrics for the NSE Data card
+  const [metrics, setMetrics] = useState<{
+    latestTradingDate: string;
+    stocksLoaded: number | null;
+    rowsLoaded: number | null;
+    lastUpdate: string;
+    status: string;
+  }>({
+    latestTradingDate: '—',
+    stocksLoaded: null,
+    rowsLoaded: null,
+    lastUpdate: '—',
+    status: 'Waiting for data',
+  });
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const formatFileSize = (bytes: number): string => {
@@ -43,132 +57,116 @@ export default function SkyHighDataUpload() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const processFile = async (selectedFile: File) => {
-    setErrorMsg(null);
+  const processRealFile = async (selectedFile: File) => {
+    setErrorMessage(null);
+    setValidationReport(null);
     setFile(selectedFile);
-    setIsProcessing(true);
 
+    // 1. Stage: Uploading
+    setStage('uploading');
+
+    // Extension & MIME verification
     const isCsv = 
       selectedFile.name.toLowerCase().endsWith('.csv') ||
       selectedFile.type === 'text/csv' ||
       selectedFile.type === 'application/vnd.ms-excel';
 
     if (!isCsv) {
-      setParsedData({
-        fileName: selectedFile.name,
-        fileSizeFormatted: formatFileSize(selectedFile.size),
-        uploadStatus: 'Rejected',
-        validationStatus: 'Invalid file format.',
-        isValid: false,
-        latestDate: '—',
-        stocksLoaded: 0,
-        rowsLoaded: 0,
-        lastUpdate: '—',
+      setStage('failed');
+      setErrorMessage('Invalid file format. Please upload an authentic NSE daily CSV (.csv) file.');
+      setValidationReport({
+        status: 'Failed',
+        tradingDate: '—',
+        totalRows: 0,
+        validRows: 0,
+        rejectedRows: 0,
+        duplicateRows: 0,
+        missingColumns: ['Unsupported file type (non-CSV)'],
+        rejectionReasons: ['File format is not recognized as a valid CSV table.'],
       });
-      setErrorMsg('Invalid file format.');
-      setIsProcessing(false);
       return;
     }
 
     try {
+      // 2. Stage: Reading file
+      setStage('reading');
       const text = await selectedFile.text();
-      const lines = text.split(/\r\n|\n/).filter(line => line.trim().length > 0);
 
-      if (lines.length < 2) {
-        setParsedData({
-          fileName: selectedFile.name,
-          fileSizeFormatted: formatFileSize(selectedFile.size),
-          uploadStatus: 'Rejected',
-          validationStatus: 'Invalid file format.',
-          isValid: false,
-          latestDate: '—',
-          stocksLoaded: 0,
-          rowsLoaded: 0,
-          lastUpdate: '—',
+      if (!text || text.trim().length === 0) {
+        setStage('failed');
+        setErrorMessage('Uploaded file is empty.');
+        setValidationReport({
+          status: 'Failed',
+          tradingDate: '—',
+          totalRows: 0,
+          validRows: 0,
+          rejectedRows: 0,
+          duplicateRows: 0,
+          missingColumns: ['Empty file'],
+          rejectionReasons: ['The selected CSV contains 0 bytes of content.'],
         });
-        setErrorMsg('Invalid file format.');
-        setIsProcessing(false);
         return;
       }
 
-      // Parse headers
-      const headerLine = lines[0];
-      const headers = headerLine.split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+      // 3. Stage: Validating
+      setStage('validating');
+      await new Promise(r => setTimeout(r, 60)); // yield to UI loop for fluid stage visualization
 
-      // Look for symbol column
-      const symbolIdx = headers.findIndex(h => 
-        ['SYMBOL', 'TCKRSYMB', 'SECURITY', 'TICKER', 'SCRIP', 'FININSTRMID'].includes(h.toUpperCase())
-      );
+      // 4. Stage: Normalizing
+      setStage('normalizing');
+      const parseResult = parseAndValidateNseCsv(text);
+      setValidationReport(parseResult.report);
 
-      // Look for date column
-      const dateIdx = headers.findIndex(h => 
-        ['TIMESTAMP', 'TRADDT', 'DATE', 'TRADE DATE', 'BIZDT'].includes(h.toUpperCase())
-      );
-
-      const symbols = new Set<string>();
-      let foundDate = '—';
-
-      // Parse rows
-      const rowCount = lines.length - 1;
-      for (let i = 1; i < lines.length; i++) {
-        const parts = lines[i].split(',').map(p => p.trim().replace(/^["']|["']$/g, ''));
-        
-        if (symbolIdx !== -1 && parts[symbolIdx]) {
-          symbols.add(parts[symbolIdx]);
-        } else if (parts[0]) {
-          symbols.add(parts[0]);
-        }
-
-        if (foundDate === '—' && dateIdx !== -1 && parts[dateIdx]) {
-          foundDate = parts[dateIdx];
-        }
+      if (parseResult.report.status === 'Failed' || parseResult.records.length === 0) {
+        setStage('failed');
+        setErrorMessage(
+          parseResult.report.missingColumns && parseResult.report.missingColumns.length > 0
+            ? `DATA VALIDATION FAILED: Missing required market-data columns (${parseResult.report.missingColumns.join(', ')}).`
+            : 'DATA VALIDATION FAILED: No valid equity market rows could be constructed.'
+        );
+        return;
       }
+
+      // 5. Stage: Importing into isolated storage
+      setStage('importing');
+      const savedDay = await saveDailyDataset(parseResult.records, selectedFile.name);
+
+      // 6. Stage: Complete
+      setStage('complete');
 
       const now = new Date();
       const formattedTimestamp = now.toLocaleDateString('en-IN', {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
-      }) + ' ' + now.toLocaleTimeString('en-IN', {
+      }) + ', ' + now.toLocaleTimeString('en-IN', {
         hour: '2-digit',
         minute: '2-digit',
-        second: '2-digit',
         hour12: true
       });
 
-      setParsedData({
-        fileName: selectedFile.name,
-        fileSizeFormatted: formatFileSize(selectedFile.size),
-        uploadStatus: 'Uploaded',
-        validationStatus: 'Valid NSE file format',
-        isValid: true,
-        latestDate: foundDate !== '—' ? foundDate : '—',
-        stocksLoaded: symbols.size > 0 ? symbols.size : rowCount,
-        rowsLoaded: rowCount,
+      // Update real engine state strictly from calculated results
+      setMetrics({
+        latestTradingDate: savedDay.formattedDate,
+        stocksLoaded: savedDay.stockCount,
+        rowsLoaded: savedDay.rowCount,
         lastUpdate: formattedTimestamp,
+        status: 'Data verified & stored',
       });
 
-    } catch {
-      setParsedData({
-        fileName: selectedFile.name,
-        fileSizeFormatted: formatFileSize(selectedFile.size),
-        uploadStatus: 'Rejected',
-        validationStatus: 'Invalid file format.',
-        isValid: false,
-        latestDate: '—',
-        stocksLoaded: 0,
-        rowsLoaded: 0,
-        lastUpdate: '—',
-      });
-      setErrorMsg('Invalid file format.');
-    } finally {
-      setIsProcessing(false);
+      if (onImportComplete) {
+        onImportComplete();
+      }
+
+    } catch (err: any) {
+      setStage('failed');
+      setErrorMessage(err?.message || 'An unexpected error occurred while processing the market data file.');
     }
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      processFile(e.target.files[0]);
+      processRealFile(e.target.files[0]);
     }
   };
 
@@ -186,27 +184,59 @@ export default function SkyHighDataUpload() {
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processFile(e.dataTransfer.files[0]);
+      processRealFile(e.dataTransfer.files[0]);
     }
   };
 
   const handleReset = () => {
     setFile(null);
-    setParsedData(null);
-    setErrorMsg(null);
+    setStage('idle');
+    setValidationReport(null);
+    setErrorMessage(null);
+    setMetrics({
+      latestTradingDate: '—',
+      stocksLoaded: null,
+      rowsLoaded: null,
+      lastUpdate: '—',
+      status: 'Waiting for data',
+    });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
+  const stagesList: { key: ProcessingStage; label: string }[] = [
+    { key: 'uploading', label: 'Uploading' },
+    { key: 'reading', label: 'Reading file' },
+    { key: 'validating', label: 'Validating' },
+    { key: 'normalizing', label: 'Normalizing' },
+    { key: 'importing', label: 'Importing' },
+    { key: 'complete', label: 'Complete' },
+  ];
+
+  const getStageIndex = (s: ProcessingStage) => {
+    switch (s) {
+      case 'uploading': return 0;
+      case 'reading': return 1;
+      case 'validating': return 2;
+      case 'normalizing': return 3;
+      case 'importing': return 4;
+      case 'complete': return 5;
+      default: return -1;
+    }
+  };
+
+  const currentStageIdx = getStageIndex(stage);
+
   return (
     <div className="w-full space-y-8">
+      
       {/* 1. DATA PANEL AS SPECIFIED IN REQUIREMENTS */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-10 shadow-betterment transition-all">
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-bold text-xs uppercase tracking-wider mb-3">
             <Database className="w-3.5 h-3.5 text-blue-600" />
-            Milestone 1 Active
+            Milestone 2 Real Ingestion Engine
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">NSE DATA</h2>
           <p className="text-base text-slate-600 mt-2 leading-relaxed">
@@ -223,9 +253,9 @@ export default function SkyHighDataUpload() {
             className={`border-2 border-dashed rounded-2xl p-6 sm:p-8 transition-all text-center ${
               isDragging 
                 ? 'border-blue-500 bg-blue-50/60' 
-                : parsedData?.isValid 
+                : stage === 'complete' 
                   ? 'border-emerald-300 bg-emerald-50/30'
-                  : errorMsg
+                  : stage === 'failed'
                     ? 'border-rose-300 bg-rose-50/30'
                     : 'border-slate-200 hover:border-blue-400 bg-slate-50/50'
             }`}
@@ -236,15 +266,15 @@ export default function SkyHighDataUpload() {
               accept=".csv,text/csv,application/vnd.ms-excel"
               onChange={handleFileChange}
               className="hidden"
-              id="nse-data-file-input"
+              id="nse-real-file-input"
             />
 
             <div className="flex flex-col items-center justify-center space-y-4 max-w-md mx-auto">
-              {parsedData?.isValid ? (
+              {stage === 'complete' ? (
                 <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm">
                   <FileCheck className="w-7 h-7" />
                 </div>
-              ) : errorMsg ? (
+              ) : stage === 'failed' ? (
                 <div className="w-14 h-14 rounded-2xl bg-rose-100 flex items-center justify-center text-rose-600 shadow-sm">
                   <AlertCircle className="w-7 h-7" />
                 </div>
@@ -256,14 +286,14 @@ export default function SkyHighDataUpload() {
 
               <div>
                 <p className="font-semibold text-slate-800 text-base">
-                  {parsedData?.isValid 
-                    ? 'NSE Data File Loaded' 
-                    : errorMsg 
-                      ? 'File Validation Error' 
+                  {stage === 'complete' 
+                    ? 'NSE Data Imported & Persisted' 
+                    : stage === 'failed' 
+                      ? 'Import Validation Error' 
                       : 'Select or drag daily NSE file here'}
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
-                  Supports daily Bhavcopy CSV files (.csv)
+                  Supports daily Bhavcopy CSV, UDiFF, and price-volume files (.csv)
                 </p>
               </div>
 
@@ -272,11 +302,13 @@ export default function SkyHighDataUpload() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isProcessing}
+                  disabled={stage !== 'idle' && stage !== 'complete' && stage !== 'failed'}
                   className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 hover:shadow-glow-royal"
                 >
                   <Upload className="w-4 h-4" />
-                  {isProcessing ? 'Processing File...' : 'Upload NSE Data'}
+                  {stage !== 'idle' && stage !== 'complete' && stage !== 'failed' 
+                    ? 'Processing File...' 
+                    : 'Upload NSE Data'}
                 </button>
 
                 {file && (
@@ -286,7 +318,7 @@ export default function SkyHighDataUpload() {
                     className="px-4 py-3 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium text-sm transition-all flex items-center gap-1.5 cursor-pointer"
                   >
                     <X className="w-4 h-4" />
-                    Clear
+                    Reset
                   </button>
                 )}
               </div>
@@ -294,72 +326,160 @@ export default function SkyHighDataUpload() {
           </div>
         </div>
 
-        {/* FILE SELECTION STATUS STREAM */}
-        <div className="mt-8 pt-6 border-t border-slate-100">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* File name */}
-            <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200/70">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">File name</span>
-              <span className="text-sm font-bold text-slate-800 break-all">
-                {file ? file.name : 'Waiting for NSE data file'}
+        {/* PROCESSING STATUS PROGRESS PIPELINE */}
+        {stage !== 'idle' && (
+          <div className="mt-8 p-5 bg-slate-50 rounded-2xl border border-slate-200">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                Processing Status
+              </span>
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                stage === 'complete'
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : stage === 'failed'
+                    ? 'bg-rose-100 text-rose-800'
+                    : 'bg-blue-100 text-blue-800 animate-pulse'
+              }`}>
+                {stage === 'complete' ? 'Completed' : stage === 'failed' ? 'Failed' : 'In Progress'}
               </span>
             </div>
 
-            {/* File size */}
-            <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200/70">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">File size</span>
-              <span className="text-sm font-bold text-slate-800">
-                {file ? formatFileSize(file.size) : '—'}
-              </span>
-            </div>
+            {/* Visual stage flow: Uploading -> Reading file -> Validating -> Normalizing -> Importing -> Complete */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+              {stagesList.map((item, idx) => {
+                const isPassed = currentStageIdx >= idx;
+                const isCurrent = currentStageIdx === idx;
+                const isErrorStage = stage === 'failed' && isCurrent;
 
-            {/* Upload status */}
-            <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200/70">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Upload status</span>
-              <div className="flex items-center gap-1.5">
-                {parsedData?.isValid ? (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span className="text-sm font-bold text-emerald-700">Uploaded</span>
-                  </>
-                ) : errorMsg ? (
-                  <>
-                    <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-                    <span className="text-sm font-bold text-rose-700">Rejected</span>
-                  </>
-                ) : (
-                  <span className="text-sm font-medium text-slate-500">Waiting for NSE data file</span>
-                )}
-              </div>
-            </div>
-
-            {/* Validation status */}
-            <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200/70">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Validation status</span>
-              <div className="flex items-center gap-1.5">
-                {parsedData?.isValid ? (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span className="text-sm font-bold text-emerald-700">Valid format</span>
-                  </>
-                ) : errorMsg ? (
-                  <>
-                    <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-                    <span className="text-sm font-bold text-rose-700">Invalid file format.</span>
-                  </>
-                ) : (
-                  <span className="text-sm font-medium text-slate-500">Waiting for NSE data file</span>
-                )}
-              </div>
+                return (
+                  <div 
+                    key={item.key} 
+                    className={`p-2.5 rounded-xl text-center text-xs font-semibold flex flex-col items-center justify-center border transition-all ${
+                      isErrorStage
+                        ? 'bg-rose-50 border-rose-200 text-rose-700'
+                        : isPassed
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                          : isCurrent
+                            ? 'bg-blue-50 border-blue-300 text-blue-700'
+                            : 'bg-white border-slate-200 text-slate-400'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1 mb-1">
+                      {isPassed && stage !== 'failed' ? (
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      ) : isErrorStage ? (
+                        <AlertCircle className="w-3.5 h-3.5" />
+                      ) : (
+                        <span className="text-[10px] opacity-75">{idx + 1}.</span>
+                      )}
+                    </div>
+                    <span>{item.label}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        </div>
+        )}
+
+        {/* VALIDATION REPORT CARD */}
+        {validationReport && (
+          <div className="mt-8">
+            {validationReport.status === 'Valid' ? (
+              <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-6 shadow-sm">
+                <div className="flex items-center justify-between pb-4 border-b border-emerald-100">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    <h4 className="font-bold text-slate-900 text-base">NSE DATA VALIDATION</h4>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider">
+                    Status: Valid
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 pt-4">
+                  <div>
+                    <span className="text-xs font-semibold text-slate-500 block">Trading date</span>
+                    <span className="text-sm sm:text-base font-bold text-slate-900">{validationReport.tradingDate}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-slate-500 block">Rows</span>
+                    <span className="text-sm sm:text-base font-bold text-slate-900">{validationReport.totalRows.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-slate-500 block">Valid</span>
+                    <span className="text-sm sm:text-base font-bold text-emerald-700">{validationReport.validRows.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-slate-500 block">Rejected</span>
+                    <span className={`text-sm sm:text-base font-bold ${validationReport.rejectedRows > 0 ? 'text-amber-700' : 'text-slate-800'}`}>
+                      {validationReport.rejectedRows.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <span className="text-xs font-semibold text-slate-500 block">Duplicates</span>
+                    <span className={`text-sm sm:text-base font-bold ${validationReport.duplicateRows > 0 ? 'text-amber-700' : 'text-slate-800'}`}>
+                      {validationReport.duplicateRows.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+
+                {validationReport.rejectionReasons && validationReport.rejectionReasons.length > 0 && (
+                  <div className="mt-4 pt-3 border-t border-emerald-100 text-xs text-amber-800 flex items-start gap-1.5">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-600" />
+                    <div>
+                      <span className="font-semibold">Notice:</span> Some rows were filtered out during normalization ({validationReport.rejectionReasons.join('; ')}).
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 shadow-sm">
+                <div className="flex items-center justify-between pb-3 border-b border-rose-100">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-rose-600" />
+                    <h4 className="font-bold text-rose-900 text-base">DATA VALIDATION FAILED</h4>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-rose-600 text-white text-xs font-bold uppercase tracking-wider">
+                    Status: Failed
+                  </span>
+                </div>
+
+                <div className="pt-3 text-xs sm:text-sm text-rose-800 space-y-2">
+                  <p className="font-semibold">
+                    The uploaded file does not contain enough market-data fields to safely construct the required OHLCV dataset.
+                  </p>
+                  
+                  {validationReport.missingColumns && validationReport.missingColumns.length > 0 && (
+                    <div className="p-3 bg-white rounded-xl border border-rose-200/80">
+                      <span className="font-bold text-rose-950 block mb-1">Missing required columns:</span>
+                      <ul className="list-disc pl-5 space-y-1 font-mono text-xs text-rose-900">
+                        {validationReport.missingColumns.map((col, idx) => (
+                          <li key={idx}>{col}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {validationReport.rejectionReasons && validationReport.rejectionReasons.length > 0 && (
+                    <p className="text-xs text-rose-700">
+                      {validationReport.rejectionReasons.join(' ')}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* METRICS BELOW UPLOAD AS STRICTLY REQUIRED */}
         <div className="mt-8 pt-8 border-t border-slate-200">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
-            Engine Data State
-          </h4>
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Active Dataset Status
+            </h4>
+            <span className="text-xs text-slate-400 font-medium">Real-time calculations</span>
+          </div>
+
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {/* Latest Trading Date */}
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
@@ -368,7 +488,7 @@ export default function SkyHighDataUpload() {
                 Latest Trading Date
               </div>
               <div className="text-lg font-bold text-slate-900 truncate">
-                {parsedData?.isValid ? parsedData.latestDate : '—'}
+                {metrics.latestTradingDate}
               </div>
             </div>
 
@@ -379,7 +499,7 @@ export default function SkyHighDataUpload() {
                 Stocks Loaded
               </div>
               <div className="text-lg font-bold text-slate-900">
-                {parsedData?.isValid ? parsedData.stocksLoaded.toLocaleString('en-IN') : '—'}
+                {metrics.stocksLoaded !== null ? metrics.stocksLoaded.toLocaleString('en-IN') : '—'}
               </div>
             </div>
 
@@ -390,7 +510,7 @@ export default function SkyHighDataUpload() {
                 Rows Loaded
               </div>
               <div className="text-lg font-bold text-slate-900">
-                {parsedData?.isValid ? parsedData.rowsLoaded.toLocaleString('en-IN') : '—'}
+                {metrics.rowsLoaded !== null ? metrics.rowsLoaded.toLocaleString('en-IN') : '—'}
               </div>
             </div>
 
@@ -400,8 +520,8 @@ export default function SkyHighDataUpload() {
                 <Clock className="w-3.5 h-3.5 text-blue-600" />
                 Last Update
               </div>
-              <div className="text-xs sm:text-sm font-semibold text-slate-900 truncate" title={parsedData?.isValid ? parsedData.lastUpdate : '—'}>
-                {parsedData?.isValid ? parsedData.lastUpdate : '—'}
+              <div className="text-xs sm:text-sm font-semibold text-slate-900 truncate" title={metrics.lastUpdate}>
+                {metrics.lastUpdate}
               </div>
             </div>
 
@@ -411,12 +531,15 @@ export default function SkyHighDataUpload() {
                 <Activity className="w-3.5 h-3.5 text-blue-600" />
                 Status
               </div>
-              <div className={`text-sm sm:text-base font-bold ${parsedData?.isValid ? 'text-emerald-600' : 'text-slate-500'}`}>
-                {parsedData?.isValid ? 'Data verified' : 'Waiting for data'}
+              <div className={`text-sm sm:text-base font-bold ${
+                metrics.stocksLoaded !== null ? 'text-emerald-600' : 'text-slate-500'
+              }`}>
+                {metrics.status}
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

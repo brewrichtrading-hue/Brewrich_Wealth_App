@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { 
   Database, 
@@ -15,11 +15,52 @@ import {
   CheckCircle2, 
   Clock, 
   Activity,
-  Cpu
+  Cpu,
+  History,
+  Calendar,
+  Trash2
 } from 'lucide-react';
 import SkyHighDataUpload from './SkyHighDataUpload';
+import { getDataHistoryStats, getAllImportedDays, clearAllSkyHighStorage } from '@/lib/skyhigh/storage';
+import { DataHistoryStats, StoredTradingDay } from '@/lib/skyhigh/types';
 
 export default function SkyHighPage() {
+  const [historyStats, setHistoryStats] = useState<DataHistoryStats>({
+    latestTradingDate: '—',
+    totalTradingDays: 0,
+    totalSecurities: 0,
+    totalRecords: 0,
+    lastImport: '—',
+  });
+
+  const [importedDays, setImportedDays] = useState<StoredTradingDay[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(true);
+
+  const loadHistory = useCallback(async () => {
+    try {
+      setIsLoadingHistory(true);
+      const stats = await getDataHistoryStats();
+      const days = await getAllImportedDays();
+      setHistoryStats(stats);
+      setImportedDays(days);
+    } catch {
+      // IndexedDB fallback in case of uninitialized client state
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
+  const handleClearHistory = async () => {
+    if (confirm('Are you sure you want to clear all imported Sky High historical records?')) {
+      await clearAllSkyHighStorage();
+      await loadHistory();
+    }
+  };
+
   const steps = [
     {
       id: 1,
@@ -169,12 +210,135 @@ export default function SkyHighPage() {
         </div>
       </section>
 
-      {/* 3. MAIN WORKSPACE: DATA PANEL & FUTURE MODULES */}
+      {/* 3. MAIN WORKSPACE: DATA PANEL & DATA HISTORY & FUTURE MODULES */}
       <section className="px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-6xl mx-auto space-y-12">
 
-          {/* NSE DATA UPLOAD CARD (ACTIVE FOR MILESTONE 1) */}
-          <SkyHighDataUpload />
+          {/* NSE DATA UPLOAD CARD (REAL VALIDATION & IMPORT WORKFLOW) */}
+          <SkyHighDataUpload onImportComplete={loadHistory} />
+
+          {/* DATA HISTORY SECTION (REQUIRED BY MILESTONE 2) */}
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-10 shadow-betterment transition-all">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-700 font-bold text-xs uppercase tracking-wider mb-2">
+                  <History className="w-3.5 h-3.5 text-blue-600" />
+                  Historical Cumulative Repository
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 tracking-tight">DATA HISTORY</h3>
+                <p className="text-sm text-slate-500 mt-1">
+                  Accumulated daily records stored in isolated client persistence. Multi-day uploads append automatically.
+                </p>
+              </div>
+
+              {importedDays.length > 0 && (
+                <button
+                  onClick={handleClearHistory}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 text-xs font-semibold transition-all border border-slate-200"
+                  title="Clear all stored historical days"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Clear Dataset
+                </button>
+              )}
+            </div>
+
+            {/* CUMULATIVE METRICS CARDS */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-6">
+              {/* Latest Trading Date */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div className="flex items-center gap-1.5 text-slate-400 text-xs font-semibold mb-1">
+                  <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                  Latest Trading Date
+                </div>
+                <div className="text-lg font-bold text-slate-900 truncate">
+                  {historyStats.latestTradingDate}
+                </div>
+              </div>
+
+              {/* Total Trading Days */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div className="flex items-center gap-1.5 text-slate-400 text-xs font-semibold mb-1">
+                  <Layers className="w-3.5 h-3.5 text-blue-600" />
+                  Total Trading Days
+                </div>
+                <div className="text-lg font-bold text-slate-900">
+                  {historyStats.totalTradingDays > 0 ? historyStats.totalTradingDays : '—'}
+                </div>
+              </div>
+
+              {/* Total Securities */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div className="flex items-center gap-1.5 text-slate-400 text-xs font-semibold mb-1">
+                  <Database className="w-3.5 h-3.5 text-blue-600" />
+                  Total Securities
+                </div>
+                <div className="text-lg font-bold text-slate-900">
+                  {historyStats.totalSecurities > 0 ? historyStats.totalSecurities.toLocaleString('en-IN') : '—'}
+                </div>
+              </div>
+
+              {/* Total Records */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div className="flex items-center gap-1.5 text-slate-400 text-xs font-semibold mb-1">
+                  <Activity className="w-3.5 h-3.5 text-blue-600" />
+                  Total Records
+                </div>
+                <div className="text-lg font-bold text-slate-900">
+                  {historyStats.totalRecords > 0 ? historyStats.totalRecords.toLocaleString('en-IN') : '—'}
+                </div>
+              </div>
+
+              {/* Last Import */}
+              <div className="col-span-2 md:col-span-1 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div className="flex items-center gap-1.5 text-slate-400 text-xs font-semibold mb-1">
+                  <Clock className="w-3.5 h-3.5 text-blue-600" />
+                  Last Import
+                </div>
+                <div className="text-xs sm:text-sm font-semibold text-slate-900 truncate" title={historyStats.lastImport}>
+                  {historyStats.lastImport}
+                </div>
+              </div>
+            </div>
+
+            {/* STORED TRADING SESSIONS TABLE (IF ANY EXIST) */}
+            {importedDays.length > 0 ? (
+              <div className="mt-8 pt-6 border-t border-slate-100 overflow-x-auto">
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+                  Imported Trading Days Log
+                </div>
+                <table className="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
+                  <thead className="bg-slate-100/80 text-slate-600 font-semibold border-b border-slate-200">
+                    <tr>
+                      <th className="p-3">Trading Date</th>
+                      <th className="p-3">Source File</th>
+                      <th className="p-3">Securities Loaded</th>
+                      <th className="p-3">Records Stored</th>
+                      <th className="p-3">Import Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 bg-white">
+                    {importedDays.map((day) => (
+                      <tr key={day.date} className="hover:bg-slate-50">
+                        <td className="p-3 font-bold text-slate-900 flex items-center gap-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          {day.formattedDate}
+                        </td>
+                        <td className="p-3 text-slate-600 truncate max-w-xs">{day.fileName}</td>
+                        <td className="p-3 font-semibold text-slate-800">{day.stockCount.toLocaleString('en-IN')}</td>
+                        <td className="p-3 font-semibold text-blue-700">{day.rowCount.toLocaleString('en-IN')}</td>
+                        <td className="p-3 text-slate-500">{day.importedAt}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="mt-6 p-4 rounded-xl bg-slate-50 text-center text-xs text-slate-500 border border-slate-100">
+                No historical sessions recorded yet. Upload a daily NSE Bhavcopy CSV to initialize history.
+              </div>
+            )}
+          </div>
 
           {/* UPCOMING PIPELINE MODULES (VISIBLY COMING NEXT - NOT FUNCTIONAL) */}
           <div className="space-y-6">
@@ -216,7 +380,7 @@ export default function SkyHighPage() {
                 <div className="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
                   <span className="flex items-center gap-1">
                     <Lock className="w-3.5 h-3.5" />
-                    Milestone 2
+                    Milestone 3
                   </span>
                   <span className="font-semibold text-slate-400">Locked</span>
                 </div>
@@ -246,7 +410,7 @@ export default function SkyHighPage() {
                 <div className="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
                   <span className="flex items-center gap-1">
                     <Lock className="w-3.5 h-3.5" />
-                    Milestone 2
+                    Milestone 4
                   </span>
                   <span className="font-semibold text-slate-400">Locked</span>
                 </div>
