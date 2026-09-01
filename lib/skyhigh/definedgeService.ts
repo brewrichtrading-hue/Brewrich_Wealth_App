@@ -12,6 +12,7 @@ import https from 'https';
 import { createClient } from '@/lib/supabase/client';
 import { lookupDefinedgeSymbol, lookupDefinedgeToken, DefinedgeSecurity } from './definedgeMaster';
 import { getActiveServerSessionKey } from './definedgeAuth';
+import { formatDisplayDate } from './normalizer';
 
 export interface DefinedgeHistoricalRequest {
   symbol?: string;
@@ -94,32 +95,102 @@ function toDefinedgeDateString(isoDate: string, isEndOfDay = false): string {
 
 /**
  * Parses Definedge date string into normalized YYYY-MM-DD.
+ * Handles:
+ * - 12-digit Definedge API timestamp: ddMMyyyyHHmm (e.g. "010820260000", "310820261530")
+ * - 14-digit timestamp: ddMMyyyyHHmmss or yyyyMMddHHmmss
+ * - 8-digit timestamp: ddMMyyyy (e.g. "01082026") or yyyyMMdd (e.g. "20260801")
+ * - Standard Indian format: DD-MM-YYYY or DD/MM/YYYY (with or without time)
+ * - ISO format: YYYY-MM-DD (with or without time or "T")
+ * - Text month format: DD-MMM-YYYY (e.g. "01-AUG-2026", "01-Aug-2026")
+ * - Epoch timestamp: 10 digits (seconds) or 13 digits (milliseconds)
+ * - Header rejection: returns null for "Date and time", "Date", "TIMESTAMP", etc.
  */
-function parseDefinedgeDate(dateStr: string): string | null {
+export function parseDefinedgeDate(dateStr: string): string | null {
   if (!dateStr) return null;
-  const clean = dateStr.trim().split(' ')[0]; // Strip time component if present
+  const clean = dateStr.replace(/["']/g, '').trim();
 
-  // 1. YYYY-MM-DD
-  if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
-    return clean;
+  // If header text or alphabetical labels, reject as non-date
+  if (/^[a-zA-Z_\s]+$/.test(clean)) {
+    return null;
   }
-  // 2. DD-MM-YYYY
-  if (/^\d{2}-\d{2}-\d{4}$/.test(clean)) {
-    const [d, m, y] = clean.split('-');
-    return `${y}-${m}-${d}`;
+
+  // 1. ISO format: YYYY-MM-DD (e.g. 2026-08-01, 2026-08-01T09:15:00, 2026-08-01 15:30:00)
+  const isoMatch = clean.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) {
+    return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
   }
-  // 3. DD/MM/YYYY
-  if (/^\d{2}\/\d{2}\/\d{4}$/.test(clean)) {
-    const [d, m, y] = clean.split('/');
-    return `${y}-${m}-${d}`;
+
+  // 2. Standard Indian hyphen format: DD-MM-YYYY (e.g. 01-08-2026, 01-08-2026 15:30:00)
+  const dmyHyphen = clean.match(/^(\d{2})-(\d{2})-(\d{4})/);
+  if (dmyHyphen) {
+    return `${dmyHyphen[3]}-${dmyHyphen[2]}-${dmyHyphen[1]}`;
   }
-  // 4. DDMMYYYY
-  if (/^\d{8}$/.test(clean)) {
+
+  // 3. Standard Indian slash format: DD/MM/YYYY (e.g. 01/08/2026, 01/08/2026 15:30:00)
+  const dmySlash = clean.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (dmySlash) {
+    return `${dmySlash[3]}-${dmySlash[2]}-${dmySlash[1]}`;
+  }
+
+  // 4. Text month format: DD-MMM-YYYY (e.g. 01-AUG-2026, 01-Aug-2026)
+  const monthMap: Record<string, string> = {
+    JAN: '01', FEB: '02', MAR: '03', APR: '04', MAY: '05', JUN: '06',
+    JUL: '07', AUG: '08', SEP: '09', OCT: '10', NOV: '11', DEC: '12',
+  };
+  const textMonthMatch = clean.match(/^(\d{1,2})[-\s/]([A-Za-z]{3})[-\s/](\d{2,4})/);
+  if (textMonthMatch) {
+    const d = textMonthMatch[1].padStart(2, '0');
+    const mStr = textMonthMatch[2].toUpperCase();
+    let y = textMonthMatch[3];
+    if (y.length === 2) {
+      y = parseInt(y, 10) > 70 ? `19${y}` : `20${y}`;
+    }
+    const m = monthMap[mStr];
+    if (m) {
+      return `${y}-${m}-${d}`;
+    }
+  }
+
+  // 5. Definedge 12-digit format: ddMMyyyyHHmm (e.g. 010820260000, 310820261530)
+  if (/^\d{12}$/.test(clean)) {
     const d = clean.slice(0, 2);
     const m = clean.slice(2, 4);
     const y = clean.slice(4, 8);
     return `${y}-${m}-${d}`;
   }
+
+  // 6. 14-digit format: ddMMyyyyHHmmss or yyyyMMddHHmmss
+  if (/^\d{14}$/.test(clean)) {
+    if (/^(19|20)\d{12}$/.test(clean)) {
+      return `${clean.slice(0, 4)}-${clean.slice(4, 6)}-${clean.slice(6, 8)}`;
+    } else {
+      return `${clean.slice(4, 8)}-${clean.slice(2, 4)}-${clean.slice(0, 2)}`;
+    }
+  }
+
+  // 7. 8-digit format: ddMMyyyy or yyyyMMdd
+  if (/^\d{8}$/.test(clean)) {
+    if (/^(19|20)\d{6}$/.test(clean)) {
+      return `${clean.slice(0, 4)}-${clean.slice(4, 6)}-${clean.slice(6, 8)}`;
+    } else {
+      return `${clean.slice(4, 8)}-${clean.slice(2, 4)}-${clean.slice(0, 2)}`;
+    }
+  }
+
+  // 8. Epoch timestamp (10 digits for seconds, 13 digits for milliseconds)
+  if (/^\d{10}$/.test(clean)) {
+    const date = new Date(parseInt(clean, 10) * 1000);
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().split('T')[0];
+    }
+  }
+  if (/^\d{13}$/.test(clean)) {
+    const date = new Date(parseInt(clean, 10));
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().split('T')[0];
+    }
+  }
+
   return null;
 }
 
@@ -313,61 +384,133 @@ export async function ingestDefinedgeHistoricalData(
     };
   }
 
-  // 6. Parse and Normalize Rows
-  const lines = rawResponse.split('\n');
+  // 6. Parse and Normalize Rows (Universal JSON / CSV parser)
   const validBars: DefinedgeNormalizedBar[] = [];
   const sampleRejectionReasons: string[] = [];
   let recordsRejected = 0;
 
-  for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
-    const line = lines[lineIdx];
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-
-    const parts = trimmed.split(',');
-    if (parts.length < 5) {
-      recordsRejected++;
-      if (sampleRejectionReasons.length < 5) {
-        sampleRejectionReasons.push(`Line ${lineIdx}: parts.length (${parts.length}) < 5. Content: "${trimmed.slice(0, 80)}"`);
+  if (isJson) {
+    let rawItems: any[] = [];
+    if (Array.isArray(parsedJson)) {
+      rawItems = parsedJson;
+    } else if (typeof parsedJson === 'object' && parsedJson !== null) {
+      for (const key of ['data', 'candles', 'history', 'records', 'result', 'bars']) {
+        if (Array.isArray(parsedJson[key])) {
+          rawItems = parsedJson[key];
+          break;
+        }
       }
-      continue;
     }
 
-    const rawDate = parts[0]?.trim();
-    const trading_date = parseDefinedgeDate(rawDate);
-    const open = parseFloat(parts[1]?.trim());
-    const high = parseFloat(parts[2]?.trim());
-    const low = parseFloat(parts[3]?.trim());
-    const close = parseFloat(parts[4]?.trim());
-    const volume = parts[5] ? parseInt(parts[5].trim(), 10) : 0;
+    for (let idx = 0; idx < rawItems.length; idx++) {
+      const item = rawItems[idx];
+      if (!item) continue;
 
-    if (!trading_date || isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)) {
-      recordsRejected++;
-      if (sampleRejectionReasons.length < 5) {
-        const failureDetails = [
-          !trading_date ? `Invalid date "${rawDate}"` : null,
-          isNaN(open) ? `Open NaN ("${parts[1]}")` : null,
-          isNaN(high) ? `High NaN ("${parts[2]}")` : null,
-          isNaN(low) ? `Low NaN ("${parts[3]}")` : null,
-          isNaN(close) ? `Close NaN ("${parts[4]}")` : null,
-        ].filter(Boolean).join(', ');
-        sampleRejectionReasons.push(`Line ${lineIdx}: ${failureDetails}. Raw: "${trimmed.slice(0, 80)}"`);
+      let rawDate: any;
+      let openVal: any, highVal: any, lowVal: any, closeVal: any, volVal: any;
+
+      if (Array.isArray(item)) {
+        rawDate = item[0];
+        openVal = item[1];
+        highVal = item[2];
+        lowVal = item[3];
+        closeVal = item[4];
+        volVal = item[5];
+      } else if (typeof item === 'object') {
+        rawDate = item.Dateandtime ?? item.datetime ?? item.date ?? item.Date ?? item.time ?? item.timestamp;
+        openVal = item.open ?? item.Open ?? item.o ?? item['Open Price'];
+        highVal = item.high ?? item.High ?? item.h ?? item['High Price'];
+        lowVal = item.low ?? item.Low ?? item.l ?? item['Low Price'];
+        closeVal = item.close ?? item.Close ?? item.c ?? item['Close Price'] ?? item.ltp;
+        volVal = item.volume ?? item.Volume ?? item.vol ?? item.v ?? item.qty;
       }
-      continue;
-    }
 
-    validBars.push({
-      id: `${trading_date}_${symbol}`,
-      symbol,
-      trading_date,
-      open,
-      high,
-      low,
-      close,
-      volume: isNaN(volume) ? 0 : volume,
-      series: series || 'EQ',
-      source_file: 'Definedge Historical',
-    });
+      const trading_date = parseDefinedgeDate(String(rawDate || ''));
+      const open = parseFloat(String(openVal));
+      const high = parseFloat(String(highVal));
+      const low = parseFloat(String(lowVal));
+      const close = parseFloat(String(closeVal));
+      const volume = parseInt(String(volVal || 0), 10);
+
+      if (!trading_date || isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close) || open <= 0 || close <= 0) {
+        recordsRejected++;
+        if (sampleRejectionReasons.length < 5) {
+          sampleRejectionReasons.push(`JSON item ${idx}: Invalid OHLCV or date (${trading_date || rawDate})`);
+        }
+        continue;
+      }
+
+      validBars.push({
+        id: `${trading_date}_${symbol}`,
+        symbol,
+        trading_date,
+        open,
+        high,
+        low,
+        close,
+        volume: isNaN(volume) ? 0 : volume,
+        series: series || 'EQ',
+        source_file: 'Definedge Historical',
+      });
+    }
+  } else {
+    // CSV / Plain text parser
+    const lines = rawResponse.split('\n');
+    const firstLine = lines[0]?.trim();
+    // Skip header line if detected
+    const isHeader = firstLine && /date|open|high|close/i.test(firstLine);
+    const startIdx = isHeader ? 1 : 0;
+
+    for (let lineIdx = startIdx; lineIdx < lines.length; lineIdx++) {
+      const line = lines[lineIdx];
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+
+      const parts = trimmed.split(',').map(p => p.replace(/["']/g, '').trim());
+      if (parts.length < 5) {
+        recordsRejected++;
+        if (sampleRejectionReasons.length < 5) {
+          sampleRejectionReasons.push(`Line ${lineIdx}: parts.length (${parts.length}) < 5. Content: "${trimmed.slice(0, 80)}"`);
+        }
+        continue;
+      }
+
+      const rawDate = parts[0];
+      const trading_date = parseDefinedgeDate(rawDate);
+      const open = parseFloat(parts[1]);
+      const high = parseFloat(parts[2]);
+      const low = parseFloat(parts[3]);
+      const close = parseFloat(parts[4]);
+      const volume = parts[5] ? parseInt(parts[5], 10) : 0;
+
+      if (!trading_date || isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close) || open <= 0 || close <= 0) {
+        recordsRejected++;
+        if (sampleRejectionReasons.length < 5) {
+          const failureDetails = [
+            !trading_date ? `Invalid date "${rawDate}"` : null,
+            isNaN(open) || open <= 0 ? `Open invalid ("${parts[1]}")` : null,
+            isNaN(high) || high <= 0 ? `High invalid ("${parts[2]}")` : null,
+            isNaN(low) || low <= 0 ? `Low invalid ("${parts[3]}")` : null,
+            isNaN(close) || close <= 0 ? `Close invalid ("${parts[4]}")` : null,
+          ].filter(Boolean).join(', ');
+          sampleRejectionReasons.push(`Line ${lineIdx}: ${failureDetails}. Raw: "${trimmed.slice(0, 80)}"`);
+        }
+        continue;
+      }
+
+      validBars.push({
+        id: `${trading_date}_${symbol}`,
+        symbol,
+        trading_date,
+        open,
+        high,
+        low,
+        close,
+        volume: isNaN(volume) ? 0 : volume,
+        series: series || 'EQ',
+        source_file: 'Definedge Historical',
+      });
+    }
   }
 
   if (sampleRejectionReasons.length > 0) {
@@ -380,10 +523,10 @@ export async function ingestDefinedgeHistoricalData(
     statusCode,
     contentType,
     responseFormat: isJson ? (Array.isArray(parsedJson) ? 'json-array' : 'json-object') : 'csv-text',
-    itemCount: isJson ? (Array.isArray(parsedJson) ? parsedJson.length : (parsedJson.data?.length ?? 0)) : lines.filter(l => l.trim()).length,
+    itemCount: isJson ? (Array.isArray(parsedJson) ? parsedJson.length : (parsedJson.data?.length ?? 0)) : rawResponse.split('\n').filter(l => l.trim()).length,
     topLevelKeys: isJson && !Array.isArray(parsedJson) && parsedJson ? Object.keys(parsedJson) : undefined,
     rawSnippet: rawResponse.slice(0, 300),
-    sampleFirstRecord: isJson ? (Array.isArray(parsedJson) ? parsedJson[0] : (parsedJson.data?.[0] ?? null)) : (lines[0] || ''),
+    sampleFirstRecord: isJson ? (Array.isArray(parsedJson) ? parsedJson[0] : (parsedJson.data?.[0] ?? null)) : (rawResponse.split('\n')[0] || ''),
     sampleFieldTypes: isJson && Array.isArray(parsedJson) && parsedJson[0] && typeof parsedJson[0] === 'object'
       ? Object.fromEntries(Object.entries(parsedJson[0]).map(([k, v]) => [k, typeof v]))
       : undefined,
@@ -417,23 +560,27 @@ export async function ingestDefinedgeHistoricalData(
     };
   }
 
-  // 7. Check for Existing Records in Supabase (Deduplication)
+  // 7. Check for Existing Records in Supabase (Batch Deduplication)
   const supabase = createClient();
-  const tradingDates = validBars.map(b => b.trading_date);
+  const allIds = validBars.map(b => b.id);
+  const existingIdSet = new Set<string>();
 
-  // Query existing dates for this symbol
-  const { data: existingRows, error: fetchErr } = await supabase
-    .from('skyhigh_market_data')
-    .select('trading_date')
-    .eq('symbol', symbol)
-    .in('trading_date', tradingDates);
+  const LOOKUP_CHUNK = 500;
+  for (let i = 0; i < allIds.length; i += LOOKUP_CHUNK) {
+    const idSlice = allIds.slice(i, i + LOOKUP_CHUNK);
+    const { data: existingRows, error: fetchErr } = await supabase
+      .from('skyhigh_market_data')
+      .select('id')
+      .in('id', idSlice);
 
-  if (fetchErr) {
-    console.warn('⚠️ [DEFINEDGE DEDUP WARNING]:', fetchErr.message);
+    if (fetchErr) {
+      console.warn('⚠️ [DEFINEDGE DEDUP WARNING]:', fetchErr.message);
+    } else if (existingRows) {
+      existingRows.forEach(r => existingIdSet.add(r.id));
+    }
   }
 
-  const existingDateSet = new Set((existingRows || []).map(r => r.trading_date));
-  const newBarsToInsert = validBars.filter(b => !existingDateSet.has(b.trading_date));
+  const newBarsToInsert = validBars.filter(b => !existingIdSet.has(b.id));
   const recordsSkipped = validBars.length - newBarsToInsert.length;
 
   // 8. Chunked Batch Persistence into Supabase
@@ -444,7 +591,7 @@ export async function ingestDefinedgeHistoricalData(
     const chunk = newBarsToInsert.slice(i, i + CHUNK_SIZE);
     const { error: insertErr } = await supabase
       .from('skyhigh_market_data')
-      .upsert(chunk, { onConflict: 'symbol,trading_date' });
+      .upsert(chunk, { onConflict: 'id' });
 
     if (insertErr) {
       console.error('❌ [DEFINEDGE UPSERT ERROR]:', insertErr);
@@ -457,27 +604,38 @@ export async function ingestDefinedgeHistoricalData(
   // 9. Register/Update Distinct Trading Days in skyhigh_trading_days
   try {
     const distinctDates = Array.from(new Set(validBars.map(b => b.trading_date)));
-    const { data: existingDays } = await supabase
-      .from('skyhigh_trading_days')
-      .select('trading_date')
-      .in('trading_date', distinctDates);
+    const existingDaysSet = new Set<string>();
 
-    const existingDaysSet = new Set((existingDays || []).map(d => d.trading_date));
+    for (let i = 0; i < distinctDates.length; i += 500) {
+      const slice = distinctDates.slice(i, i + 500);
+      const { data: existingDays } = await supabase
+        .from('skyhigh_trading_days')
+        .select('trading_date')
+        .in('trading_date', slice);
+
+      if (existingDays) {
+        existingDays.forEach(d => existingDaysSet.add(d.trading_date));
+      }
+    }
+
     const newDays = distinctDates.filter(d => !existingDaysSet.has(d));
 
     if (newDays.length > 0) {
       const dayInserts = newDays.map(d => ({
         trading_date: d,
-        formatted_date: d,
+        formatted_date: formatDisplayDate(d),
         stock_count: 1,
         row_count: 1,
         source_file: 'Definedge Historical',
         imported_at: new Date().toISOString(),
       }));
 
-      await supabase
-        .from('skyhigh_trading_days')
-        .upsert(dayInserts, { onConflict: 'trading_date' });
+      for (let i = 0; i < dayInserts.length; i += 500) {
+        const chunk = dayInserts.slice(i, i + 500);
+        await supabase
+          .from('skyhigh_trading_days')
+          .upsert(chunk, { onConflict: 'trading_date' });
+      }
     }
   } catch (dayErr) {
     console.warn('⚠️ [DEFINEDGE TRADING DAYS LOG WARNING]:', dayErr);
