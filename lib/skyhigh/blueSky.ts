@@ -25,7 +25,8 @@ import {
   BlueSkyEngineResult, 
   BreakoutStatus, 
   BlueSkyStatus,
-  BaseStatus
+  BaseStatus,
+  SecurityPipelineStage
 } from './types';
 import { formatDisplayDate } from './normalizer';
 
@@ -121,6 +122,7 @@ export function calculateBlueSkyStrategy(
         notQualifiedCount: 0,
         insufficientHistoryCount: 0,
         isSingleDayDataset: true,
+        isScreenReady: false,
         totalHistoricalDays: 0,
         calculatedAt: new Date().toLocaleString('en-IN'),
       },
@@ -145,6 +147,7 @@ export function calculateBlueSkyStrategy(
         notQualifiedCount: 0,
         insufficientHistoryCount: 0,
         isSingleDayDataset: true,
+        isScreenReady: false,
         totalHistoricalDays: 0,
         calculatedAt: new Date().toLocaleString('en-IN'),
       },
@@ -407,6 +410,24 @@ export function calculateBlueSkyStrategy(
       notQualifiedCount++;
     }
 
+    // Explicit Data Pipeline Stage determination
+    let pipelineStage: SecurityPipelineStage = 'UNIVERSE';
+    if (!historyLengthPass) {
+      pipelineStage = 'INSUFFICIENT_HISTORY';
+    } else if (!passesUniverseAndLiquidity) {
+      pipelineStage = 'NOT_QUALIFIED';
+    } else if (rs === null) {
+      pipelineStage = 'RS_ELIGIBLE';
+    } else if (rs < config.minRelativeStrength) {
+      pipelineStage = 'NOT_QUALIFIED';
+    } else if (status === 'BLUE SKY BREAKOUT') {
+      pipelineStage = 'BLUE_SKY_BREAKOUT';
+    } else if (status === 'BLUE SKY CANDIDATE') {
+      pipelineStage = 'BLUE_SKY_CANDIDATE';
+    } else {
+      pipelineStage = 'RS_PASS';
+    }
+
     finalSecurities.push({
       symbol: item.symbol,
       company: item.company,
@@ -425,6 +446,7 @@ export function calculateBlueSkyStrategy(
       marketCapCrores: item.marketCapCrores,
       avgDailyTradedValueCrores: item.avgDailyTradedValueCrores,
       totalSessionsAvailable: item.totalSessionsAvailable,
+      pipelineStage,
       baseStatus,
       breakoutStatus,
       status,
@@ -469,6 +491,8 @@ export function calculateBlueSkyStrategy(
     return b.avgDailyTradedValueCrores - a.avgDailyTradedValueCrores;
   });
 
+  const isScreenReady = totalHistoricalDays >= config.minTradingSessionsForRS && N >= 10;
+
   return {
     summary: {
       tradingDate: displayTradingDate,
@@ -478,6 +502,7 @@ export function calculateBlueSkyStrategy(
       notQualifiedCount,
       insufficientHistoryCount,
       isSingleDayDataset,
+      isScreenReady,
       totalHistoricalDays,
       calculatedAt: new Date().toLocaleString('en-IN'),
     },

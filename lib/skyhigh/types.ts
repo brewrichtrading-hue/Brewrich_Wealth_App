@@ -70,6 +70,22 @@ export interface CloudVerificationResult {
 // MILESTONE 4: APPROVED BANANAPATTERNS BLUE SKY STRATEGY TYPES
 // ==============================================================================
 
+export type SecurityPipelineStage = 
+  | 'UNIVERSE'
+  | 'HISTORY_AVAILABLE'
+  | 'LIQUIDITY_ELIGIBLE'
+  | 'MARKET_CAP_ELIGIBLE'
+  | 'RS_ELIGIBLE'
+  | 'RS_CALCULATED'
+  | 'RS_PASS'
+  | 'ATH_CALCULATED'
+  | 'PIVOT_AVAILABLE'
+  | 'BASE_STATUS'
+  | 'BLUE_SKY_CANDIDATE'
+  | 'BLUE_SKY_BREAKOUT'
+  | 'INSUFFICIENT_HISTORY'
+  | 'NOT_QUALIFIED';
+
 export type BlueSkyStatus = 
   | 'BLUE SKY BREAKOUT' 
   | 'BLUE SKY CANDIDATE' 
@@ -117,7 +133,8 @@ export interface SecurityHistoricalMetrics {
   avgDailyTradedValueCrores: number;    // Average daily traded turnover (Close * Volume) in ₹ Crores
   totalSessionsAvailable: number;       // Count of historical trading sessions available up to evaluationDate
   
-  // Statuses
+  // Statuses & Explicit Pipeline Stage
+  pipelineStage: SecurityPipelineStage;
   baseStatus: BaseStatus;               // Explicitly exposed as UNRESOLVED
   breakoutStatus: BreakoutStatus;
   status: BlueSkyStatus;
@@ -134,6 +151,21 @@ export interface SecurityHistoricalMetrics {
   };
 }
 
+export interface HistoricalCoverageMetrics {
+  totalUniverseSecurities: number;
+  securitiesWithHistory: number;
+  securitiesWith252Sessions: number; // RS-Eligible count
+  securitiesWith1Year: number;       // >= 240 sessions
+  securitiesWith3Years: number;      // >= 720 sessions
+  securitiesWith5Years: number;      // >= 1200 sessions
+  earliestTradingDate: string;
+  latestTradingDate: string;
+  totalTradingSessions: number;
+  totalMarketRecords: number;
+  isScreenReady: boolean;
+  readinessReason: string;
+}
+
 export interface BlueSkySummary {
   tradingDate: string;
   totalUniverse: number;
@@ -142,6 +174,7 @@ export interface BlueSkySummary {
   notQualifiedCount: number;
   insufficientHistoryCount: number;
   isSingleDayDataset: boolean;
+  isScreenReady: boolean;
   totalHistoricalDays: number;
   calculatedAt: string;
 }
@@ -150,4 +183,5 @@ export interface BlueSkyEngineResult {
   summary: BlueSkySummary;
   securities: SecurityHistoricalMetrics[];
   config: BlueSkyConfig;
+  coverage?: HistoricalCoverageMetrics;
 }

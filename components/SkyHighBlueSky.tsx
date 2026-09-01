@@ -76,6 +76,7 @@ export default function SkyHighBlueSky({ onRefreshNeeded }: SkyHighBlueSkyProps)
             notQualifiedCount: 0,
             insufficientHistoryCount: 0,
             isSingleDayDataset: true,
+            isScreenReady: false,
             totalHistoricalDays: 0,
             calculatedAt: new Date().toLocaleString('en-IN'),
           },
@@ -233,16 +234,21 @@ export default function SkyHighBlueSky({ onRefreshNeeded }: SkyHighBlueSkyProps)
           </div>
         )}
 
-        {/* DATASET AWARENESS NOTICE */}
-        {engineResult && engineResult.summary.isSingleDayDataset && (
-          <div className="my-6 p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-900 text-xs sm:text-sm flex items-start gap-3">
-            <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <span className="font-bold text-amber-950 block">
-                Historical Dataset Notice ({engineResult.summary.tradingDate})
-              </span>
-              <p className="text-xs text-amber-800 leading-relaxed">
-                The current repository contains {engineResult.summary.totalHistoricalDays} trading session(s). The 252-session Trailing Return for Relative Strength ranking (RS 1–99) requires at least 252 trading sessions. Stocks with fewer than 252 sessions are accurately marked as <span className="font-bold font-mono">INSUFFICIENT HISTORY</span> without synthetic data generation.
+        {/* SCREEN READINESS NOTICE */}
+        {engineResult && !engineResult.summary.isScreenReady && (
+          <div className="my-6 p-5 rounded-2xl bg-amber-50/90 border border-amber-300 text-amber-950 text-xs sm:text-sm flex items-start gap-3.5 shadow-sm">
+            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-sm text-amber-950 uppercase tracking-wide">
+                  BLUE SKY SCREEN NOT READY — INSUFFICIENT MARKET-WIDE HISTORICAL COVERAGE
+                </span>
+                <span className="text-[10px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">
+                  {engineResult.summary.totalHistoricalDays} / 252+ SESSIONS
+                </span>
+              </div>
+              <p className="text-xs text-amber-900 leading-relaxed">
+                The repository currently contains <strong>{engineResult.summary.totalHistoricalDays}</strong> trading session(s). Cross-sectional Relative Strength ranking (RS 1–99) requires at least <strong>252 historical trading sessions</strong> across the eligible market universe. In accordance with the approved Blue Sky rules, stocks cannot be screened or ranked without complete historical depth. Use the <strong>Market-Wide Historical Ingestion</strong> panel above to ingest 1-year or 5-year benchmark datasets.
               </p>
             </div>
           </div>
@@ -454,6 +460,7 @@ export default function SkyHighBlueSky({ onRefreshNeeded }: SkyHighBlueSkyProps)
                     <th className="p-3 text-center">Market Cap</th>
                     <th className="p-3 text-center">Base Status</th>
                     <th className="p-3 text-center">Breakout Status</th>
+                    <th className="p-3 text-center">Pipeline Stage</th>
                     <th className="p-3 text-center">Blue Sky Status</th>
                   </tr>
                 </thead>
@@ -552,6 +559,13 @@ export default function SkyHighBlueSky({ onRefreshNeeded }: SkyHighBlueSkyProps)
                                 : 'bg-slate-100 text-slate-500'
                           }`}>
                             {sec.breakoutStatus}
+                          </span>
+                        </td>
+
+                        {/* Pipeline Stage */}
+                        <td className="p-3 text-center">
+                          <span className="inline-flex px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-mono font-bold">
+                            {sec.pipelineStage || 'UNIVERSE'}
                           </span>
                         </td>
 

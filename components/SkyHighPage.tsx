@@ -23,6 +23,8 @@ import {
   ArrowUpCircle
 } from 'lucide-react';
 import SkyHighDataUpload from './SkyHighDataUpload';
+import SkyHighCoverageDashboard from './SkyHighCoverageDashboard';
+import SkyHighBatchIngestion from './SkyHighBatchIngestion';
 import SkyHighDefinedgeTest from './SkyHighDefinedgeTest';
 import SkyHighBlueSky from './SkyHighBlueSky';
 import { 
@@ -301,7 +303,22 @@ export default function SkyHighPage() {
             setRefreshTrigger(prev => prev + 1);
           }} />
 
-          {/* 2. DEFINEDGE HISTORICAL DATA INTEGRATION (PHASE 4) */}
+          {/* 2. HISTORICAL COVERAGE AUDITOR & SCREEN READINESS GATE */}
+          <SkyHighCoverageDashboard 
+            key={`coverage-${refreshTrigger}`}
+            onRefreshNeeded={() => {
+              loadCloudHistory();
+              setRefreshTrigger(prev => prev + 1);
+            }} 
+          />
+
+          {/* 3. MARKET-WIDE HISTORICAL INGESTION (BATCH PIPELINE) */}
+          <SkyHighBatchIngestion onIngestionComplete={() => {
+            loadCloudHistory();
+            setRefreshTrigger(prev => prev + 1);
+          }} />
+
+          {/* 4. DEFINEDGE DIAGNOSTIC & TESTING TOOL (SINGLE SECURITY) */}
           <SkyHighDefinedgeTest onIngestionComplete={() => {
             loadCloudHistory();
             setRefreshTrigger(prev => prev + 1);
