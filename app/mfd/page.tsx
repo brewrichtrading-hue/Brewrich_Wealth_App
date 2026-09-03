@@ -24,11 +24,11 @@ export default function MfdPage() {
   const phoneWhatsAppNumber = "+919042747590";
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-slate-900 font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-surface text-storm font-sans selection:bg-bumblebee selection:text-storm">
       
-      {/* ================= HERO SECTION (Betterment Royal Blue) ================= */}
-      <section className="relative bg-blue-600 text-white overflow-hidden pt-20 pb-32 px-4 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-400/30 via-transparent to-blue-900/50 pointer-events-none" />
+      {/* ================= HERO SECTION (Deep Storm Brand Palette) ================= */}
+      <section className="relative bg-storm text-surface overflow-hidden pt-20 pb-32 px-4 sm:px-6 lg:px-8">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-bumblebee/10 via-transparent to-storm-950/80 pointer-events-none" />
         
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
           
@@ -38,16 +38,16 @@ export default function MfdPage() {
             transition={{ duration: 0.6 }}
             className="lg:col-span-7 space-y-6"
           >
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/30 border border-blue-400/40 text-xs font-bold tracking-wide uppercase backdrop-blur-md text-blue-100">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-storm-800/80 border border-bumblebee/30 text-caption font-bold tracking-wide uppercase backdrop-blur-md text-bumblebee">
+              <span className="w-2 h-2 rounded-full bg-bumblebee animate-pulse" />
               Brewrich Institutional Wealth Platform
             </div>
 
-            <h1 className="text-4xl sm:text-6xl font-serif tracking-tight leading-[1.1]">
+            <h1 className="text-4xl sm:text-5xl lg:text-display font-serif tracking-tight leading-[1.1] text-surface">
               Build wealth with confidence and ease.
             </h1>
 
-            <p className="text-lg sm:text-xl text-blue-100 font-normal max-w-2xl leading-relaxed">
+            <p className="text-body sm:text-lg text-slate-300 font-normal max-w-2xl leading-relaxed">
               Investing and saving shouldn't take over your life. Brewrich automates your advisory, tax optimization, and credit lines for you.
             </p>
 
@@ -56,7 +56,7 @@ export default function MfdPage() {
                 href={onboardingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-8 py-4 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-bold text-base shadow-xl transition-all transform hover:-translate-y-0.5"
+                className="btn-interactive px-8 py-4 rounded-2xl bg-bumblebee hover:bg-bumblebee-400 text-storm font-extrabold text-body shadow-xl transition-all transform hover:-translate-y-0.5"
               >
                 Get Started &rarr;
               </a>
@@ -64,24 +64,24 @@ export default function MfdPage() {
                 href={`https://wa.me/${phoneWhatsAppNumber.replace('+', '')}?text=Hi,%20I%20would%20like%20to%20schedule%20a%201-to-1%20wealth%20consultation.`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-4 rounded-xl bg-blue-700/80 hover:bg-blue-700 text-white font-semibold text-base border border-blue-400/30 backdrop-blur-md transition-all"
+                className="btn-interactive px-6 py-4 rounded-2xl bg-storm-800/90 hover:bg-storm-700 text-surface font-semibold text-body border border-storm-600 backdrop-blur-md transition-all"
               >
                 Talk to Advisor (WhatsApp)
               </a>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 pt-8 border-t border-blue-500/40 text-blue-100 text-sm">
+            <div className="grid grid-cols-3 gap-4 pt-8 border-t border-storm-700 text-slate-300 text-sm">
               <div>
-                <p className="font-bold text-white text-xl">₹500 / mo</p>
-                <p className="text-xs text-blue-200">Minimum SIP Entry</p>
+                <p className="font-bold text-surface text-xl">₹500 / mo</p>
+                <p className="text-caption text-slate-400">Minimum SIP Entry</p>
               </div>
               <div>
-                <p className="font-bold text-white text-xl">₹1.25L</p>
-                <p className="text-xs text-blue-200">LTCG Tax Free Cap</p>
+                <p className="font-bold text-surface text-xl">₹1.25L</p>
+                <p className="text-caption text-slate-400">LTCG Tax Free Cap</p>
               </div>
               <div>
-                <p className="font-bold text-white text-xl">Trusted</p>
-                <p className="text-xs text-blue-200">By High-Net-Worth Clients</p>
+                <p className="font-bold text-surface text-xl">Trusted</p>
+                <p className="text-caption text-slate-400">By High-Net-Worth Clients</p>
               </div>
             </div>
           </motion.div>
@@ -93,41 +93,41 @@ export default function MfdPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="lg:col-span-5 flex justify-center"
           >
-            <div className="relative w-full max-w-sm bg-slate-900 rounded-[3rem] p-4 border-4 border-slate-700 shadow-2xl shadow-black/60">
-              <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-28 h-5 bg-slate-950 rounded-full z-20 flex items-center justify-center">
-                <div className="w-12 h-1.5 bg-slate-800 rounded-full" />
+            <div className="relative w-full max-w-sm bg-storm-950 rounded-[3rem] p-4 border-4 border-storm-700 shadow-2xl shadow-black/60">
+              <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-28 h-5 bg-black rounded-full z-20 flex items-center justify-center">
+                <div className="w-12 h-1.5 bg-storm-800 rounded-full" />
               </div>
 
-              <div className="bg-white text-slate-900 rounded-[2.2rem] p-5 pt-8 space-y-4 shadow-inner">
-                <div className="flex justify-between items-center text-xs text-slate-500 font-medium">
+              <div className="bg-[#FEFEFE] text-storm rounded-[2.2rem] p-5 pt-8 space-y-4 shadow-inner">
+                <div className="flex justify-between items-center text-caption text-slate-500 font-medium">
                   <span>Automated Portfolio</span>
-                  <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">XIRR 16.4%</span>
+                  <span className="text-storm font-bold bg-bumblebee/20 px-2 py-0.5 rounded border border-bumblebee/40">XIRR 16.4%</span>
                 </div>
 
                 <div>
-                  <p className="text-xs text-slate-500">Total Portfolio Value</p>
-                  <p className="text-2xl font-black text-slate-900">₹48,93,420.10</p>
-                  <p className="text-xs text-emerald-600 font-semibold mt-0.5">+₹4,22,150.80 All-time gain</p>
+                  <p className="text-caption text-slate-500">Total Portfolio Value</p>
+                  <p className="text-2xl font-black text-storm">₹48,93,420.10</p>
+                  <p className="text-caption text-emerald-600 font-semibold mt-0.5">+₹4,22,150.80 All-time gain</p>
                 </div>
 
-                <div className="bg-blue-50 border border-blue-100 rounded-2xl p-3 space-y-2">
-                  <div className="flex justify-between text-xs font-bold text-blue-900">
+                <div className="bg-storm-50 border border-storm-100 rounded-2xl p-3 space-y-2">
+                  <div className="flex justify-between text-caption font-bold text-storm">
                     <span>Goal Progress</span>
                     <span>88% on track</span>
                   </div>
-                  <div className="w-full bg-blue-200 h-2 rounded-full overflow-hidden">
-                    <div className="bg-blue-600 h-full rounded-full w-[88%]" />
+                  <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                    <div className="bg-storm h-full rounded-full w-[88%]" />
                   </div>
                 </div>
 
                 <div className="pt-2">
-                  <div className="text-xs font-semibold text-slate-600 mb-2">Compounding Trajectory</div>
+                  <div className="text-caption font-semibold text-slate-600 mb-2">Compounding Trajectory</div>
                   <div className="h-24 w-full flex items-end gap-1.5 pt-2 border-b border-l border-slate-200 px-1">
                     {[35, 42, 50, 58, 65, 74, 82, 95, 110, 135].map((val, idx) => (
                       <div 
                         key={idx} 
                         style={{ height: `${val}%` }} 
-                        className="flex-1 bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-sm"
+                        className="flex-1 bg-gradient-to-t from-storm to-bumblebee rounded-t-sm"
                       />
                     ))}
                   </div>
@@ -140,41 +140,41 @@ export default function MfdPage() {
       </section>
 
 
-      {/* ================= BETTERMENT-STYLE 3-COLUMN PRODUCT GRID ================= */}
+      {/* ================= 3-COLUMN PRODUCT GRID ================= */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-16">
         
         <div className="text-center space-y-3">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600">Invest The Way You Want</h2>
-          <p className="text-3xl sm:text-5xl font-serif text-slate-900">Engineered for Maximum Yield</p>
-          <p className="text-slate-600 max-w-xl mx-auto text-base">
+          <h2 className="text-caption font-bold uppercase tracking-widest text-storm bg-bumblebee/20 px-3 py-1 rounded-full inline-block border border-bumblebee/40">Invest The Way You Want</h2>
+          <p className="text-3xl sm:text-h1 font-serif text-storm">Engineered for Maximum Yield</p>
+          <p className="text-slate-600 max-w-xl mx-auto text-body">
             Select your strategy and let institutional automation handle the rebalancing, tax-loss harvesting, and compounding.
           </p>
         </div>
 
-        {/* 3-Column Card Grid with White Top & Royal Blue Interactive Bottom */}
+        {/* 3-Column Card Grid with White Surface Top & Interactive Bottom */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
           {/* Card 1: SIP & Mutual Funds */}
           <motion.div 
             whileHover={{ y: -6 }}
             transition={{ duration: 0.2 }}
-            className="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden flex flex-col justify-between"
+            className="bg-[#FEFEFE] rounded-3xl border border-slate-200 shadow-brand overflow-hidden flex flex-col justify-between"
           >
             <div className="p-8 space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">
+              <div className="w-12 h-12 rounded-2xl bg-storm-50 border border-storm-100 flex items-center justify-center text-storm font-bold text-lg">
                 01
               </div>
-              <h3 className="text-2xl font-serif font-bold text-slate-900">SIP & Mutual Funds</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
+              <h3 className="text-h3 font-serif font-bold text-storm">SIP & Mutual Funds</h3>
+              <p className="text-slate-600 text-body leading-relaxed">
                 Build long-term wealth with automated monthly disciplined allocations and smart tax harvesting.
               </p>
             </div>
 
-            {/* Interactive Blue Bottom Module */}
-            <div className="bg-blue-600 p-6 text-white space-y-4">
-              <div className="flex justify-between items-center text-xs text-blue-100">
+            {/* Interactive Storm Bottom Module */}
+            <div className="bg-storm p-6 text-surface space-y-4">
+              <div className="flex justify-between items-center text-caption text-slate-300">
                 <span>Monthly Allocation:</span>
-                <span className="font-bold text-white bg-blue-700 px-2.5 py-1 rounded-lg">₹{sipAmount.toLocaleString('en-IN')}/mo</span>
+                <span className="font-bold text-storm bg-bumblebee px-2.5 py-1 rounded-lg">₹{sipAmount.toLocaleString('en-IN')}/mo</span>
               </div>
               <input 
                 type="range" 
@@ -183,17 +183,17 @@ export default function MfdPage() {
                 step={1000}
                 value={sipAmount}
                 onChange={(e) => setSipAmount(Number(e.target.value))}
-                className="w-full accent-yellow-400 bg-blue-700 rounded-lg h-2 cursor-pointer"
+                className="w-full accent-bumblebee bg-storm-800 rounded-lg h-2 cursor-pointer"
               />
-              <div className="pt-2 border-t border-blue-500/60 flex justify-between items-center text-xs">
-                <span className="text-blue-100">Est. 10Y Growth:</span>
-                <span className="font-bold text-yellow-300">+₹{(estimatedGains / 100000).toFixed(2)} Lakhs</span>
+              <div className="pt-2 border-t border-storm-700 flex justify-between items-center text-caption">
+                <span className="text-slate-300">Est. 10Y Growth:</span>
+                <span className="font-bold text-bumblebee">+₹{(estimatedGains / 100000).toFixed(2)} Lakhs</span>
               </div>
               <a 
                 href={onboardingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-center w-full py-3.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-bold text-sm shadow-lg transition-all"
+                className="btn-interactive block text-center w-full py-3.5 rounded-xl bg-bumblebee hover:bg-bumblebee-400 text-storm font-bold text-sm shadow-lg transition-all"
               >
                 Start SIP Portfolio &rarr;
               </a>
@@ -204,23 +204,23 @@ export default function MfdPage() {
           <motion.div 
             whileHover={{ y: -6 }}
             transition={{ duration: 0.2 }}
-            className="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden flex flex-col justify-between"
+            className="bg-[#FEFEFE] rounded-3xl border border-slate-200 shadow-brand overflow-hidden flex flex-col justify-between"
           >
             <div className="p-8 space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 font-bold text-lg">
+              <div className="w-12 h-12 rounded-2xl bg-storm-50 border border-storm-100 flex items-center justify-center text-storm font-bold text-lg">
                 02
               </div>
-              <h3 className="text-2xl font-serif font-bold text-slate-900">Loan Against Mutual Funds</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
+              <h3 className="text-h3 font-serif font-bold text-storm">Loan Against Mutual Funds</h3>
+              <p className="text-slate-600 text-body leading-relaxed">
                 Unlock instant bank overdraft liquidity without breaking your compounding or triggering capital gains tax.
               </p>
             </div>
 
-            {/* Interactive Blue/Purple Bottom Module */}
-            <div className="bg-slate-900 p-6 text-white space-y-4">
-              <div className="flex justify-between items-center text-xs text-slate-400">
+            {/* Interactive Dark Bottom Module */}
+            <div className="bg-storm-950 p-6 text-surface space-y-4">
+              <div className="flex justify-between items-center text-caption text-slate-400">
                 <span>Pledged Portfolio:</span>
-                <span className="font-bold text-white bg-slate-800 px-2.5 py-1 rounded-lg">₹{(portfolioValue / 100000).toFixed(1)} Lakhs</span>
+                <span className="font-bold text-surface bg-storm-800 px-2.5 py-1 rounded-lg">₹{(portfolioValue / 100000).toFixed(1)} Lakhs</span>
               </div>
               <input 
                 type="range" 
@@ -229,17 +229,17 @@ export default function MfdPage() {
                 step={500000}
                 value={portfolioValue}
                 onChange={(e) => setPortfolioValue(Number(e.target.value))}
-                className="w-full accent-blue-500 bg-slate-800 rounded-lg h-2 cursor-pointer"
+                className="w-full accent-bumblebee bg-storm-800 rounded-lg h-2 cursor-pointer"
               />
-              <div className="pt-2 border-t border-slate-800 flex justify-between items-center text-xs">
+              <div className="pt-2 border-t border-storm-800 flex justify-between items-center text-caption">
                 <span className="text-slate-400">Overdraft Limit (80% LTV):</span>
-                <span className="font-bold text-emerald-400">₹{approvedLimit.toLocaleString('en-IN')}</span>
+                <span className="font-bold text-bumblebee">₹{approvedLimit.toLocaleString('en-IN')}</span>
               </div>
               <a 
                 href={onboardingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-center w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg transition-all"
+                className="btn-interactive block text-center w-full py-3.5 rounded-xl bg-storm-800 hover:bg-storm-700 text-surface font-bold text-sm shadow-lg transition-all"
               >
                 Access Credit Line &rarr;
               </a>
@@ -250,33 +250,33 @@ export default function MfdPage() {
           <motion.div 
             whileHover={{ y: -6 }}
             transition={{ duration: 0.2 }}
-            className="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden flex flex-col justify-between"
+            className="bg-[#FEFEFE] rounded-3xl border border-slate-200 shadow-brand overflow-hidden flex flex-col justify-between"
           >
             <div className="p-8 space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-lg">
+              <div className="w-12 h-12 rounded-2xl bg-joyous-50 border border-joyous-100 flex items-center justify-center text-joyous font-bold text-lg">
                 03
               </div>
-              <h3 className="text-2xl font-serif font-bold text-slate-900">Term & Health Protection</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
+              <h3 className="text-h3 font-serif font-bold text-storm">Term & Health Protection</h3>
+              <p className="text-slate-600 text-body leading-relaxed">
                 Multi-crore life cover and cashless health networks across 10,000+ top hospitals for family security.
               </p>
             </div>
 
             {/* Digital Policy Card Visual Bottom Module */}
-            <div className="bg-emerald-950 p-6 text-white space-y-4">
-              <div className="flex justify-between items-center text-xs text-emerald-300">
+            <div className="bg-storm-900 p-6 text-surface space-y-4">
+              <div className="flex justify-between items-center text-caption text-bumblebee">
                 <span className="font-bold uppercase tracking-wider">Verified Active Cover</span>
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="w-2.5 h-2.5 rounded-full bg-bumblebee animate-pulse" />
               </div>
-              <div className="bg-emerald-900/60 border border-emerald-500/30 rounded-2xl p-3.5">
-                <p className="text-xs text-emerald-200">Composite Life Protection</p>
-                <p className="text-xl font-black text-white">₹10 Crore+ Life Cover</p>
+              <div className="bg-storm-800/80 border border-storm-700 rounded-2xl p-3.5">
+                <p className="text-caption text-slate-300">Composite Life Protection</p>
+                <p className="text-xl font-black text-surface">₹10 Crore+ Life Cover</p>
               </div>
               <a 
                 href={onboardingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-center w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-lg transition-all"
+                className="btn-interactive block text-center w-full py-3.5 rounded-xl bg-joyous hover:bg-joyous-600 text-surface font-bold text-sm shadow-lg transition-all"
               >
                 Explore Protection Plans &rarr;
               </a>
@@ -288,39 +288,39 @@ export default function MfdPage() {
         {/* Secondary Row: SWP/STP & NPS/FD */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-lg flex flex-col justify-between">
+          <div className="bg-[#FEFEFE] rounded-3xl border border-slate-200 p-8 shadow-brand flex flex-col justify-between">
             <div className="space-y-4">
-              <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wide">Cashflow Management</span>
-              <h3 className="text-3xl font-serif font-bold text-slate-900">SWP & STP Automation</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
+              <span className="px-3 py-1 rounded-full bg-storm-50 text-storm text-caption font-bold uppercase tracking-wide border border-storm-100">Cashflow Management</span>
+              <h3 className="text-h2 font-serif font-bold text-storm">SWP & STP Automation</h3>
+              <p className="text-slate-600 text-body leading-relaxed">
                 Systematic Withdrawal Plans (SWP) for tax-efficient retirement income and Systematic Transfer Plans (STP) to dollar-cost average safely into equities.
               </p>
-              <ul className="space-y-2 text-sm font-medium text-slate-700 pt-2">
+              <ul className="space-y-2 text-body font-medium text-slate-700 pt-2">
                 <li className="flex items-center gap-2">✓ Automated monthly payouts directly to your bank account</li>
                 <li className="flex items-center gap-2">✓ Zero capital gains tax on principal drawdown components</li>
               </ul>
             </div>
             <div className="pt-8">
-              <a href={onboardingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-bold text-sm">
+              <a href={onboardingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-storm hover:text-storm-700 font-bold text-sm">
                 Configure Cashflows &rarr;
               </a>
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-lg flex flex-col justify-between">
+          <div className="bg-[#FEFEFE] rounded-3xl border border-slate-200 p-8 shadow-brand flex flex-col justify-between">
             <div className="space-y-4">
-              <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold uppercase tracking-wide">Retirement & Tax Shield</span>
-              <h3 className="text-3xl font-serif font-bold text-slate-900">NPS & High-Yield FDs</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
+              <span className="px-3 py-1 rounded-full bg-bumblebee/20 text-storm text-caption font-bold uppercase tracking-wide border border-bumblebee/30">Retirement & Tax Shield</span>
+              <h3 className="text-h2 font-serif font-bold text-storm">NPS & High-Yield FDs</h3>
+              <p className="text-slate-600 text-body leading-relaxed">
                 National Pension System (NPS) allocations for additional tax deductions under Sec 80CCD(1B), combined with elite corporate fixed deposits.
               </p>
-              <ul className="space-y-2 text-sm font-medium text-slate-700 pt-2">
+              <ul className="space-y-2 text-body font-medium text-slate-700 pt-2">
                 <li className="flex items-center gap-2">✓ Extra tax savings under Section 80CCD</li>
                 <li className="flex items-center gap-2">✓ Curated high-yield corporate FD instruments</li>
               </ul>
             </div>
             <div className="pt-8">
-              <a href={onboardingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-bold text-sm">
+              <a href={onboardingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-storm hover:text-storm-700 font-bold text-sm">
                 Secure Retirement &rarr;
               </a>
             </div>
@@ -339,10 +339,10 @@ export default function MfdPage() {
 
 
       {/* ================= CONSULTATION HUB ================= */}
-      <section className="bg-blue-600 text-white py-16 px-4 sm:px-6 lg:px-8">
+      <section className="bg-storm text-surface py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-serif font-bold">Need Customized Portfolio Allocation?</h2>
-          <p className="text-blue-100 text-base max-w-2xl mx-auto">
+          <h2 className="text-3xl sm:text-h1 font-serif font-bold text-surface">Need Customized Portfolio Allocation?</h2>
+          <p className="text-slate-300 text-body max-w-2xl mx-auto">
             Book a 1-to-1 consultation session with our certified financial planners. Get your portfolio audited and optimized.
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-2">
@@ -350,13 +350,13 @@ export default function MfdPage() {
               href={`https://wa.me/${phoneWhatsAppNumber.replace('+', '')}?text=Hello,%20I%20would%20like%20to%20schedule%20a%20wealth%20consultation.`}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-8 py-4 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-bold text-base shadow-lg transition-all"
+              className="btn-interactive px-8 py-4 rounded-2xl bg-bumblebee hover:bg-bumblebee-400 text-storm font-extrabold text-body shadow-lg transition-all"
             >
               Chat on WhatsApp ({phoneWhatsAppNumber})
             </a>
             <a
               href={`tel:${phoneWhatsAppNumber}`}
-              className="px-8 py-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-base border border-blue-400/30 transition-all"
+              className="btn-interactive px-8 py-4 rounded-2xl bg-storm-800 hover:bg-storm-700 text-surface font-bold text-body border border-storm-600 transition-all"
             >
               Direct Call ({phoneWhatsAppNumber})
             </a>
@@ -366,32 +366,32 @@ export default function MfdPage() {
 
 
       {/* ================= REGULATORY COMPLIANCE FOOTER ================= */}
-      <footer className="bg-white border-t border-slate-200 text-slate-600 py-12 px-4 sm:px-6 lg:px-8 text-xs">
+      <footer className="bg-[#FEFEFE] border-t border-slate-200 text-slate-600 py-12 px-4 sm:px-6 lg:px-8 text-caption">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-8 border-b border-slate-200">
           
           <div className="space-y-3">
-            <p className="font-bold text-slate-900 text-sm uppercase tracking-wider">Brewrich Wealth</p>
+            <p className="font-bold text-storm text-sm uppercase tracking-wider">Brewrich Wealth</p>
             <p className="text-slate-500">Helping individuals build long-term wealth using structured, disciplined, and AI-driven intelligent financial planning.</p>
-            <p className="text-slate-600 font-medium">Brewrich 2151/1A, Sri Rajarajeshwari Nagar, plot no 21, Periyakulam - Theni Rd, Lakshmipuram, Thamarai Kulam, Tamil Nadu 625523</p>
+            <p className="text-slate-700 font-medium">Brewrich 2151/1A, Sri Rajarajeshwari Nagar, plot no 21, Periyakulam - Theni Rd, Lakshmipuram, Thamarai Kulam, Tamil Nadu 625523</p>
           </div>
 
           <div className="space-y-2">
-            <p className="font-bold text-slate-900 text-sm uppercase tracking-wider">Regulatory Credentials</p>
+            <p className="font-bold text-storm text-sm uppercase tracking-wider">Regulatory Credentials</p>
             <p><strong className="text-slate-800">AMFI Registered MFD:</strong> ARN-335693</p>
             <p><strong className="text-slate-800">EUIN:</strong> E637441</p>
             <p><strong className="text-slate-800">IRDAI Licensed Advisor:</strong> URN: CAI0405260445 (Composite)</p>
           </div>
 
           <div className="space-y-2">
-            <p className="font-bold text-slate-900 text-sm uppercase tracking-wider">Accreditations & Quality</p>
+            <p className="font-bold text-storm text-sm uppercase tracking-wider">Accreditations & Quality</p>
             <p><strong className="text-slate-800">ISO 9001:2015 Certified:</strong> UDYAM-TN-23-0001645</p>
             <p><strong className="text-slate-800">Certifications:</strong> CFP | NISM Series V-A | NISM Series VII Certified</p>
           </div>
 
           <div className="space-y-2">
-            <p className="font-bold text-slate-900 text-sm uppercase tracking-wider">Client Onboarding</p>
+            <p className="font-bold text-storm text-sm uppercase tracking-wider">Client Onboarding</p>
             <p className="text-slate-500">Direct secure digital account opening powered by authorized institutional infrastructure.</p>
-            <a href={onboardingUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-blue-600 hover:underline font-bold pt-1">
+            <a href={onboardingUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-storm hover:underline font-bold pt-1">
               Launch Client Portal &rarr;
             </a>
           </div>

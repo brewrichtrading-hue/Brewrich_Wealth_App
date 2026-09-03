@@ -3,8 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  --background: #FEFEFE;
+  --foreground: #000B4F;
+  --color-storm: #000B4F;
+  --color-bumblebee: #FFC729;
+  --color-joyous: #B0261D;
+  --color-surface: #FEFEFE;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
@@ -19,8 +23,8 @@
   
   html {
     scroll-behavior: smooth;
-    background-color: var(--background);
-    color: var(--foreground);
+    background-color: #FEFEFE;
+    color: #000B4F;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
@@ -31,8 +35,8 @@
     padding-left: var(--safe-left);
     padding-right: var(--safe-right);
     overflow-x: hidden;
-    background-color: #f8fafc;
-    color: #0f172a;
+    background-color: #FEFEFE;
+    color: #000B4F;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -58,18 +62,18 @@
   }
 }
 
-/* Custom modern scrollbar */
+/* Custom modern scrollbar with brand tokens */
 ::-webkit-scrollbar {
   width: 7px;
   height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #F0F2FA;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #ADC0E3;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #7E9CD1;
 }

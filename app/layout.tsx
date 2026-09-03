@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0A358F',
+  themeColor: '#000B4F',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -46,7 +46,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth bg-slate-50">
+    <html lang="en" className="scroll-smooth bg-[#FEFEFE]">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -55,7 +55,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen flex flex-col font-['Plus_Jakarta_Sans',sans-serif] antialiased bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
+      <body className="min-h-screen flex flex-col font-['Plus_Jakarta_Sans',sans-serif] antialiased bg-[#FEFEFE] text-storm selection:bg-bumblebee selection:text-storm">
         <GlobalScrollUnlocker />
         <WhatsAppTicker />
         <Navbar />

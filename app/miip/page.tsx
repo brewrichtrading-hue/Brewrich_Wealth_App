@@ -279,50 +279,50 @@ function MipContent() {
   ];
 
   return (
-    <div className="flex flex-col w-full pb-24 md:pb-16 bg-slate-50 text-slate-900">
+    <div className="flex flex-col w-full pb-24 md:pb-16 bg-surface text-storm font-sans">
 
       {/* ========================================================================= */}
-      {/* 1. TOP HERO SECTION & BROCHURE DOWNLOAD (BETTERMENT ROYAL BLUE STYLE) */}
+      {/* 1. TOP HERO SECTION & BROCHURE DOWNLOAD */}
       {/* ========================================================================= */}
-      <section className="relative bg-gradient-to-b from-[#0A358F] via-[#0D44B8] to-[#1456F0] text-white pt-20 pb-28 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <section className="relative bg-storm text-surface pt-20 pb-28 px-4 sm:px-6 lg:px-8 overflow-hidden">
         {/* Subtle Ambient Glows */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none -z-0" />
-        <div className="absolute bottom-0 left-10 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl pointer-events-none -z-0" />
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-bumblebee/5 rounded-full blur-3xl pointer-events-none -z-0" />
+        <div className="absolute bottom-0 left-10 w-80 h-80 bg-joyous/5 rounded-full blur-3xl pointer-events-none -z-0" />
 
         <div className="relative z-10 mx-auto max-w-5xl text-center space-y-8">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-bold uppercase tracking-wider shadow-sm">
-            <Sparkles className="h-4 w-4 text-amber-300" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-storm-800/80 backdrop-blur-md border border-bumblebee/30 text-bumblebee text-caption font-bold uppercase tracking-wider shadow-sm">
+            <Sparkles className="h-4 w-4 text-bumblebee" />
             <span>High-Ticket Quantitative Mentorship</span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl lg:text-display font-extrabold text-surface tracking-tight leading-[1.1]">
             Momentum Investing <br className="hidden sm:inline" />
-            <span className="text-blue-100 drop-shadow-sm">Program (MIP)</span>
+            <span className="text-bumblebee drop-shadow-sm">Program (MIP)</span>
           </h1>
 
           {/* Subheadline */}
-          <p className="mx-auto max-w-3xl text-base sm:text-xl text-blue-100 font-normal leading-relaxed">
+          <p className="mx-auto max-w-3xl text-body sm:text-lg text-slate-300 font-normal leading-relaxed">
             Transition from retail liquidity prey to a systematic momentum executor. Master order flow, dark pool accumulation, and quantitative trade execution.
           </p>
 
           {/* Trust Badges */}
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 pt-2 text-xs sm:text-sm text-blue-100 font-semibold">
-            <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/15 backdrop-blur-sm">
-              <Calendar className="h-4 w-4 text-amber-300 shrink-0" />
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 pt-2 text-caption text-slate-200 font-semibold">
+            <div className="flex items-center gap-2 bg-storm-800/90 px-4 py-2 rounded-full border border-storm-700 backdrop-blur-sm">
+              <Calendar className="h-4 w-4 text-bumblebee shrink-0" />
               <span>Weekend Live Batches</span>
             </div>
-            <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/15 backdrop-blur-sm">
-              <Video className="h-4 w-4 text-emerald-300 shrink-0" />
+            <div className="flex items-center gap-2 bg-storm-800/90 px-4 py-2 rounded-full border border-storm-700 backdrop-blur-sm">
+              <Video className="h-4 w-4 text-emerald-400 shrink-0" />
               <span>2-Day Live Campus Immersion</span>
             </div>
-            <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/15 backdrop-blur-sm">
-              <Sparkles className="h-4 w-4 text-teal-300 shrink-0" />
+            <div className="flex items-center gap-2 bg-storm-800/90 px-4 py-2 rounded-full border border-storm-700 backdrop-blur-sm">
+              <Sparkles className="h-4 w-4 text-bumblebee shrink-0" />
               <span>Meals & Stay Fully Provided</span>
             </div>
-            <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/15 backdrop-blur-sm">
-              <Award className="h-4 w-4 text-amber-300 shrink-0" />
+            <div className="flex items-center gap-2 bg-storm-800/90 px-4 py-2 rounded-full border border-storm-700 backdrop-blur-sm">
+              <Award className="h-4 w-4 text-bumblebee shrink-0" />
               <span>Certification on Quiz Completion</span>
             </div>
           </div>
@@ -332,36 +332,36 @@ function MipContent() {
             <button
               type="button"
               onClick={scrollToPricing}
-              className="btn-interactive w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-white text-blue-900 font-extrabold text-base shadow-xl shadow-blue-950/30 hover:bg-blue-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="btn-interactive w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-bumblebee hover:bg-bumblebee-400 text-storm font-extrabold text-body shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
-              <Sparkles className="h-5 w-5 text-blue-700" />
+              <Sparkles className="h-5 w-5 text-storm" />
               <span>Enroll in Cohort</span>
-              <ArrowRight className="h-5 w-5 text-blue-700" />
+              <ArrowRight className="h-5 w-5 text-storm" />
             </button>
 
             <a
               href="/BREWRICH_Momentum_Institutional_Investing_Program_MIIP.pdf"
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-interactive w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-4 rounded-full bg-blue-800/80 hover:bg-blue-800 text-white font-bold text-sm border border-white/25 shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="btn-interactive w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-4 rounded-full bg-storm-800 hover:bg-storm-700 text-surface font-bold text-sm border border-storm-600 shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
-              <Download className="h-4 w-4 text-blue-200" />
+              <Download className="h-4 w-4 text-bumblebee" />
               <span>Download Brochure (PDF)</span>
             </a>
           </div>
 
           {/* Quick Metrics Strip */}
-          <div className="pt-6 flex flex-wrap items-center justify-center gap-3 max-w-3xl mx-auto text-xs text-blue-100">
-            <span className="px-3 py-1 rounded-full bg-white/10 border border-white/15">
-              <strong>4-Week</strong> Masterclass
+          <div className="pt-6 flex flex-wrap items-center justify-center gap-3 max-w-3xl mx-auto text-caption text-slate-300">
+            <span className="px-3 py-1 rounded-full bg-storm-800/80 border border-storm-700">
+              <strong className="text-surface">4-Week</strong> Masterclass
             </span>
-            <span className="px-3 py-1 rounded-full bg-white/10 border border-white/15">
-              <strong>2-Day</strong> Campus Immersion (Stay & Meals Incl.)
+            <span className="px-3 py-1 rounded-full bg-storm-800/80 border border-storm-700">
+              <strong className="text-surface">2-Day</strong> Campus Immersion (Stay & Meals Incl.)
             </span>
-            <span className="px-3 py-1 rounded-full bg-white/10 border border-white/15">
-              <strong>1-on-1</strong> Strategy Audit
+            <span className="px-3 py-1 rounded-full bg-storm-800/80 border border-storm-700">
+              <strong className="text-surface">1-on-1</strong> Strategy Audit
             </span>
-            <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 font-bold">
+            <span className="px-3 py-1 rounded-full bg-bumblebee/20 text-bumblebee border border-bumblebee/30 font-bold">
               25.0% Historical CAGR
             </span>
           </div>
@@ -372,24 +372,24 @@ function MipContent() {
       {/* 2. INTERACTIVE CAGR & CAPITAL GROWTH SIMULATOR */}
       {/* ========================================================================= */}
       <section className="-mt-12 px-4 sm:px-6 lg:px-8 relative z-20">
-        <div className="mx-auto max-w-5xl rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-10 shadow-2xl shadow-slate-300/60 space-y-8">
+        <div className="mx-auto max-w-5xl rounded-3xl bg-[#FEFEFE] border border-slate-200 p-6 sm:p-10 shadow-brand space-y-8">
           
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
             <div>
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-700">
-                <Calculator className="h-4 w-4" />
+              <div className="flex items-center gap-2 text-caption font-bold uppercase tracking-wider text-storm">
+                <Calculator className="h-4 w-4 text-storm" />
                 <span>Interactive Capital Growth Simulator</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
+              <h2 className="text-2xl sm:text-h2 font-extrabold text-storm mt-1">
                 Visualizing 25.0% Momentum Compounding
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              <p className="text-caption sm:text-sm text-slate-500 mt-1">
                 Model your wealth trajectory powered by our verified 7-year multi-regime quantitative strategy.
               </p>
             </div>
 
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-blue-50 border border-blue-200/80 text-blue-800 text-xs font-bold shrink-0">
-              <Activity className="h-4 w-4 text-blue-600" />
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-bumblebee/20 border border-bumblebee/40 text-storm text-caption font-bold shrink-0">
+              <Activity className="h-4 w-4 text-storm" />
               <span>Simulated CAGR: 25.0%</span>
             </div>
           </div>
@@ -402,10 +402,10 @@ function MipContent() {
               {/* Capital Slider */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                  <label className="text-caption font-bold uppercase tracking-wider text-slate-600">
                     Starting Capital
                   </label>
-                  <span className="text-2xl font-extrabold text-blue-700">
+                  <span className="text-h3 font-extrabold text-storm">
                     ₹{initialCapital.toLocaleString('en-IN')}
                   </span>
                 </div>
@@ -416,7 +416,7 @@ function MipContent() {
                   step={100000}
                   value={initialCapital}
                   onChange={(e) => setInitialCapital(Number(e.target.value))}
-                  className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-storm"
                 />
                 <div className="flex justify-between text-[11px] text-slate-500 font-semibold">
                   <span>₹5 Lakh</span>
@@ -432,9 +432,9 @@ function MipContent() {
                       key={val}
                       type="button"
                       onClick={() => setInitialCapital(val)}
-                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                      className={`px-3 py-1 rounded-full text-caption font-bold transition-all ${
                         initialCapital === val
-                          ? 'bg-blue-600 text-white shadow-sm'
+                          ? 'bg-storm text-surface shadow-sm'
                           : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                       }`}
                     >
@@ -447,10 +447,10 @@ function MipContent() {
               {/* Timeline Slider */}
               <div className="space-y-3 pt-2">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                  <label className="text-caption font-bold uppercase tracking-wider text-slate-600">
                     Simulation Horizon
                   </label>
-                  <span className="text-xl font-extrabold text-slate-900">
+                  <span className="text-h3 font-extrabold text-storm">
                     {simulationYears} {simulationYears === 1 ? 'Year' : 'Years'}
                   </span>
                 </div>
@@ -461,7 +461,7 @@ function MipContent() {
                   step={1}
                   value={simulationYears}
                   onChange={(e) => setSimulationYears(Number(e.target.value))}
-                  className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-storm"
                 />
                 <div className="flex justify-between text-[11px] text-slate-500 font-semibold">
                   <span>1 Year</span>
@@ -471,17 +471,17 @@ function MipContent() {
               </div>
 
               {/* Annual Timeline Breakdown Mini Table */}
-              <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4 space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-700 pb-1 border-b border-slate-200/60">
+              <div className="rounded-2xl bg-storm-50/50 border border-storm-100 p-4 space-y-2">
+                <div className="flex items-center justify-between text-caption font-bold text-storm pb-1 border-b border-storm-100">
                   <span>Horizon Progress</span>
                   <span>Portfolio Value</span>
                   <span>Annual Growth</span>
                 </div>
                 <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
                   {calculations.yearlyData.map((row) => (
-                    <div key={row.year} className="flex items-center justify-between text-xs font-medium text-slate-600">
-                      <span className="font-bold text-slate-800">Year {row.year}</span>
-                      <span className="text-blue-700 font-extrabold">₹{row.endBalance.toLocaleString('en-IN')}</span>
+                    <div key={row.year} className="flex items-center justify-between text-caption font-medium text-slate-600">
+                      <span className="font-bold text-storm">Year {row.year}</span>
+                      <span className="text-storm font-extrabold">₹{row.endBalance.toLocaleString('en-IN')}</span>
                       <span className="text-emerald-600 font-bold">+₹{row.profit.toLocaleString('en-IN')}</span>
                     </div>
                   ))}
@@ -491,63 +491,63 @@ function MipContent() {
             </div>
 
             {/* Right Display Card (Results & Benchmark Matrix) */}
-            <div className="lg:col-span-6 rounded-3xl bg-gradient-to-br from-blue-900 to-[#0A358F] text-white p-6 sm:p-8 space-y-6 shadow-xl">
+            <div className="lg:col-span-6 rounded-3xl bg-storm text-surface p-6 sm:p-8 space-y-6 shadow-xl border border-storm-800">
               <div>
-                <p className="text-xs uppercase tracking-widest text-blue-200 font-bold">
+                <p className="text-caption uppercase tracking-widest text-slate-300 font-bold">
                   Projected Portfolio Value ({simulationYears} Yrs)
                 </p>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
+                  <span className="text-3xl sm:text-h1 font-extrabold tracking-tight text-bumblebee">
                     ₹{calculations.mipFinal.toLocaleString('en-IN')}
                   </span>
-                  <span className="text-xs font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-400/30">
+                  <span className="text-caption font-bold text-storm bg-bumblebee px-2 py-0.5 rounded-full">
                     {calculations.multiplier}x Capital
                   </span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15">
-                  <span className="text-[10px] uppercase text-blue-200 block font-bold">Initial Principal</span>
-                  <span className="text-base font-extrabold text-white">₹{initialCapital.toLocaleString('en-IN')}</span>
+                <div className="p-3.5 rounded-2xl bg-storm-800/80 backdrop-blur-md border border-storm-700">
+                  <span className="text-[10px] uppercase text-slate-400 block font-bold">Initial Principal</span>
+                  <span className="text-base font-extrabold text-surface">₹{initialCapital.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="p-3.5 rounded-2xl bg-emerald-500/20 border border-emerald-400/30">
-                  <span className="text-[10px] uppercase text-emerald-300 block font-bold">Net Alpha Gain</span>
-                  <span className="text-base font-extrabold text-emerald-300">+₹{calculations.mipGain.toLocaleString('en-IN')}</span>
+                <div className="p-3.5 rounded-2xl bg-storm-800/80 border border-storm-700">
+                  <span className="text-[10px] uppercase text-bumblebee block font-bold">Net Alpha Gain</span>
+                  <span className="text-base font-extrabold text-bumblebee">+₹{calculations.mipGain.toLocaleString('en-IN')}</span>
                 </div>
               </div>
 
               {/* Comparative Benchmark Matrix */}
-              <div className="space-y-3 pt-2 border-t border-white/15">
-                <p className="text-xs font-bold uppercase tracking-wider text-blue-200">
+              <div className="space-y-3 pt-2 border-t border-storm-700">
+                <p className="text-caption font-bold uppercase tracking-wider text-slate-300">
                   Strategy Comparison ({simulationYears} Years)
                 </p>
                 
                 {/* MIP */}
-                <div className="p-3 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-between">
+                <div className="p-3 rounded-2xl bg-storm-800 border border-bumblebee/30 flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-white block">MIP Quantitative Momentum</span>
-                    <span className="text-[10px] text-blue-200">25.0% Verified CAGR</span>
+                    <span className="text-caption font-bold text-surface block">MIP Quantitative Momentum</span>
+                    <span className="text-[10px] text-bumblebee">25.0% Verified CAGR</span>
                   </div>
-                  <span className="text-sm font-extrabold text-white">₹{calculations.mipFinal.toLocaleString('en-IN')}</span>
+                  <span className="text-sm font-extrabold text-bumblebee">₹{calculations.mipFinal.toLocaleString('en-IN')}</span>
                 </div>
 
                 {/* Nifty 50 */}
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
+                <div className="p-3 rounded-2xl bg-storm-900 border border-storm-700 flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-slate-200 block">Nifty 50 Index</span>
-                    <span className="text-[10px] text-slate-300">12.0% Benchmark</span>
+                    <span className="text-caption font-bold text-slate-300 block">Nifty 50 Index</span>
+                    <span className="text-[10px] text-slate-400">12.0% Benchmark</span>
                   </div>
-                  <span className="text-sm font-bold text-slate-200">₹{calculations.niftyFinal.toLocaleString('en-IN')}</span>
+                  <span className="text-sm font-bold text-slate-300">₹{calculations.niftyFinal.toLocaleString('en-IN')}</span>
                 </div>
 
                 {/* FD */}
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
+                <div className="p-3 rounded-2xl bg-storm-900 border border-storm-700 flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-slate-200 block">Fixed Deposit / Debt</span>
-                    <span className="text-[10px] text-slate-300">7.0% Conservative</span>
+                    <span className="text-caption font-bold text-slate-300 block">Fixed Deposit / Debt</span>
+                    <span className="text-[10px] text-slate-400">7.0% Conservative</span>
                   </div>
-                  <span className="text-sm font-bold text-slate-200">₹{calculations.fdFinal.toLocaleString('en-IN')}</span>
+                  <span className="text-sm font-bold text-slate-300">₹{calculations.fdFinal.toLocaleString('en-IN')}</span>
                 </div>
               </div>
 
@@ -809,22 +809,22 @@ function MipContent() {
           </div>
 
           {/* 10 Pillars Preview Bar */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-blue-900 to-[#0A358F] text-white shadow-xl space-y-4">
+          <div className="p-6 sm:p-8 rounded-3xl bg-storm text-surface shadow-xl space-y-4 border border-storm-800">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <span className="text-[10px] uppercase font-bold text-blue-200 tracking-wider">
+                <span className="text-[10px] uppercase font-bold text-bumblebee tracking-wider">
                   The Institutional Discipline
                 </span>
-                <h4 className="text-xl font-extrabold text-white">
+                <h4 className="text-h3 font-extrabold text-surface">
                   10 Interconnected Pillars of Portfolio Design
                 </h4>
               </div>
-              <span className="text-xs bg-white/10 px-3 py-1 rounded-full border border-white/20 text-blue-100 font-semibold self-start sm:self-auto">
+              <span className="text-caption bg-storm-800 px-3 py-1 rounded-full border border-storm-700 text-slate-300 font-semibold self-start sm:self-auto">
                 Prioritizes Survivability Over Speculation
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-2 text-xs font-semibold">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-2 text-caption font-semibold">
               {[
                 '01 Capital Allocation',
                 '02 Portfolio Construction',
@@ -837,7 +837,7 @@ function MipContent() {
                 '09 Performance Evaluation',
                 '10 Investment Discipline',
               ].map((pillar) => (
-                <div key={pillar} className="p-2.5 rounded-xl bg-white/10 backdrop-blur-sm border border-white/15 text-center truncate">
+                <div key={pillar} className="p-2.5 rounded-xl bg-storm-800/90 backdrop-blur-sm border border-storm-700 text-center truncate text-slate-200">
                   {pillar}
                 </div>
               ))}
@@ -850,17 +850,17 @@ function MipContent() {
       {/* ========================================================================= */}
       {/* 5. FOUR-WEEK CURRICULUM ROADMAP */}
       {/* ========================================================================= */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-surface">
         <div className="mx-auto max-w-6xl space-y-14">
           
           <div className="text-center max-w-3xl mx-auto space-y-3">
-            <span className="text-xs font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+            <span className="text-caption font-bold uppercase tracking-widest text-storm bg-bumblebee/20 px-3 py-1 rounded-full border border-bumblebee/40">
               11 // Curriculum Roadmap
             </span>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-3xl sm:text-h1 font-extrabold text-storm tracking-tight">
               Four-Week Masterclass Curriculum
             </h2>
-            <p className="text-base text-slate-600">
+            <p className="text-body text-slate-600">
               A high-density institutional transformation delivered through weekend live interactive Google Meet sessions.
             </p>
           </div>
@@ -869,18 +869,18 @@ function MipContent() {
             {curriculum.map((item, idx) => (
               <div
                 key={item.week}
-                className={`p-8 rounded-3xl border shadow-lg space-y-5 transition-all ${
+                className={`p-8 rounded-3xl border shadow-brand space-y-5 transition-all ${
                   idx === 3
-                    ? 'bg-gradient-to-br from-[#0B1B3D] to-[#0A358F] text-white border-blue-900'
-                    : 'bg-white border-slate-200/80 text-slate-900'
+                    ? 'bg-storm text-surface border-storm-800'
+                    : 'bg-[#FEFEFE] border-slate-200 text-storm'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span
-                    className={`text-xs font-extrabold px-3 py-1 rounded-full ${
+                    className={`text-caption font-extrabold px-3 py-1 rounded-full ${
                       idx === 3
-                        ? 'bg-amber-400 text-slate-950'
-                        : 'bg-blue-100 text-blue-800 border border-blue-200'
+                        ? 'bg-bumblebee text-storm'
+                        : 'bg-storm-50 text-storm border border-storm-100'
                     }`}
                   >
                     {item.week}
@@ -1149,20 +1149,20 @@ function MipContent() {
           </div>
 
           {/* Mentor Profile Hero Card */}
-          <div className="rounded-3xl bg-white border border-slate-200/80 shadow-2xl p-8 sm:p-12">
+          <div className="rounded-3xl bg-[#FEFEFE] border border-slate-200 shadow-brand p-8 sm:p-12">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               
               {/* Image Column */}
               <div className="lg:col-span-5 flex flex-col items-center">
-                <div className="relative w-64 h-72 sm:w-72 sm:h-80 rounded-3xl overflow-hidden shadow-2xl border-4 border-white ring-4 ring-blue-500/20">
+                <div className="relative w-64 h-72 sm:w-72 sm:h-80 rounded-3xl overflow-hidden shadow-2xl border-4 border-white ring-4 ring-storm/20">
                   <img
                     src="/YOGESH NATH IMAGE.jpg"
                     alt="Yogesh Nath S - Lead Strategist & Quant Research Director"
                     className="w-full h-full object-cover object-top"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A358F]/80 via-transparent to-transparent" />
-                  <div className="absolute bottom-3 left-4 right-4 text-white text-left">
-                    <span className="text-[10px] uppercase font-extrabold tracking-wider bg-blue-600/90 px-2 py-0.5 rounded-md">
+                  <div className="absolute inset-0 bg-gradient-to-t from-storm/80 via-transparent to-transparent" />
+                  <div className="absolute bottom-3 left-4 right-4 text-surface text-left">
+                    <span className="text-[10px] uppercase font-extrabold tracking-wider bg-storm px-2 py-0.5 rounded-md">
                       Program Director
                     </span>
                     <p className="text-lg font-extrabold mt-0.5">Yogesh Nath S</p>
@@ -1173,33 +1173,33 @@ function MipContent() {
               {/* Bio Details Column */}
               <div className="lg:col-span-7 space-y-6">
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-extrabold uppercase tracking-wider mb-2">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-storm-50 text-storm text-caption font-extrabold uppercase tracking-wider mb-2 border border-storm-100">
                     <span>Lead Strategist & Quant Research Director</span>
                   </div>
-                  <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900">
+                  <h3 className="text-3xl sm:text-h1 font-extrabold text-storm">
                     Yogesh Nath S
                   </h3>
-                  <p className="text-sm font-semibold text-slate-500 mt-1">
+                  <p className="text-caption font-semibold text-slate-500 mt-1">
                     Quant Research Director & Founder • 7+ Years Market Experience
                   </p>
                 </div>
 
                 {/* Featured Quote */}
-                <div className="p-4 rounded-2xl bg-slate-50 border-l-4 border-blue-600 italic text-slate-800 text-base font-semibold shadow-sm">
+                <div className="p-4 rounded-2xl bg-storm-50 border-l-4 border-storm italic text-storm text-body font-semibold shadow-sm">
                   &ldquo;This is not a stock course. It&apos;s a system.&rdquo;
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold text-slate-700">
+                <div className="flex flex-wrap items-center gap-2 pt-1 text-caption font-bold text-slate-700">
                   <span className="px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200">
                     7+ Years Market Experience
                   </span>
-                  <span className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+                  <span className="px-3 py-1.5 rounded-full bg-storm-50 text-storm border border-storm-100">
                     Momentum Investor
                   </span>
                   <span className="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
                     Data Driven Approach
                   </span>
-                  <span className="px-3 py-1.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                  <span className="px-3 py-1.5 rounded-full bg-bumblebee/20 text-storm border border-bumblebee/30">
                     Senior Data Analyst
                   </span>
                 </div>
@@ -1220,7 +1220,7 @@ function MipContent() {
                   <button
                     type="button"
                     onClick={scrollToPricing}
-                    className="btn-interactive flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md transition-all"
+                    className="btn-interactive flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-storm hover:bg-storm-800 text-surface font-bold text-sm shadow-md transition-all"
                   >
                     <span>View Registration Options</span>
                   </button>
@@ -1244,32 +1244,32 @@ function MipContent() {
           {/* Who This Program Is For Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            <div className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-md space-y-3">
-              <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+            <div className="p-8 rounded-3xl bg-[#FEFEFE] border border-slate-200 shadow-brand space-y-3">
+              <div className="h-12 w-12 rounded-2xl bg-storm-50 text-storm flex items-center justify-center font-bold border border-storm-100">
                 <Users className="h-6 w-6" />
               </div>
-              <h4 className="text-lg font-bold text-slate-900">Serious Investors</h4>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <h4 className="text-h3 font-bold text-storm">Serious Investors</h4>
+              <p className="text-caption sm:text-body text-slate-600 leading-relaxed">
                 Investors seeking a repeatable, data-backed system to deploy capital with confidence and strict risk controls.
               </p>
             </div>
 
-            <div className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-md space-y-3">
-              <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+            <div className="p-8 rounded-3xl bg-[#FEFEFE] border border-slate-200 shadow-brand space-y-3">
+              <div className="h-12 w-12 rounded-2xl bg-bumblebee/20 text-storm flex items-center justify-center font-bold border border-bumblebee/30">
                 <PieChart className="h-6 w-6" />
               </div>
-              <h4 className="text-lg font-bold text-slate-900">Entrepreneurs & Founders</h4>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <h4 className="text-h3 font-bold text-storm">Entrepreneurs & Founders</h4>
+              <p className="text-caption sm:text-body text-slate-600 leading-relaxed">
                 Leaders who want their liquid capital managed with institutional rigor rather than watching minute charts all day.
               </p>
             </div>
 
-            <div className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-md space-y-3">
-              <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+            <div className="p-8 rounded-3xl bg-[#FEFEFE] border border-slate-200 shadow-brand space-y-3">
+              <div className="h-12 w-12 rounded-2xl bg-joyous-50 text-joyous flex items-center justify-center font-bold border border-joyous-100">
                 <TrendingUp className="h-6 w-6" />
               </div>
-              <h4 className="text-lg font-bold text-slate-900">Traders & Analysts</h4>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <h4 className="text-h3 font-bold text-storm">Traders & Analysts</h4>
+              <p className="text-caption sm:text-body text-slate-600 leading-relaxed">
                 Traders transitioning from emotional retail guesswork to systematic algorithmic order flow execution.
               </p>
             </div>
@@ -1282,40 +1282,40 @@ function MipContent() {
       {/* ========================================================================= */}
       {/* 8. PROGRAM CREDENTIAL & CERTIFICATION */}
       {/* ========================================================================= */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white border-y border-slate-200/80">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-surface border-y border-slate-200">
         <div className="mx-auto max-w-5xl space-y-12">
           
           <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+            <span className="text-caption font-bold uppercase tracking-widest text-storm bg-bumblebee/20 px-3 py-1 rounded-full border border-bumblebee/40">
               15 // Official Credential
             </span>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-3xl sm:text-h1 font-extrabold text-storm tracking-tight">
               Verified Program Certification
             </h2>
-            <p className="text-base text-slate-600">
+            <p className="text-body text-slate-600">
               Earn an institutional Certificate of Program Completion issued upon completing the Module 4 assessment quizzes.
             </p>
           </div>
 
           {/* Certificate Mockup Card */}
-          <div className="rounded-3xl border-2 border-slate-300 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-8 sm:p-12 shadow-2xl space-y-8 relative overflow-hidden">
+          <div className="rounded-3xl border border-slate-200 bg-[#FEFEFE] p-8 sm:p-12 shadow-brand space-y-8 relative overflow-hidden">
             
             {/* Top Certificate Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-6">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-2xl bg-[#0A358F] text-white flex items-center justify-center font-extrabold text-xl shadow-md">
+                <div className="h-12 w-12 rounded-2xl bg-storm text-surface flex items-center justify-center font-extrabold text-xl shadow-md">
                   B
                 </div>
                 <div>
-                  <h3 className="text-lg font-extrabold text-slate-900">BREWRICH WEALTH</h3>
-                  <p className="text-[10px] text-blue-700 font-bold uppercase tracking-wider">
+                  <h3 className="text-lg font-extrabold text-storm">BREWRICH WEALTH</h3>
+                  <p className="text-[10px] text-storm font-bold uppercase tracking-wider">
                     SEBI-Registered Research Analyst Advisory
                   </p>
                 </div>
               </div>
 
               <div className="text-left sm:text-right">
-                <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                <span className="text-caption font-extrabold px-3 py-1 rounded-full bg-bumblebee text-storm shadow-sm">
                   PROGRAM CREDENTIAL
                 </span>
                 <p className="text-[10px] text-slate-500 mt-1 uppercase font-semibold">
@@ -1473,36 +1473,36 @@ function MipContent() {
       {/* ========================================================================= */}
       {/* 10. BOTTOM PRICING, LIVE SCARCITY TRACKER & REGISTRATION CARD */}
       {/* ========================================================================= */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-100 border-t border-slate-200/80">
+      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-storm-50/50 border-t border-slate-200">
         <div className="mx-auto max-w-4xl space-y-8">
           
           <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+            <span className="text-caption font-bold uppercase tracking-widest text-storm bg-bumblebee/20 px-3 py-1 rounded-full border border-bumblebee/40">
               Next Cohort Registration
             </span>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-3xl sm:text-h1 font-extrabold text-storm tracking-tight">
               Invest in Your Edge
             </h2>
-            <p className="text-base text-slate-600">
+            <p className="text-body text-slate-600">
               Direct access to institutional quantitative mentorship, live Google Meet sessions, and a personalized 1-on-1 audit.
             </p>
           </div>
 
           {/* Main Pricing & Registration Card */}
-          <div className="rounded-3xl bg-white border border-slate-200/80 shadow-2xl p-8 sm:p-12 space-y-8 relative overflow-hidden">
+          <div className="rounded-3xl bg-[#FEFEFE] border border-slate-200 shadow-brand p-8 sm:p-12 space-y-8 relative overflow-hidden">
             
             {/* Live Scarcity Tracker Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-amber-50 border border-amber-200">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-bumblebee/15 border border-bumblebee/30">
               <div className="flex items-center gap-2.5">
                 <span className="flex h-3 w-3 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-bumblebee opacity-75" />
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-bumblebee" />
                 </span>
-                <span className="text-xs font-extrabold text-amber-900 uppercase tracking-wider">
+                <span className="text-caption font-extrabold text-storm uppercase tracking-wider">
                   Live Scarcity Tracker: Limited 25 Seats Per Cohort
                 </span>
               </div>
-              <span className="text-xs font-bold text-amber-800 bg-amber-100 px-3 py-1 rounded-full self-start sm:self-auto">
+              <span className="text-caption font-bold text-storm bg-bumblebee px-3 py-1 rounded-full self-start sm:self-auto">
                 Next Weekend Batch Enrolling
               </span>
             </div>
@@ -1510,11 +1510,11 @@ function MipContent() {
             {/* Price Header */}
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-100 pb-8">
               <div>
-                <span className="text-xs font-bold uppercase tracking-widest text-slate-500 block">
+                <span className="text-caption font-bold uppercase tracking-widest text-slate-500 block">
                   Cohort Registration Fee
                 </span>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight">
+                  <span className="text-4xl sm:text-display font-extrabold text-storm tracking-tight">
                     ₹46,000
                   </span>
                   <span className="text-sm font-bold text-slate-500">
@@ -1524,7 +1524,7 @@ function MipContent() {
               </div>
 
               <div className="text-left sm:text-right">
-                <span className="text-xs font-extrabold px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+                <span className="text-caption font-extrabold px-3.5 py-1.5 rounded-full bg-storm-50 text-storm border border-storm-100">
                   4-Wk Cohort + 2-Day Campus Stay
                 </span>
               </div>
@@ -1532,7 +1532,7 @@ function MipContent() {
 
             {/* What is Included Checklist */}
             <div className="space-y-4">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              <p className="text-caption font-bold uppercase tracking-wider text-slate-500">
                 Everything Included in Your ₹46,000 Enrollment:
               </p>
               
@@ -1549,8 +1549,8 @@ function MipContent() {
                   'Lifetime Access to Strategy Updates & Institutional Refinements',
                   'Zero Hidden Fees • 100% Tax Invoice Provided',
                 ].map((feature) => (
-                  <div key={feature} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700 font-medium">
-                    <CheckCircle2 className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                  <div key={feature} className="flex items-start gap-2.5 text-caption sm:text-sm text-slate-700 font-medium">
+                    <CheckCircle2 className="h-5 w-5 text-storm shrink-0 mt-0.5" />
                     <span>{feature}</span>
                   </div>
                 ))}
@@ -1563,26 +1563,26 @@ function MipContent() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(true)}
-                  className="btn-interactive w-full min-h-[56px] flex items-center justify-center gap-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-base shadow-xl shadow-blue-600/30 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                  className="btn-interactive w-full min-h-[56px] flex items-center justify-center gap-2.5 rounded-full bg-bumblebee hover:bg-bumblebee-400 text-storm font-extrabold text-body shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99]"
                 >
-                  <Sparkles className="h-5 w-5 text-amber-300" />
+                  <Sparkles className="h-5 w-5 text-storm" />
                   <span>Register via Razorpay • ₹46,000</span>
-                  <ArrowRight className="h-5 w-5" />
+                  <ArrowRight className="h-5 w-5 text-storm" />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setIsQrModalOpen(true)}
-                  className="btn-interactive w-full min-h-[56px] flex items-center justify-center gap-2.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-base border border-slate-700 shadow-xl shadow-slate-900/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                  className="btn-interactive w-full min-h-[56px] flex items-center justify-center gap-2.5 rounded-full bg-storm hover:bg-storm-800 text-surface font-extrabold text-body border border-storm-700 shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99]"
                 >
-                  <QrCode className="h-5 w-5 text-emerald-400" />
+                  <QrCode className="h-5 w-5 text-bumblebee" />
                   <span>Scan & Pay via UPI / QR</span>
                 </button>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500 font-semibold pt-2">
+              <div className="flex flex-wrap items-center justify-center gap-6 text-caption text-slate-500 font-semibold pt-2">
                 <div className="flex items-center gap-1.5">
-                  <Lock className="h-4 w-4 text-blue-600" />
+                  <Lock className="h-4 w-4 text-storm" />
                   <span>256-Bit SSL Razorpay & Direct UPI Encrypted</span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -1590,7 +1590,7 @@ function MipContent() {
                   <span>Instant Student Portal Activation</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Award className="h-4 w-4 text-amber-500" />
+                  <Award className="h-4 w-4 text-bumblebee-600" />
                   <span>SEBI-Registered Research Analyst Desk</span>
                 </div>
               </div>
@@ -1604,14 +1604,14 @@ function MipContent() {
       {/* ========================================================================= */}
       {/* 11. STICKY MOBILE-FRIENDLY "REGISTER NOW" BOTTOM BAR */}
       {/* ========================================================================= */}
-      <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 p-3 sm:p-4 md:hidden pb-safe shadow-2xl">
+      <div className="fixed bottom-0 inset-x-0 z-40 bg-[#FEFEFE]/95 backdrop-blur-xl border-t border-slate-200 p-3 sm:p-4 md:hidden pb-safe shadow-2xl">
         <div className="flex items-center justify-between gap-2.5 max-w-md mx-auto">
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase font-bold text-blue-700 tracking-wider">
+            <span className="text-[10px] uppercase font-bold text-storm tracking-wider">
               MIP Live Cohort
             </span>
             <div className="flex items-baseline gap-1">
-              <span className="text-lg font-extrabold text-slate-900">₹46,000</span>
+              <span className="text-lg font-extrabold text-storm">₹46,000</span>
               <span className="text-[10px] text-slate-500 font-semibold">INR</span>
             </div>
           </div>
@@ -1620,21 +1620,21 @@ function MipContent() {
             <button
               type="button"
               onClick={() => setIsQrModalOpen(true)}
-              className="btn-interactive min-h-[46px] px-3.5 flex items-center justify-center gap-1.5 rounded-full bg-slate-900 active:bg-slate-800 text-white font-bold text-xs shadow-md"
+              className="btn-interactive min-h-[46px] px-3.5 flex items-center justify-center gap-1.5 rounded-full bg-storm active:bg-storm-800 text-surface font-bold text-caption shadow-md"
               title="Scan QR Code"
             >
-              <QrCode className="h-4 w-4 text-emerald-400" />
+              <QrCode className="h-4 w-4 text-bumblebee" />
               <span>QR Pay</span>
             </button>
 
             <button
               type="button"
               onClick={() => setIsModalOpen(true)}
-              className="btn-interactive min-h-[46px] px-4 flex items-center justify-center gap-1.5 rounded-full bg-blue-600 active:bg-blue-700 text-white font-extrabold text-xs shadow-md shadow-blue-600/30"
+              className="btn-interactive min-h-[46px] px-4 flex items-center justify-center gap-1.5 rounded-full bg-bumblebee active:bg-bumblebee-400 text-storm font-extrabold text-caption shadow-md"
             >
-              <Sparkles className="h-3.5 w-3.5 text-amber-300" />
+              <Sparkles className="h-3.5 w-3.5 text-storm" />
               <span>Register</span>
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-3.5 w-3.5 text-storm" />
             </button>
           </div>
         </div>

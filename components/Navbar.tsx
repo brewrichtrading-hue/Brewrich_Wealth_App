@@ -99,12 +99,12 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-[#FEFEFE]/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 h-20">
         
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-3 group focus:outline-none rounded-xl p-1">
-          <div className="flex items-center bg-white p-1 rounded-xl shadow-sm border border-slate-100">
+          <div className="flex items-center bg-[#FEFEFE] p-1 rounded-xl shadow-sm border border-slate-100">
             <img 
               src="/BR LOGO.jpeg" 
               alt="Brewrich Wealth Logo" 
@@ -112,7 +112,7 @@ export default function Navbar() {
             />
           </div>
           <div className="hidden lg:flex flex-col">
-            <span className="text-[10px] tracking-widest uppercase text-blue-700 font-extrabold">
+            <span className="text-[10px] tracking-widest uppercase text-storm font-extrabold">
               Institutional Mentorship & Wealth
             </span>
           </div>
@@ -128,13 +128,13 @@ export default function Navbar() {
                 href={link.href}
                 className={`relative px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
                   isActive
-                    ? 'text-blue-700 bg-blue-50 font-bold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
+                    ? 'text-storm bg-storm-50 font-bold border border-storm-100'
+                    : 'text-slate-700 hover:text-storm hover:bg-storm-50/50'
                 }`}
               >
                 <span>{link.name}</span>
                 {link.badge && (
-                  <span className="text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                  <span className="text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-full bg-bumblebee text-storm shadow-sm">
                     {link.badge}
                   </span>
                 )}
@@ -148,11 +148,11 @@ export default function Navbar() {
               href="/dashboard"
               className={`px-4 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2 ${
                 pathname.startsWith('/dashboard')
-                  ? 'text-blue-700 bg-blue-50 font-bold'
-                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/70'
+                  ? 'text-storm bg-storm-50 font-bold border border-storm-100'
+                  : 'text-slate-700 hover:text-storm hover:bg-storm-50/50'
               }`}
             >
-              <LayoutDashboard className="h-4 w-4 text-blue-600" />
+              <LayoutDashboard className="h-4 w-4 text-storm" />
               <span>Student Portal</span>
               {isPaid && (
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -169,7 +169,7 @@ export default function Navbar() {
             <div className="flex items-center gap-2.5">
               <Link
                 href="/dashboard"
-                className="btn-interactive flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-600/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                className="btn-interactive flex items-center gap-2 px-5 py-2.5 rounded-full bg-storm hover:bg-storm-800 text-surface font-bold text-sm shadow-md transition-all hover:scale-[1.01] active:scale-[0.99]"
               >
                 <LayoutDashboard className="h-4 w-4" />
                 <span>Dashboard</span>
@@ -177,7 +177,7 @@ export default function Navbar() {
               <button
                 onClick={handleSignOut}
                 title="Sign Out"
-                className="btn-interactive flex items-center justify-center h-10 w-10 rounded-full bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-500 transition-all"
+                className="btn-interactive flex items-center justify-center h-10 w-10 rounded-full bg-slate-100 hover:bg-joyous-50 hover:text-joyous text-slate-500 transition-all"
               >
                 <LogOut className="h-4 w-4" />
               </button>
@@ -186,7 +186,7 @@ export default function Navbar() {
             <div className="flex items-center gap-3">
               <button
                 onClick={handleGoogleSignIn}
-                className="btn-interactive flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-all"
+                className="btn-interactive flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold text-storm hover:text-storm-900 bg-slate-100 hover:bg-slate-200 transition-all"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24">
                   <path
@@ -211,7 +211,7 @@ export default function Navbar() {
 
               <Link
                 href="/miip"
-                className="btn-interactive flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-md shadow-blue-600/25 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                className="btn-interactive flex items-center gap-2 px-5 py-2.5 rounded-full bg-bumblebee hover:bg-bumblebee-400 text-storm font-extrabold text-sm shadow-md transition-all hover:scale-[1.01] active:scale-[0.99]"
               >
                 <Sparkles className="h-4 w-4" />
                 <span>Join MIP</span>
@@ -225,17 +225,17 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center justify-center min-h-[48px] min-w-[48px] rounded-full bg-slate-100 text-slate-700 hover:text-slate-900 active:bg-slate-200 focus:outline-none"
+            className="flex items-center justify-center min-h-[48px] min-w-[48px] rounded-full bg-slate-100 text-storm hover:text-storm-900 active:bg-slate-200 focus:outline-none"
             aria-label="Toggle menu"
           >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6 text-slate-800" />}
+            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6 text-storm" />}
           </button>
         </div>
       </div>
 
       {/* Mobile Navigation Drawer */}
       {isOpen && (
-        <div className="md:hidden fixed inset-x-0 top-20 bottom-0 z-40 bg-white/98 backdrop-blur-2xl border-t border-slate-200 px-4 py-6 overflow-y-auto flex flex-col justify-between animate-in slide-in-from-top-4 duration-200">
+        <div className="md:hidden fixed inset-x-0 top-20 bottom-0 z-40 bg-[#FEFEFE]/98 backdrop-blur-2xl border-t border-slate-200 px-4 py-6 overflow-y-auto flex flex-col justify-between animate-in slide-in-from-top-4 duration-200">
           <div className="space-y-3">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3">
               Explore Wealth Solutions
@@ -250,16 +250,16 @@ export default function Navbar() {
                   onClick={() => setIsOpen(false)}
                   className={`btn-interactive flex items-center justify-between w-full px-4 py-3.5 rounded-2xl text-base font-bold transition-all ${
                     isActive
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                      : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
+                      ? 'bg-storm-50 text-storm border border-storm-200'
+                      : 'bg-slate-50 text-slate-700 hover:bg-storm-50'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className={`h-5 w-5 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
+                    <Icon className={`h-5 w-5 ${isActive ? 'text-storm' : 'text-slate-400'}`} />
                     <span>{link.name}</span>
                   </div>
                   {link.badge ? (
-                    <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                    <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-bumblebee text-storm">
                       {link.badge}
                     </span>
                   ) : (
@@ -274,12 +274,12 @@ export default function Navbar() {
               onClick={() => setIsOpen(false)}
               className={`btn-interactive flex items-center justify-between w-full px-4 py-3.5 rounded-2xl text-base font-bold transition-all ${
                 pathname.startsWith('/dashboard')
-                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                  : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
+                  ? 'bg-storm-50 text-storm border border-storm-200'
+                  : 'bg-slate-50 text-slate-700 hover:bg-storm-50'
               }`}
             >
               <div className="flex items-center gap-3">
-                <LayoutDashboard className="h-5 w-5 text-blue-600" />
+                <LayoutDashboard className="h-5 w-5 text-storm" />
                 <span>Student Portal (Dashboard)</span>
               </div>
               <ChevronRight className="h-4 w-4 text-slate-400" />
@@ -290,12 +290,12 @@ export default function Navbar() {
             {user ? (
               <div className="space-y-3">
                 <div className="px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                  <div className="h-10 w-10 rounded-full bg-storm-100 text-storm flex items-center justify-center font-bold">
                     {user.email?.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 truncate">
                     <p className="text-xs text-slate-500">Signed in as</p>
-                    <p className="text-sm font-bold text-slate-900 truncate">{user.email}</p>
+                    <p className="text-sm font-bold text-storm truncate">{user.email}</p>
                   </div>
                 </div>
 
@@ -304,7 +304,7 @@ export default function Navbar() {
                     setIsOpen(false);
                     handleSignOut();
                   }}
-                  className="btn-interactive w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-full bg-red-50 text-red-600 font-bold text-sm hover:bg-red-100"
+                  className="btn-interactive w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-full bg-joyous-50 text-joyous font-bold text-sm hover:bg-joyous-100"
                 >
                   <LogOut className="h-4 w-4" />
                   <span>Sign Out</span>
@@ -317,7 +317,7 @@ export default function Navbar() {
                     setIsOpen(false);
                     handleGoogleSignIn();
                   }}
-                  className="btn-interactive w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm"
+                  className="btn-interactive w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-full bg-slate-100 hover:bg-slate-200 text-storm font-bold text-sm"
                 >
                   <svg className="h-5 w-5" viewBox="0 0 24 24">
                     <path
@@ -343,7 +343,7 @@ export default function Navbar() {
                 <Link
                   href="/miip"
                   onClick={() => setIsOpen(false)}
-                  className="btn-interactive w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-full bg-blue-600 text-white font-extrabold text-base shadow-lg shadow-blue-600/25"
+                  className="btn-interactive w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-full bg-bumblebee hover:bg-bumblebee-400 text-storm font-extrabold text-base shadow-lg shadow-bumblebee/25"
                 >
                   <Sparkles className="h-5 w-5" />
                   <span>Join MIP Mentorship (₹46,000)</span>
