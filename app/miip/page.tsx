@@ -279,7 +279,7 @@ function MipContent() {
   ];
 
   return (
-    <div className="flex flex-col w-full pb-24 md:pb-16 bg-surface text-storm font-sans">
+    <div className="flex flex-col w-full pb-48 md:pb-16 bg-surface text-storm font-sans">
 
       {/* ========================================================================= */}
       {/* 1. TOP HERO SECTION & BROCHURE DOWNLOAD */}
@@ -1473,7 +1473,7 @@ function MipContent() {
       {/* ========================================================================= */}
       {/* 10. BOTTOM PRICING, LIVE SCARCITY TRACKER & REGISTRATION CARD */}
       {/* ========================================================================= */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-storm-50/50 border-t border-slate-200">
+      <section id="pricing" className="pt-20 pb-32 sm:pb-36 md:py-20 px-4 sm:px-6 lg:px-8 bg-storm-50/50 border-t border-slate-200">
         <div className="mx-auto max-w-4xl space-y-8">
           
           <div className="text-center max-w-2xl mx-auto space-y-3">
