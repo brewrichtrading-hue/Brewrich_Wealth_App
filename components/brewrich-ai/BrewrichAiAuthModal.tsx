@@ -11,7 +11,7 @@ interface BrewrichAiAuthModalProps {
 
 export default function BrewrichAiAuthModal({ isOpen, onSuccess }: BrewrichAiAuthModalProps) {
   const [email, setEmail] = useState('wealth@brewrich.in');
-  const [password, setPassword] = useState('••••••••••••');
+  const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);

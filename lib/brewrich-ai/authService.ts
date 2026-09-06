@@ -22,7 +22,7 @@ export interface RequestWithCookies {
 const SESSION_COOKIE_NAME = 'brewrich_ai_session';
 const SESSION_SECRET = process.env.BREWRICH_SESSION_SECRET || 'brewrich-ai-personal-cockpit-secret-salt-2026';
 const OWNER_EMAIL = process.env.BREWRICH_ADMIN_EMAIL || 'wealth@brewrich.in';
-const OWNER_DEFAULT_PASSWORD = process.env.BREWRICH_ADMIN_PASSWORD || 'BrewrichWealth2026!';
+const OWNER_PASSWORD = process.env.BREWRICH_ADMIN_PASSWORD;
 
 /**
  * Creates a signed session token: base64(payload).signature
@@ -82,9 +82,10 @@ export function authenticateOwner(email: string, password: string): { success: b
   const normalizedEmail = email.trim().toLowerCase();
   const normalizedOwnerEmail = OWNER_EMAIL.trim().toLowerCase();
 
-  // Validate owner credentials
-  const isValidOwner = (normalizedEmail === normalizedOwnerEmail || normalizedEmail === 'wealth@brewrich.in' || normalizedEmail === 'admin@brewrich.in') &&
-    (password === OWNER_DEFAULT_PASSWORD || password === 'BrewrichWealth2026!' || password.length >= 8);
+  const isEmailMatch = (normalizedEmail === normalizedOwnerEmail || normalizedEmail === 'wealth@brewrich.in' || normalizedEmail === 'admin@brewrich.in');
+  const isPasswordValid = OWNER_PASSWORD ? (password === OWNER_PASSWORD) : (password.length >= 8);
+
+  const isValidOwner = isEmailMatch && isPasswordValid;
 
   if (!isValidOwner) {
     recordAuditEvent({

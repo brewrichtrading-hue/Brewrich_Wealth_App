@@ -17,8 +17,7 @@ import {
   Menu,
   X,
   User,
-  Shield,
-  Clock
+  AlertTriangle
 } from 'lucide-react';
 import { CockpitTab, CockpitDashboardData, BrewrichUserSession, BacktestDataset } from '@/lib/brewrich-ai/types';
 import { getBrewrich400Backtest } from '@/lib/brewrich-ai/brewrich400Engine';
@@ -41,35 +40,64 @@ export default function BrewrichAiShell() {
   const [backtestData, setBacktestData] = useState<BacktestDataset | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [engineUnavailable, setEngineUnavailable] = useState(false);
   
   const [session, setSession] = useState<BrewrichUserSession>({
-    isAuthenticated: true, // Defaults to authenticated for seamless cockpit access; modal available for re-auth
+    isAuthenticated: false,
     email: 'wealth@brewrich.in',
     name: 'Brewrich Principal',
     role: 'owner',
-    twoFactorVerified: true,
+    twoFactorVerified: false,
   });
 
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  // Fetch cockpit data
-  const loadCockpitData = useCallback(async () => {
+  // 1. Initial Session Check & Data Load
+  const checkSessionAndLoad = useCallback(async () => {
     try {
       setIsRefreshing(true);
+      // Step A: Check Authentication Session
+      const authRes = await fetch('/api/brewrich-ai/auth');
+      const authJson = await authRes.json();
+
+      if (!authJson.isAuthenticated) {
+        setSession({ isAuthenticated: false, role: 'guest', twoFactorVerified: false });
+        setShowAuthModal(true);
+        setIsLoading(false);
+        setIsRefreshing(false);
+        return;
+      }
+
+      setSession(authJson.user || {
+        isAuthenticated: true,
+        email: 'wealth@brewrich.in',
+        name: 'Brewrich Principal',
+        role: 'owner',
+        twoFactorVerified: true,
+      });
+      setShowAuthModal(false);
+
+      // Step B: Load Dashboard & Backtest Data
       const [dashRes, btRes] = await Promise.all([
         fetch('/api/brewrich-ai/dashboard'),
         fetch('/api/brewrich-ai/backtest'),
       ]);
+
       const json = await dashRes.json();
-      if (json.success) {
+      if (json.success && json.data) {
         setData(json.data);
+        setEngineUnavailable(json.data.systemPulse === 'OFFLINE');
+      } else {
+        setEngineUnavailable(true);
       }
+
       const btJson = await btRes.json();
-      if (btJson.success) {
+      if (btJson.success && btJson.backtest) {
         setBacktestData(btJson.backtest);
       }
     } catch (err) {
       console.warn('⚠️ [BREWRICH AI] Cockpit data load warning:', err);
+      setEngineUnavailable(true);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -77,11 +105,15 @@ export default function BrewrichAiShell() {
   }, []);
 
   useEffect(() => {
-    loadCockpitData();
-  }, [loadCockpitData]);
+    checkSessionAndLoad();
+  }, [checkSessionAndLoad]);
 
   const handleLogout = async () => {
-    await fetch('/api/brewrich-ai/auth', { method: 'DELETE' });
+    try {
+      await fetch('/api/brewrich-ai/auth', { method: 'DELETE' });
+    } catch {
+      // ignore network errors on logout
+    }
     setSession({ isAuthenticated: false, role: 'guest', twoFactorVerified: false });
     setShowAuthModal(true);
   };
@@ -95,7 +127,7 @@ export default function BrewrichAiShell() {
       twoFactorVerified: true,
     });
     setShowAuthModal(false);
-    loadCockpitData();
+    checkSessionAndLoad();
   };
 
   const navItems: { id: CockpitTab; label: string; icon: React.ComponentType<{ className?: string }>; badge?: string; isLocked?: boolean }[] = [
@@ -156,7 +188,7 @@ export default function BrewrichAiShell() {
           {/* Right Actions & User Menu */}
           <div className="flex items-center gap-2 sm:gap-3">
             <button
-              onClick={loadCockpitData}
+              onClick={checkSessionAndLoad}
               disabled={isRefreshing}
               className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-blue-100 transition-all active:scale-95 disabled:opacity-50"
               title="Refresh Cockpit Data"
@@ -164,10 +196,12 @@ export default function BrewrichAiShell() {
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>
 
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 border border-white/10 text-xs font-semibold text-white">
-              <User className="w-3.5 h-3.5 text-bumblebee" />
-              <span className="truncate max-w-[120px]">{session.email}</span>
-            </div>
+            {session.isAuthenticated && (
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 border border-white/10 text-xs font-semibold text-white">
+                <User className="w-3.5 h-3.5 text-bumblebee" />
+                <span className="truncate max-w-[120px]">{session.email}</span>
+              </div>
+            )}
 
             <button
               onClick={handleLogout}
@@ -260,14 +294,36 @@ export default function BrewrichAiShell() {
       {/* 3. MAIN COCKPIT BODY */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         
+        {/* ENGINE UNAVAILABLE BANNER */}
+        {engineUnavailable && (
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-center gap-3 text-amber-900 text-xs font-semibold">
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+            <div>
+              <span className="font-bold">Engine Unavailable:</span> The Python Strategy Engine bridge at 127.0.0.1:8400 is offline. Real-time evaluation and backtests are temporarily paused.
+            </div>
+          </div>
+        )}
+
         {/* LOADING PLACEHOLDER */}
-        {isLoading || !data ? (
+        {isLoading ? (
           <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 shadow-sm space-y-4">
             <RefreshCw className="w-8 h-8 text-storm animate-spin mx-auto" />
             <div className="text-sm font-bold text-storm">Initializing Brewrich AI Cockpit...</div>
-            <p className="text-xs text-slate-400">Loading strategy engine state and paper portfolio.</p>
+            <p className="text-xs text-slate-400">Verifying authenticated session and connecting to strategy engine.</p>
           </div>
-        ) : (
+        ) : !session.isAuthenticated ? (
+          <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <Lock className="w-8 h-8 text-storm mx-auto" />
+            <div className="text-sm font-bold text-storm">Authentication Required</div>
+            <p className="text-xs text-slate-400">Please log into the personal wealth cockpit to view protected strategy data.</p>
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="px-6 py-2.5 rounded-xl bg-storm text-white font-bold text-xs shadow-md"
+            >
+              Log In
+            </button>
+          </div>
+        ) : data ? (
           <>
             {activeTab === 'dashboard' && (
               <DashboardTab data={data} onNavigate={setActiveTab} />
@@ -279,7 +335,7 @@ export default function BrewrichAiShell() {
               <BacktestTab backtest={backtestData || getBrewrich400Backtest()} />
             )}
             {activeTab === 'paper-trading' && (
-              <PaperTradingTab portfolio={data.portfolio} recentOrders={data.recentOrders} onRefresh={loadCockpitData} />
+              <PaperTradingTab portfolio={data.portfolio} recentOrders={data.recentOrders} onRefresh={checkSessionAndLoad} />
             )}
             {activeTab === 'portfolio' && (
               <PortfolioTab portfolio={data.portfolio} />
@@ -300,7 +356,7 @@ export default function BrewrichAiShell() {
               <LiveTradingLockedTab onNavigate={setActiveTab} />
             )}
           </>
-        )}
+        ) : null}
 
       </main>
 

@@ -84,7 +84,8 @@ export async function runBackendTestSuite() {
 
   // TEST 4: Successful login
   console.log('TEST 4: Verifying owner authentication...');
-  const validAuth = authenticateOwner('wealth@brewrich.in', 'BrewrichWealth2026!');
+  const testPasswordFixture = process.env.BREWRICH_ADMIN_PASSWORD || 'TestOwnerPass123!';
+  const validAuth = authenticateOwner('wealth@brewrich.in', testPasswordFixture);
   assert(validAuth.success === true, 'Valid owner credentials must succeed');
   assert(validAuth.token !== undefined, 'Token must be issued on successful login');
   assert(validAuth.session?.role === 'owner', 'User role must be owner');
