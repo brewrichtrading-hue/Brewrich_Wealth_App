@@ -1,20 +1,21 @@
 import type { Metadata } from 'next';
-import SkyHighPage from '@/components/SkyHighPage';
+import BrewrichAiShell from '@/components/brewrich-ai/BrewrichAiShell';
 
 export const metadata: Metadata = {
-  title: 'Brewrich Sky High | Blue Sky Strategy Engine',
+  title: 'Brewrich AI | Personal Wealth Cockpit',
   description:
-    'A focused NSE strategy engine for screening, backtesting and eventually live execution.',
+    'Private quantitative wealth cockpit operating the proprietary Brewrich 400 momentum strategy engine.',
   keywords: [
-    'Brewrich Sky High',
-    'Blue Sky Strategy',
-    'NSE Data Engine',
+    'Brewrich AI',
+    'Personal Wealth Cockpit',
+    'Brewrich 400',
     'Quantitative Momentum',
-    'Stock Screening',
-    'Backtesting',
+    'Paper Trading',
+    'Dhan',
+    'Firstock',
   ],
 };
 
 export default function Page() {
-  return <SkyHighPage />;
+  return <BrewrichAiShell />;
 }
