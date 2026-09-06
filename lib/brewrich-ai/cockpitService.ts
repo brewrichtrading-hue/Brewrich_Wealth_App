@@ -63,10 +63,10 @@ export class CockpitService {
       systemPulse: strategy.status === 'ACTIVE' ? 'OPERATIONAL' : 'DEGRADED',
       strategy,
       portfolio,
-      recentOrders: recentOrders.slice(0, 10),
+      recentOrders: recentOrders.slice(0, 50),
       risk,
       brokers,
-      recentAuditLogs: auditLogs.slice(0, 20),
+      recentAuditLogs: auditLogs.slice(0, 50),
       liveStatus: {
         isLocked: true,
         reason: 'Execution mode is strictly PAPER. Live trading is fail-closed locked.',

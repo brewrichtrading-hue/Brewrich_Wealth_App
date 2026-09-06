@@ -86,7 +86,7 @@ export default function BrewrichAiShell() {
       const json = await dashRes.json();
       if (json.success && json.data) {
         setData(json.data);
-        setEngineUnavailable(json.data.systemPulse === 'OFFLINE');
+        setEngineUnavailable(json.data.systemPulse !== 'OPERATIONAL');
       } else {
         setEngineUnavailable(true);
       }
@@ -299,7 +299,7 @@ export default function BrewrichAiShell() {
           <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-center gap-3 text-amber-900 text-xs font-semibold">
             <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
             <div>
-              <span className="font-bold">Engine Unavailable:</span> The Python Strategy Engine bridge at 127.0.0.1:8400 is offline. Real-time evaluation and backtests are temporarily paused.
+              <span className="font-bold">Engine Evaluation Paused:</span> The Python Strategy Engine bridge at 127.0.0.1:8400 is offline (expected in cloud deployments without a local worker). Strategy evaluation is paused, while persistent Supabase portfolio, order, risk, and audit records remain fully active.
             </div>
           </div>
         )}
