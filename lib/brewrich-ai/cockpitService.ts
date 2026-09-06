@@ -43,29 +43,21 @@ import {
 } from './safetyService';
 import { recordAuditEvent, getLocalAuditEvents } from './auditService';
 import { getSystemHealth } from './healthService';
+import { supabaseStore } from './persistence/supabaseStore';
 
 export class CockpitService {
   /**
    * 1. Aggregated Dashboard Data
    */
   async getDashboard(): Promise<CockpitDashboardData> {
-    const [strategy, portfolio, recentOrders, brokers, pythonLogs] = await Promise.all([
+    const [strategy, portfolio, recentOrders, brokers, auditLogs, risk] = await Promise.all([
       getBrewrich400StateAsync(),
-      fetchPaperPortfolioFromPython(),
-      fetchPaperOrdersFromPython(),
-      fetchBrokerConnectionsFromPython(),
-      fetchAuditLogsFromPython(),
+      this.getPaperPortfolio(),
+      this.getPaperOrders(),
+      this.getBrokerStatus(),
+      this.getAuditLog(),
+      this.getRiskStatus(),
     ]);
-
-    const localLogs = getLocalAuditEvents();
-    // Merge logs with deduplication by id
-    const mergedLogsMap = new Map<string, AuditLogEvent>();
-    for (const l of [...localLogs, ...pythonLogs]) {
-      if (!mergedLogsMap.has(l.id)) mergedLogsMap.set(l.id, l);
-    }
-    const recentAuditLogs = Array.from(mergedLogsMap.values()).slice(0, 20);
-
-    const risk = getAuthoritativeRiskSafetyMetrics();
 
     return {
       systemPulse: strategy.status === 'ACTIVE' ? 'OPERATIONAL' : 'DEGRADED',
@@ -74,7 +66,7 @@ export class CockpitService {
       recentOrders: recentOrders.slice(0, 10),
       risk,
       brokers,
-      recentAuditLogs,
+      recentAuditLogs: auditLogs.slice(0, 20),
       liveStatus: {
         isLocked: true,
         reason: 'Execution mode is strictly PAPER. Live trading is fail-closed locked.',
@@ -124,6 +116,45 @@ export class CockpitService {
    * 5. Canonical Persistent Paper Portfolio
    */
   async getPaperPortfolio(): Promise<PaperPortfolioState> {
+    try {
+      const cloudPortfolio = await supabaseStore.getPaperPortfolio();
+      const cloudPositions = await supabaseStore.getPaperPositions();
+
+      if (cloudPortfolio && cloudPositions.length > 0) {
+        return {
+          initialCapital: cloudPortfolio.initialCapital,
+          cashBalance: cloudPortfolio.cashBalance,
+          investedValue: cloudPortfolio.investedValue,
+          totalPortfolioValue: cloudPortfolio.totalNav,
+          totalRealizedPnl: cloudPortfolio.totalRealizedPnl,
+          totalUnrealizedPnl: cloudPortfolio.totalUnrealizedPnl,
+          totalPnlPct: cloudPortfolio.initialCapital > 0
+            ? Number(((cloudPortfolio.totalNav - cloudPortfolio.initialCapital) / cloudPortfolio.initialCapital * 100).toFixed(2))
+            : 0,
+          dayPnl: 0,
+          dayPnlPct: 0,
+          positions: cloudPositions.map(p => ({
+            symbol: p.symbol,
+            companyName: p.symbol,
+            sector: 'Nifty MidSmall 400',
+            quantity: p.shares,
+            avgBuyPrice: p.entryPrice,
+            currentPrice: p.currentPrice,
+            investedValue: p.costBasis,
+            currentValue: p.currentValue,
+            unrealizedPnl: p.unrealizedPnl,
+            unrealizedPnlPct: p.unrealizedPnlPct,
+            weightPct: p.weightPct,
+            targetWeightPct: 10.0,
+            allocationStatus: p.weightPct > 11 ? 'Overweight' : (p.weightPct < 9 ? 'Underweight' : 'Balanced'),
+          })),
+          lastUpdated: cloudPortfolio.updatedAt,
+          executionMode: 'PAPER_ONLY',
+        };
+      }
+    } catch (err) {
+      console.warn('[CockpitService] Cloud portfolio read fallback:', err);
+    }
     return fetchPaperPortfolioFromPython();
   }
 
@@ -131,6 +162,27 @@ export class CockpitService {
    * 6. Paper Orders Book
    */
   async getPaperOrders(): Promise<PaperOrder[]> {
+    try {
+      const cloudOrders = await supabaseStore.getPaperOrders();
+      if (cloudOrders && cloudOrders.length > 0) {
+        return cloudOrders.map(o => ({
+          orderId: o.id,
+          symbol: o.symbol,
+          side: o.side as 'BUY' | 'SELL',
+          quantity: o.quantity,
+          price: o.price,
+          orderValue: o.orderValue,
+          timestamp: o.timestamp,
+          reason: o.strategySignal || 'Monthly Momentum Rebalance',
+          status: 'PAPER_ONLY',
+          executionMode: 'PAPER_ONLY',
+          brokerContext: o.brokerContext || 'DHAN_PAPER_ADAPTER',
+          processedEventId: o.eventId,
+        }));
+      }
+    } catch (err) {
+      console.warn('[CockpitService] Cloud orders read fallback:', err);
+    }
     return fetchPaperOrdersFromPython();
   }
 
@@ -144,6 +196,25 @@ export class CockpitService {
       details: 'Dhan & Firstock adapter health check executed.',
       severity: 'INFO',
     });
+
+    try {
+      const cloudBrokers = await supabaseStore.getBrokerConnections();
+      if (cloudBrokers && cloudBrokers.length > 0) {
+        return cloudBrokers.map(b => ({
+          brokerId: b.id as 'dhan' | 'firstock',
+          name: b.name,
+          status: 'READY_PAPER_ONLY',
+          lastVerified: 'PostgreSQL Cloud Sync',
+          maskedClientId: b.maskedClientId,
+          authStatus: b.id === 'firstock' ? 'Credentials Not Set' : (b.credentialsConfiguredServerSide ? 'Server-Side Configured' : 'Credentials Not Set'),
+          tradingStatus: 'LOCKED',
+          rateLimitStatus: 'Normal',
+        }));
+      }
+    } catch (err) {
+      console.warn('[CockpitService] Cloud brokers read fallback:', err);
+    }
+
     return fetchBrokerConnectionsFromPython();
   }
 
@@ -151,17 +222,50 @@ export class CockpitService {
    * 8. Risk & Safety Guardrails Status
    */
   async getRiskStatus(): Promise<RiskSafetyMetrics> {
-    return getAuthoritativeRiskSafetyMetrics();
+    const baseRisk = getAuthoritativeRiskSafetyMetrics();
+    try {
+      const cloudRisk = await supabaseStore.getRiskState();
+      if (cloudRisk) {
+        return {
+          ...baseRisk,
+          executionMode: cloudRisk.execution_mode as 'PAPER',
+          liveTradingStatus: 'LOCKED',
+          emergencyStopActive: cloudRisk.emergency_stop,
+          maxSinglePositionPct: Number(cloudRisk.max_single_position_pct),
+          drawdownLimitPct: Number(cloudRisk.drawdown_limit_pct),
+        };
+      }
+    } catch (err) {
+      console.warn('[CockpitService] Cloud risk state read fallback:', err);
+    }
+    return baseRisk;
   }
 
   /**
    * 9. Immutable Structured Audit Log
    */
   async getAuditLog(): Promise<AuditLogEvent[]> {
-    const [pythonLogs] = await Promise.all([fetchAuditLogsFromPython()]);
+    const [pythonLogs, cloudEvents] = await Promise.all([
+      fetchAuditLogsFromPython(),
+      supabaseStore.getAuditEvents(),
+    ]);
     const localLogs = getLocalAuditEvents();
-    const merged = [...localLogs, ...pythonLogs];
-    return merged;
+
+    const mappedCloudEvents: AuditLogEvent[] = (cloudEvents || []).map(e => ({
+      id: e.id,
+      timestamp: e.timestamp.replace('T', ' ').slice(0, 19),
+      category: e.category as any,
+      action: e.action,
+      details: e.details,
+      severity: e.severity,
+      metadata: e.metadataJson,
+    }));
+
+    const mergedLogsMap = new Map<string, AuditLogEvent>();
+    for (const l of [...localLogs, ...mappedCloudEvents, ...pythonLogs]) {
+      if (!mergedLogsMap.has(l.id)) mergedLogsMap.set(l.id, l);
+    }
+    return Array.from(mergedLogsMap.values()).slice(0, 50);
   }
 
   /**
@@ -185,8 +289,24 @@ export class CockpitService {
 
   /**
    * 12. Run Deterministic Paper Rebalance
+   * FAIL-CLOSED: Blocks execution if emergency_stop is active
    */
   async runPaperRebalance(): Promise<{ success: boolean; message: string; actions: any[] }> {
+    const risk = await this.getRiskStatus();
+    if (risk.emergencyStopActive) {
+      recordAuditEvent({
+        category: 'SAFETY',
+        action: 'EXECUTION_BLOCKED',
+        details: 'Paper rebalance blocked: emergency_stop is active (true). System is locked in safe mode.',
+        severity: 'CRITICAL',
+      });
+      return {
+        success: false,
+        message: 'Execution blocked by Emergency Stop. System is locked in safe mode.',
+        actions: [],
+      };
+    }
+
     recordAuditEvent({
       category: 'PAPER_EXECUTION',
       action: 'PAPER_RUN',
