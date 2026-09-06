@@ -4,7 +4,7 @@
  * 
  * Proprietary to Brewrich Wealth.
  * Governs the Brewrich 400 Wealth Strategy Engine, Paper Execution Layer,
- * Broker Boundaries (Dhan & Firstock), and Cockpit UI Navigation.
+ * Broker Boundaries (Dhan & Firstock), Health, Safety, and Cockpit UI Navigation.
  */
 
 // ==============================================================================
@@ -104,6 +104,7 @@ export interface EquityCurvePoint {
   portfolioValue: number;
   benchmarkValue: number;
   drawdownPct: number;
+  cashPct?: number;
 }
 
 export interface YearlyReturn {
@@ -200,8 +201,10 @@ export interface RiskSafetyMetrics {
 // 6. BROKER INTEGRATIONS (DHAN & FIRSTOCK)
 // ==============================================================================
 
+export type BrokerIdentifier = 'dhan' | 'firstock';
+
 export interface BrokerConnectionInfo {
-  brokerId: 'dhan' | 'firstock';
+  brokerId: BrokerIdentifier;
   name: string;
   status: 'Connected' | 'Ready' | 'Disconnected' | 'Ready (Paper Only)' | 'READY_PAPER_ONLY';
   lastVerified: string;
@@ -211,21 +214,72 @@ export interface BrokerConnectionInfo {
   rateLimitStatus: 'Normal' | 'Throttled';
 }
 
+export interface NormalizedBrokerStatus {
+  broker: BrokerIdentifier;
+  name: string;
+  connectionStatus: 'connected' | 'ready' | 'disconnected';
+  tradingStatus: 'LOCKED';
+  mode: 'PAPER_SIMULATION';
+  maskedClientId: string;
+  liveOrdersAllowed: false;
+}
+
 // ==============================================================================
 // 7. AUDIT LOG EVENT
 // ==============================================================================
 
+export type AuditCategory =
+  | 'AUTH'
+  | 'STRATEGY'
+  | 'BACKTEST'
+  | 'PAPER_EXECUTION'
+  | 'PORTFOLIO'
+  | 'BROKER'
+  | 'SAFETY'
+  | 'SYSTEM';
+
+export type AuditActionType =
+  | 'LOGIN'
+  | 'LOGOUT'
+  | 'ENGINE_CHECK'
+  | 'BACKTEST_RUN'
+  | 'PAPER_RUN'
+  | 'PAPER_BUY'
+  | 'PAPER_SELL'
+  | 'BROKER_STATUS_CHECK'
+  | 'SAFETY_CHECK'
+  | 'LIVE_BLOCKED';
+
 export interface AuditLogEvent {
   id: string;
   timestamp: string;
-  category: 'AUTH' | 'STRATEGY' | 'PAPER_EXECUTION' | 'PORTFOLIO' | 'BROKER' | 'SAFETY' | 'SYSTEM';
-  action: string;
+  category: AuditCategory;
+  action: AuditActionType | string;
   details: string;
   severity: 'INFO' | 'SUCCESS' | 'WARNING' | 'CRITICAL';
+  metadata?: Record<string, any>;
 }
 
 // ==============================================================================
-// 8. COCKPIT DASHBOARD AGGREGATE
+// 8. SYSTEM HEALTH ABSTRACTION
+// ==============================================================================
+
+export interface SystemHealthStatus {
+  timestamp: string;
+  overallStatus: 'HEALTHY' | 'DEGRADED' | 'DOWN';
+  components: {
+    webApi: { status: 'UP'; message: string };
+    pythonEngine: { status: 'UP' | 'DOWN'; latencyMs: number; version?: string };
+    historicalDataset: { status: 'AVAILABLE' | 'UNAVAILABLE'; stockCount: number; sessionCount: number };
+    paperPortfolio: { status: 'PERSISTED'; nav: number; positionsCount: number };
+    dhanBroker: { status: 'READY_PAPER_ONLY'; trading: 'LOCKED' };
+    firstockBroker: { status: 'READY_PAPER_ONLY'; trading: 'LOCKED' };
+    liveTradingLock: { status: 'ENFORCED'; liveEnabled: false; paperOnly: true };
+  };
+}
+
+// ==============================================================================
+// 9. COCKPIT DASHBOARD AGGREGATE
 // ==============================================================================
 
 export interface CockpitDashboardData {

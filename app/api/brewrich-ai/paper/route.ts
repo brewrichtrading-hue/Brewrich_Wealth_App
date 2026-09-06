@@ -1,17 +1,22 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { fetchPaperPortfolioFromPython, executePaperRebalanceInPython } from '@/lib/brewrich-ai/paperExecution';
+import { cockpitService } from '@/lib/brewrich-ai/cockpitService';
+import { getSessionFromRequest } from '@/lib/brewrich-ai/authService';
 
-export async function GET() {
-  const portfolio = await fetchPaperPortfolioFromPython();
-  return NextResponse.json({ success: true, portfolio });
+export async function GET(req: NextRequest) {
+  const session = getSessionFromRequest(req);
+  const portfolio = await cockpitService.getPaperPortfolio();
+  return NextResponse.json({
+    success: true,
+    authenticated: session.isAuthenticated,
+    portfolio,
+  });
 }
 
 export async function POST(req: NextRequest) {
-  try {
-    const result = await executePaperRebalanceInPython();
-    return NextResponse.json(result);
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err?.message || 'Paper execution error.' }, { status: 500 });
-  }
+  const session = getSessionFromRequest(req);
+  const result = await cockpitService.runPaperRebalance();
+  return NextResponse.json({
+    ...result,
+    authenticated: session.isAuthenticated,
+  });
 }
-

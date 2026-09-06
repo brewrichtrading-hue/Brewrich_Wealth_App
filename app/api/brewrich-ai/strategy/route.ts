@@ -1,8 +1,13 @@
-import { NextResponse } from 'next/server';
-import { getBrewrich400StateAsync } from '@/lib/brewrich-ai/brewrich400Engine';
+import { NextResponse, type NextRequest } from 'next/server';
+import { cockpitService } from '@/lib/brewrich-ai/cockpitService';
+import { getSessionFromRequest } from '@/lib/brewrich-ai/authService';
 
-export async function GET() {
-  const strategy = await getBrewrich400StateAsync();
-  return NextResponse.json({ success: true, strategy });
+export async function GET(req: NextRequest) {
+  const session = getSessionFromRequest(req);
+  const strategy = await cockpitService.getStrategy();
+  return NextResponse.json({
+    success: true,
+    authenticated: session.isAuthenticated,
+    strategy,
+  });
 }
-

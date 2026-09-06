@@ -1,8 +1,13 @@
-import { NextResponse } from 'next/server';
-import { fetchAuditLogsFromPython } from '@/lib/brewrich-ai/brokerService';
+import { NextResponse, type NextRequest } from 'next/server';
+import { cockpitService } from '@/lib/brewrich-ai/cockpitService';
+import { getSessionFromRequest } from '@/lib/brewrich-ai/authService';
 
-export async function GET() {
-  const logs = await fetchAuditLogsFromPython();
-  return NextResponse.json({ success: true, logs });
+export async function GET(req: NextRequest) {
+  const session = getSessionFromRequest(req);
+  const logs = await cockpitService.getAuditLog();
+  return NextResponse.json({
+    success: true,
+    authenticated: session.isAuthenticated,
+    logs,
+  });
 }
-

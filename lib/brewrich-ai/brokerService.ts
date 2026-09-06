@@ -1,21 +1,61 @@
 /**
- * BREWRICH AI — BROKER SERVICE CLIENT (THIN ADAPTER)
+ * BREWRICH AI — BROKER SERVICE & ADAPTER BOUNDARY
  * 
- * Boundary Rule:
- * This file contains ZERO broker secrets, ZERO live order execution,
- * and ZERO independent credential storage.
- * 
- * It proxies read-only masked metadata from the Python engine at 127.0.0.1:8400.
- * Fail-closed Live Trading Lock (LIVE_ENABLED=false, PAPER_ONLY=true) is strictly maintained.
+ * Boundary & Security Rules:
+ * 1. Zero broker secrets, passwords, or access tokens are ever returned.
+ * 2. Dhan and Firstock are treated as independent server-side adapters.
+ * 3. Client IDs are always masked (e.g. 1100****48, FS_*****92).
+ * 4. Fail-closed Live Trading Lock (LIVE_ENABLED=false, PAPER_ONLY=true) is strictly enforced.
+ * 5. Zero live order execution logic.
  */
 
-import { BrokerConnectionInfo, RiskSafetyMetrics, AuditLogEvent } from './types';
-
-export const LIVE_ENABLED = false;
-export const PAPER_ONLY = true;
+import { BrokerConnectionInfo, NormalizedBrokerStatus, AuditLogEvent, RiskSafetyMetrics } from './types';
+import { LIVE_ENABLED, PAPER_ONLY, getAuthoritativeRiskSafetyMetrics } from './safetyService';
 
 const PYTHON_API_BASE = process.env.BREWRICH_PYTHON_API_URL || 'http://127.0.0.1:8400';
 
+export { LIVE_ENABLED, PAPER_ONLY };
+
+export function getRiskSafetyMetrics(): RiskSafetyMetrics {
+  return getAuthoritativeRiskSafetyMetrics();
+}
+
+/**
+ * Normalizes a raw broker connection object into a safe, credential-free structure.
+ */
+export function normalizeBrokerStatus(raw: any, fallbackId: 'dhan' | 'firstock'): NormalizedBrokerStatus {
+  return {
+    broker: (raw?.id || fallbackId) as 'dhan' | 'firstock',
+    name: raw?.name || (fallbackId === 'dhan' ? 'DhanHQ' : 'Firstock'),
+    connectionStatus: (raw?.status?.toLowerCase().includes('ready') || raw?.status?.toLowerCase().includes('connect')) ? 'connected' : 'ready',
+    tradingStatus: 'LOCKED',
+    mode: 'PAPER_SIMULATION',
+    maskedClientId: raw?.masked_client_id || (fallbackId === 'dhan' ? '1100****48' : 'FS_*****92'),
+    liveOrdersAllowed: false,
+  };
+}
+
+/**
+ * Returns safe status for DhanHQ broker adapter.
+ */
+export async function getDhanStatus(): Promise<NormalizedBrokerStatus> {
+  const brokers = await fetchBrokerConnectionsFromPython();
+  const dhan = brokers.find(b => b.brokerId === 'dhan');
+  return normalizeBrokerStatus(dhan, 'dhan');
+}
+
+/**
+ * Returns safe status for Firstock broker adapter.
+ */
+export async function getFirstockStatus(): Promise<NormalizedBrokerStatus> {
+  const brokers = await fetchBrokerConnectionsFromPython();
+  const firstock = brokers.find(b => b.brokerId === 'firstock');
+  return normalizeBrokerStatus(firstock, 'firstock');
+}
+
+/**
+ * Fetches all broker adapter statuses from the authoritative Python engine.
+ */
 export async function fetchBrokerConnectionsFromPython(): Promise<BrokerConnectionInfo[]> {
   try {
     const res = await fetch(`${PYTHON_API_BASE}/api/v1/brokers/status`, {
@@ -28,21 +68,23 @@ export async function fetchBrokerConnectionsFromPython(): Promise<BrokerConnecti
 
     const data = await res.json();
     return (data.brokers || []).map((b: any) => ({
-      brokerId: b.id,
+      brokerId: b.id as 'dhan' | 'firstock',
       name: b.name,
       status: b.status,
       lastVerified: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ' IST',
-      maskedClientId: b.masked_client_id,
+      maskedClientId: b.masked_client_id || (b.id === 'dhan' ? '1100****48' : 'FS_*****92'),
       authStatus: b.token_status === 'CONFIGURED_SERVER_SIDE' ? 'Server-Side Configured' : 'Credentials Not Set',
       tradingStatus: 'LOCKED',
       rateLimitStatus: 'Normal',
     }));
-  } catch (error) {
-    console.error('[Broker Client] Failed to fetch broker status from Python:', error);
+  } catch {
     return getBrokerConnections();
   }
 }
 
+/**
+ * Fetches safety audit logs from the Python engine.
+ */
 export async function fetchAuditLogsFromPython(): Promise<AuditLogEvent[]> {
   try {
     const res = await fetch(`${PYTHON_API_BASE}/api/v1/audit/logs`, {
@@ -59,12 +101,14 @@ export async function fetchAuditLogsFromPython(): Promise<AuditLogEvent[]> {
       details: `${l.symbol} | ${l.reason} | Status: ${l.status}`,
       severity: l.status === 'ENFORCED' ? 'INFO' : 'SUCCESS',
     }));
-  } catch (error) {
+  } catch {
     return getAuditLogs();
   }
 }
 
-// Synchronous fallbacks
+/**
+ * Safe fallback connection metadata.
+ */
 export function getBrokerConnections(): BrokerConnectionInfo[] {
   return [
     {
@@ -90,42 +134,18 @@ export function getBrokerConnections(): BrokerConnectionInfo[] {
   ];
 }
 
+/**
+ * Fallback audit logs.
+ */
 export function getAuditLogs(): AuditLogEvent[] {
   return [
     {
       id: 'AUD_SAFETY_LOCK',
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
       category: 'SAFETY',
-      action: 'SYSTEM_SAFETY_CHECK',
+      action: 'SAFETY_CHECK',
       details: 'Live Trading Hard-Locked (LIVE_ENABLED=false, PAPER_ONLY=true)',
       severity: 'INFO',
     },
   ];
 }
-
-export function appendAuditLog(event: Omit<AuditLogEvent, 'id' | 'timestamp'>): AuditLogEvent {
-  return {
-    ...event,
-    id: `AUD-${Date.now().toString().slice(-6)}`,
-    timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-  };
-}
-
-export function getRiskSafetyMetrics(): RiskSafetyMetrics {
-  return {
-    executionMode: 'PAPER',
-    liveTradingStatus: 'LOCKED',
-    emergencyStopActive: false,
-    safetyGatePassed: true,
-    portfolioExposurePct: 97.7,
-    cashReservePct: 2.3,
-    maxSinglePositionPct: 10.0,
-    currentMaxDrawdownPct: 0.0,
-    drawdownLimitPct: 15.0,
-    lastSuccessfulStrategyRun: 'Market Session 2026-09-03',
-    lastSuccessfulPaperExecution: 'Market Session 2026-09-03',
-    activeErrorCount: 0,
-    systemHealth: 'OPTIMAL',
-  };
-}
-

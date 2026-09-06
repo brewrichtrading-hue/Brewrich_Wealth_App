@@ -1,8 +1,13 @@
-import { NextResponse } from 'next/server';
-import { fetchPaperPortfolioFromPython } from '@/lib/brewrich-ai/paperExecution';
+import { NextResponse, type NextRequest } from 'next/server';
+import { cockpitService } from '@/lib/brewrich-ai/cockpitService';
+import { getSessionFromRequest } from '@/lib/brewrich-ai/authService';
 
-export async function GET() {
-  const portfolio = await fetchPaperPortfolioFromPython();
-  return NextResponse.json({ success: true, portfolio });
+export async function GET(req: NextRequest) {
+  const session = getSessionFromRequest(req);
+  const portfolio = await cockpitService.getPaperPortfolio();
+  return NextResponse.json({
+    success: true,
+    authenticated: session.isAuthenticated,
+    portfolio,
+  });
 }
-
