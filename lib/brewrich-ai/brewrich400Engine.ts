@@ -10,20 +10,11 @@
  */
 
 import { Brewrich400State, BacktestDataset, UniverseStock, TargetAllocation } from './types';
-
-const PYTHON_API_BASE = process.env.BREWRICH_PYTHON_API_URL || 'http://127.0.0.1:8400';
+import { getWorkerStrategySummary, getWorkerBacktestResults } from './workerClient';
 
 export async function getBrewrich400StateAsync(): Promise<Brewrich400State> {
   try {
-    const res = await fetch(`${PYTHON_API_BASE}/api/v1/strategy/summary`, {
-      cache: 'no-store',
-    });
-
-    if (!res.ok) {
-      throw new Error(`Python engine returned HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
+    const data = await getWorkerStrategySummary();
     
     // Map authentic Python response to UI contract
     const topRanked: UniverseStock[] = (data.top_constituents || []).map((c: any) => ({
@@ -88,15 +79,7 @@ export async function getBrewrich400StateAsync(): Promise<Brewrich400State> {
 
 export async function getBrewrich400BacktestAsync(): Promise<BacktestDataset> {
   try {
-    const res = await fetch(`${PYTHON_API_BASE}/api/v1/backtest/results`, {
-      cache: 'no-store',
-    });
-
-    if (!res.ok) {
-      throw new Error(`Python engine returned HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
+    const data = await getWorkerBacktestResults();
     const m = data.metrics || {};
 
     return {

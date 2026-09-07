@@ -8,21 +8,11 @@
  */
 
 import { PaperPortfolioState, PaperPosition, PaperOrder } from './types';
-
-
-const PYTHON_API_BASE = process.env.BREWRICH_PYTHON_API_URL || 'http://127.0.0.1:8400';
+import { getWorkerPaperPortfolio, executeWorkerPaperRebalance } from './workerClient';
 
 export async function fetchPaperPortfolioFromPython(): Promise<PaperPortfolioState> {
   try {
-    const res = await fetch(`${PYTHON_API_BASE}/api/v1/paper/portfolio`, {
-      cache: 'no-store',
-    });
-
-    if (!res.ok) {
-      throw new Error(`Python engine returned HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
+    const data = await getWorkerPaperPortfolio();
     
     const positions: PaperPosition[] = (data.positions || []).map((p: any) => ({
       symbol: p.symbol,
@@ -75,18 +65,9 @@ export async function fetchPaperPortfolioFromPython(): Promise<PaperPortfolioSta
 
 export async function executePaperRebalanceInPython(): Promise<{ success: boolean; message: string; actions: any[] }> {
   try {
-    const res = await fetch(`${PYTHON_API_BASE}/api/v1/paper/rebalance`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Python engine returned HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
+    const data = await executeWorkerPaperRebalance();
     return {
-      success: true,
+      success: data.status === 'success' || data.status === 'skipped',
       message: data.message || 'Paper rebalance executed',
       actions: data.actions_executed || [],
     };
@@ -94,7 +75,7 @@ export async function executePaperRebalanceInPython(): Promise<{ success: boolea
     console.error('[PaperExecution Client] Rebalance failed:', error);
     return {
       success: false,
-      message: error?.message || 'Failed to connect to Python engine',
+      message: error?.message || 'Failed to connect to Python worker',
       actions: [],
     };
   }
@@ -102,12 +83,7 @@ export async function executePaperRebalanceInPython(): Promise<{ success: boolea
 
 export async function fetchPaperOrdersFromPython(): Promise<PaperOrder[]> {
   try {
-    const res = await fetch(`${PYTHON_API_BASE}/api/v1/paper/portfolio`, {
-      cache: 'no-store',
-    });
-
-    if (!res.ok) return [];
-    const data = await res.json();
+    const data = await getWorkerPaperPortfolio();
     return (data.orders || []).map((o: any) => ({
       orderId: o.order_id,
       symbol: o.symbol,

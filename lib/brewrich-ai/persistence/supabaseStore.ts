@@ -265,4 +265,47 @@ export const supabaseStore = {
       };
     }
   },
+
+  /**
+   * 8. Check if a date is a verified NSE trading day in skyhigh_trading_days (Read-Only)
+   */
+  async isTradingDay(dateStr: string): Promise<boolean> {
+    try {
+      const supabase = getSupabaseServerClient();
+      const { data, error } = await supabase
+        .from('skyhigh_trading_days')
+        .select('trading_date')
+        .eq('trading_date', dateStr)
+        .limit(1);
+
+      if (error || !data || data.length === 0) {
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  /**
+   * 9. Query rebalance runs for a given session date
+   */
+  async getRebalanceRun(sessionDate: string): Promise<any> {
+    try {
+      const supabase = getSupabaseServerClient();
+      const { data, error } = await supabase
+        .from('brewrich_rebalance_runs')
+        .select('*')
+        .eq('session_date', sessionDate)
+        .eq('status', 'SUCCESS')
+        .limit(1);
+
+      if (error || !data || data.length === 0) {
+        return null;
+      }
+      return data[0];
+    } catch {
+      return null;
+    }
+  },
 };

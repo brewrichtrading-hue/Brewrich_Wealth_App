@@ -11,8 +11,7 @@
 
 import { BrokerConnectionInfo, NormalizedBrokerStatus, AuditLogEvent, RiskSafetyMetrics } from './types';
 import { LIVE_ENABLED, PAPER_ONLY, getAuthoritativeRiskSafetyMetrics } from './safetyService';
-
-const PYTHON_API_BASE = process.env.BREWRICH_PYTHON_API_URL || 'http://127.0.0.1:8400';
+import { getWorkerBrokersStatus, getWorkerAuditLogs } from './workerClient';
 
 export { LIVE_ENABLED, PAPER_ONLY };
 
@@ -58,15 +57,7 @@ export async function getFirstockStatus(): Promise<NormalizedBrokerStatus> {
  */
 export async function fetchBrokerConnectionsFromPython(): Promise<BrokerConnectionInfo[]> {
   try {
-    const res = await fetch(`${PYTHON_API_BASE}/api/v1/brokers/status`, {
-      cache: 'no-store',
-    });
-
-    if (!res.ok) {
-      throw new Error(`Python engine returned HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
+    const data = await getWorkerBrokersStatus();
     return (data.brokers || []).map((b: any) => ({
       brokerId: b.id as 'dhan' | 'firstock',
       name: b.name,
@@ -87,12 +78,7 @@ export async function fetchBrokerConnectionsFromPython(): Promise<BrokerConnecti
  */
 export async function fetchAuditLogsFromPython(): Promise<AuditLogEvent[]> {
   try {
-    const res = await fetch(`${PYTHON_API_BASE}/api/v1/audit/logs`, {
-      cache: 'no-store',
-    });
-
-    if (!res.ok) return getAuditLogs();
-    const data = await res.json();
+    const data = await getWorkerAuditLogs(50);
     return (data.logs || []).map((l: any) => ({
       id: l.id,
       timestamp: l.timestamp,
