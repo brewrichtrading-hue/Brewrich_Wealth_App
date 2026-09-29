@@ -114,20 +114,20 @@ export default function HomePage() {
         <div className="mx-auto max-w-5xl rounded-3xl bg-[#FEFEFE] p-6 sm:p-8 shadow-brand border border-slate-200">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
             <div className="pt-2 sm:pt-0">
-              <p className="text-h2 sm:text-h1 font-black text-storm">₹140Cr+</p>
-              <p className="text-caption text-slate-500 mt-1 uppercase font-bold tracking-wider">AUM & Capital Advised</p>
+              <p className="text-h2 sm:text-h1 font-black text-storm">7+</p>
+              <p className="text-caption text-slate-500 mt-1 uppercase font-bold tracking-wider">YEARS OF MARKET EXPERIENCE</p>
             </div>
             <div className="pt-4 sm:pt-0">
-              <p className="text-h2 sm:text-h1 font-black text-storm">94.2%</p>
-              <p className="text-caption text-slate-500 mt-1 uppercase font-bold tracking-wider">Order Execution Rate</p>
+              <p className="text-h2 sm:text-h1 font-black text-storm">DATA-DRIVEN</p>
+              <p className="text-caption text-slate-500 mt-1 uppercase font-bold tracking-wider">INVESTMENT APPROACH</p>
             </div>
             <div className="pt-4 sm:pt-0">
-              <p className="text-h2 sm:text-h1 font-black text-storm">4.9 / 5.0</p>
-              <p className="text-caption text-slate-500 mt-1 uppercase font-bold tracking-wider">Investor Rating</p>
+              <p className="text-h2 sm:text-h1 font-black text-storm">AMFI REGISTERED MFD</p>
+              <p className="text-caption text-slate-500 mt-1 uppercase font-bold tracking-wider">ARN 35693</p>
             </div>
             <div className="pt-4 sm:pt-0">
-              <p className="text-h2 sm:text-h1 font-black text-storm">100%</p>
-              <p className="text-caption text-slate-500 mt-1 uppercase font-bold tracking-wider">Regulated & Compliant</p>
+              <p className="text-h2 sm:text-h1 font-black text-storm">NISM V-A</p>
+              <p className="text-caption text-slate-500 mt-1 uppercase font-bold tracking-wider">CERTIFIED PROFESSIONAL</p>
             </div>
           </div>
         </div>
